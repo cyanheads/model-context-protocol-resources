@@ -1,70 +1,70 @@
 # Creating MCP Tools: A Comprehensive Guide
 
-This guide provides a detailed walkthrough of creating tools for the Model Context Protocol (MCP), incorporating best practices and real-world patterns from production implementations.
-
 ## Table of Contents
 
-1. [Understanding MCP Tools](#understanding-mcp-tools)
-2. [Project Setup](#project-setup)
-3. [Core Components](#core-components)
-4. [MCP Server Implementation](#mcp-server-implementation)
-5. [Advanced Features](#advanced-features)
-6. [Testing and Quality Assurance](#testing-and-quality-assurance)
-7. [Deployment and Operations](#deployment-and-operations)
-8. [Best Practices](#best-practices)
-9. [Troubleshooting](#troubleshooting)
+1. [Core Concepts](creating_tools_v2.md#core-concepts)
+2. [Project Structure](creating_tools_v2.md#project-structure)
+3. [Implementation Guide](creating_tools_v2.md#implementation-guide)
+4. [Best Practices](creating_tools_v2.md#best-practices)
+5. [Integration Patterns](creating_tools_v2.md#integration-patterns)
+6. [Testing & Quality Assurance](creating_tools_v2.md#testing--quality-assurance)
+7. [Deployment](creating_tools_v2.md#deployment)
+8. [Security & Production Readiness](creating_tools_v2.md#security--production-readiness)
 
-## Understanding MCP Tools
+## Core Concepts
 
 ### What is an MCP Tool?
 
-An MCP tool is a standardized interface that allows AI models (like Claude) to interact with local or remote services in a secure and controlled way. Tools can:
+An MCP (Model Context Protocol) tool is a standardized interface that allows AI models to interact with external systems and services. Key aspects include:
 
-- Execute specific operations
-- Process and return data
-- Handle user inputs
-- Provide progress updates
-- Manage resources
-- Report errors consistently
+- Standardized input/output formats
+- Strong type safety
+- Error handling
+- Progress reporting
+- Resource management
+- Async operation support
 
-### Key Concepts
+### Key Components
 
-1. **Resources**: Static or dynamic data sources accessible through URIs
-2. **Tools**: Executable operations with defined inputs and outputs
-3. **Prompts**: AI-friendly text generation templates
-4. **Progress Tracking**: Real-time operation status updates
-5. **Error Handling**: Standardized error reporting and recovery
+1. **Server**: The MCP server implementation that handles tool registration and execution
+2. **Tools**: Individual operations exposed to AI models
+3. **Models**: Data structures for input/output validation
+4. **Session**: Handles client communication and capabilities
+5. **Configuration**: System and runtime settings
 
-## Project Setup
-
-### 1. Directory Structure
+## Project Structure
 
 ```
 my_mcp_tool/
 ├── src/
 │   └── my_mcp_tool/
-│       ├── __init__.py      # Package initialization and entry point
-│       ├── __main__.py      # CLI entry point
-│       ├── models.py        # Data models and types
-│       ├── service.py       # Core business logic
-│       └── server.py        # MCP server implementation
+│       ├── __init__.py      # Entry point & CLI
+│       ├── __main__.py      # Script entry
+│       ├── server.py        # Core MCP server
+│       ├── models.py        # Data models
+│       ├── exceptions.py    # Custom exceptions
+│       ├── config.py        # Configuration handling
+│       └── utils/           # Helper functions
+│           ├── __init__.py
+│           ├── logging.py   # Logging setup
+│           └── security.py  # Security utilities
 ├── tests/
 │   ├── __init__.py
+│   ├── conftest.py         # Test configuration
+│   ├── test_server.py
 │   ├── test_models.py
-│   ├── test_service.py
-│   └── test_server.py
-├── scripts/
-│   ├── run_service.sh       # Service runner script
-│   └── service.sh           # Service management script
-├── pyproject.toml          # Project metadata and dependencies
+│   └── integration/        # Integration tests
+├── pyproject.toml          # Project metadata
 ├── README.md              # Documentation
-└── .env                   # Environment configuration
+├── CHANGELOG.md          # Version history
+├── LICENSE              # License information
+└── .gitignore          # Git ignore rules
 ```
 
-### 2. Project Configuration
+### Essential Files
 
+#### pyproject.toml
 ```toml
-# pyproject.toml
 [project]
 name = "my-mcp-tool"
 version = "0.1.0"
@@ -72,8 +72,20 @@ description = "MCP Tool Description"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.0.0",
-    "httpx>=0.27.2",
-    "python-dotenv>=1.0.1",
+    "pydantic>=2.6.3",
+    "click>=8.1.7",
+    "structlog>=24.1.0",
+    "prometheus-client>=0.20.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-asyncio>=0.23.5",
+    "pytest-cov>=4.1.0",
+    "black>=24.2.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0"
 ]
 
 [build-system]
@@ -81,714 +93,463 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-my-mcp-tool = "my_mcp_tool:run"
+my-mcp-tool = "my_mcp_tool:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+select = ["E", "F", "B", "I"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
 ```
 
-### 3. Environment Setup
+## Implementation Guide
 
-```bash
-# Create virtual environment
-uv venv .venv
-
-# Install dependencies
-uv pip install mcp httpx python-dotenv
-
-# Install development dependencies
-uv pip install --dev pytest pytest-asyncio pytest-cov
-```
-
-## Core Components
-
-### 1. Data Models (models.py)
+### 1. Configuration Management
 
 ```python
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
-from typing import Dict, Any, Optional
+# config.py
+from pydantic import BaseModel, Field
+from pathlib import Path
+import tomli
 
-class DataType(Enum):
-    """Define standardized data types"""
-    TEXT = "text"
-    NUMBER = "number"
-    BINARY = "binary"
+class ServerConfig(BaseModel):
+    host: str = Field(default="127.0.0.1")
+    port: int = Field(default=8000, ge=1024, le=65535)
+    log_level: str = Field(default="INFO")
+    metrics_enabled: bool = Field(default=True)
 
-@dataclass
-class ProcessingResult:
-    """Core result data structure"""
-    type: DataType
-    data: Any
-    timestamp: datetime
-    metadata: Optional[Dict[str, Any]] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary format"""
-        return {
-            "type": self.type.value,
-            "data": self.data,
-            "timestamp": self.timestamp.isoformat(),
-            **({"metadata": self.metadata} if self.metadata else {})
-        }
+def load_config(path: Path | None = None) -> ServerConfig:
+    if path and path.exists():
+        with open(path, "rb") as f:
+            config_dict = tomli.load(f)
+        return ServerConfig(**config_dict)
+    return ServerConfig()
 ```
 
-### 2. Service Layer (service.py)
+### 2. Logging Setup
 
 ```python
+# utils/logging.py
+import structlog
 import logging
-from typing import Dict, Any
-import httpx
+from typing import Any
 
-logger = logging.getLogger(__name__)
+def setup_logging(level: str = "INFO") -> None:
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer()
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(
+            logging.getLevelName(level)
+        ),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+        cache_logger_on_first_use=True
+    )
+```
 
-class ToolService:
-    """Core service implementation"""
-    
-    def __init__(self, config: Dict[str, Any]):
+### 3. Custom Exceptions
+
+```python
+# exceptions.py
+class MCPToolError(Exception):
+    """Base exception for MCP tool errors"""
+    pass
+
+class ConfigurationError(MCPToolError):
+    """Configuration related errors"""
+    pass
+
+class OperationError(MCPToolError):
+    """Operation execution errors"""
+    pass
+
+class ValidationError(MCPToolError):
+    """Input validation errors"""
+    pass
+```
+
+### 4. Server Implementation
+
+```python
+# server.py
+from mcp.server import Server
+from mcp.types import Tool, TextContent, Progress
+from pydantic import BaseModel, ValidationError
+from prometheus_client import Counter, Histogram
+import structlog
+from .exceptions import *
+from .config import ServerConfig
+
+logger = structlog.get_logger()
+
+# Metrics
+REQUESTS = Counter("tool_requests_total", "Total tool requests", ["tool_name"])
+LATENCY = Histogram("tool_latency_seconds", "Tool execution latency", ["tool_name"])
+
+class MyToolInput(BaseModel):
+    param1: str
+    param2: int = Field(default=10, ge=0, le=100)
+
+class ToolServer:
+    def __init__(self, config: ServerConfig):
         self.config = config
-        self.client = httpx.AsyncClient(
-            timeout=10.0,
-            limits=httpx.Limits(
-                max_keepalive_connections=5,
-                max_connections=10
-            )
-        )
-        self._cache = {}
-        
-    async def process_request(self, params: Dict[str, Any]) -> ProcessingResult:
-        """Process a tool request"""
-        try:
-            # Implementation
-            pass
-        except Exception as e:
-            logger.error(f"Processing error: {str(e)}", exc_info=True)
-            raise
-            
-    async def cleanup(self):
-        """Clean up resources"""
-        await self.client.aclose()
-        self._cache.clear()
+        self.server = Server("my-mcp-tool")
+        self.setup_routes()
+
+    def setup_routes(self):
+        @self.server.list_tools()
+        async def list_tools() -> list[Tool]:
+            return [
+                Tool(
+                    name="my_tool",
+                    description="Tool description",
+                    inputSchema=MyToolInput.schema(),
+                )
+            ]
+
+        @self.server.call_tool()
+        async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+            try:
+                REQUESTS.labels(tool_name=name).inc()
+                with LATENCY.labels(tool_name=name).time():
+                    match name:
+                        case "my_tool":
+                            # Validate input
+                            try:
+                                input_model = MyToolInput(**arguments)
+                            except ValidationError as e:
+                                raise ValidationError(f"Invalid input: {e}")
+
+                            # Report progress
+                            if hasattr(self.server, "request_context"):
+                                await self.server.request_context.session.send_progress(
+                                    Progress(current=0, total=100)
+                                )
+
+                            # Execute operation
+                            try:
+                                result = await self.process_tool(input_model)
+                            except Exception as e:
+                                logger.error("operation_failed", 
+                                           tool=name, 
+                                           error=str(e),
+                                           exc_info=True)
+                                raise OperationError(f"Operation failed: {e}")
+
+                            # Final progress update
+                            if hasattr(self.server, "request_context"):
+                                await self.server.request_context.session.send_progress(
+                                    Progress(current=100, total=100)
+                                )
+
+                            return [TextContent(
+                                type="text",
+                                text=str(result)
+                            )]
+                        case _:
+                            raise ValueError(f"Unknown tool: {name}")
+            except Exception as e:
+                logger.error("tool_execution_failed",
+                           tool=name,
+                           error=str(e),
+                           exc_info=True)
+                raise
+
+    async def process_tool(self, input: MyToolInput) -> str:
+        # Implementation
+        pass
+
+    async def start(self):
+        options = self.server.create_initialization_options()
+        async with stdio_server() as (read, write):
+            await self.server.run(read, write, options)
 ```
 
-## MCP Server Implementation
-
-### 1. Server Setup (server.py)
-
-```python
-import os
-import logging
-from typing import Dict, Any, List
-from dotenv import load_dotenv
-from mcp.server import Server, McpError
-from mcp.types import Tool, TextContent, Resource
-
-# Load configuration
-load_dotenv()
-logger = logging.getLogger(__name__)
-
-# Initialize server
-server = Server("my_tool")
-service = ToolService(config={
-    "api_key": os.getenv("API_KEY"),
-    "base_url": os.getenv("BASE_URL")
-})
-
-@server.list_resources()
-async def handle_list_resources() -> List[Resource]:
-    """List available resources"""
-    return [
-        Resource(
-            uri="myapp://default/resource",
-            name="Default Resource",
-            description="Description",
-            mimeType="application/json"
-        )
-    ]
-
-@server.list_tools()
-async def handle_list_tools() -> List[Tool]:
-    """List available tools"""
-    return [
-        Tool(
-            name="my-tool",
-            description="Tool description",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "param1": {
-                        "type": "string",
-                        "description": "Parameter description"
-                    }
-                },
-                "required": ["param1"]
-            }
-        )
-    ]
-
-@server.call_tool()
-async def handle_call_tool(
-    name: str,
-    arguments: Dict[str, Any]
-) -> List[TextContent]:
-    """Handle tool execution"""
-    try:
-        # Validate tool name
-        if name != "my-tool":
-            raise McpError(f"Unknown tool: {name}")
-            
-        # Validate arguments
-        if not arguments or "param1" not in arguments:
-            raise McpError("Missing required parameter: param1")
-            
-        # Process request
-        result = await service.process_request(arguments)
-        
-        return [TextContent(
-            type="text",
-            text=json.dumps(result.to_dict())
-        )]
-        
-    except Exception as e:
-        logger.error(f"Tool error: {str(e)}", exc_info=True)
-        raise McpError(f"Tool execution failed: {str(e)}")
-```
-
-### 2. Entry Points
-
-```python
-# __main__.py
-"""Main entry point for the MCP tool."""
-
-from . import run
-
-if __name__ == "__main__":
-    run()
-```
+### 5. Entry Point
 
 ```python
 # __init__.py
-import argparse
+import click
+from pathlib import Path
 import asyncio
-import logging
-import signal
-import sys
-from typing import Optional
+import structlog
+from prometheus_client import start_http_server
+from .config import load_config
+from .utils.logging import setup_logging
+from .server import ToolServer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
-def parse_args():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="MCP Tool Service")
-    parser.add_argument(
-        "--log-level",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        default="INFO",
-        help="Set the logging level"
-    )
-    parser.add_argument(
-        "--config",
-        type=str,
-        help="Path to config file"
-    )
-    return parser.parse_args()
-
-def setup_logging(level: str):
-    """Configure logging with the specified level."""
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
-
-def handle_signal(signum, frame):
-    """Handle system signals gracefully."""
-    signal_name = signal.Signals(signum).name
-    logger.info(f"Received signal {signal_name} ({signum})")
-    logger.info("Initiating graceful shutdown...")
-    sys.exit(0)
-
-def run():
-    """
-    Main entry point for running the service.
-    
-    This function:
-    1. Parses command line arguments
-    2. Sets up logging
-    3. Configures signal handlers
-    4. Starts the async event loop
-    5. Handles cleanup on shutdown
-    """
+@click.command()
+@click.option("--config", type=Path, help="Config file path")
+@click.option("-v", "--verbose", count=True)
+def main(config: Path | None, verbose: bool) -> None:
+    """MCP Tool Description"""
     try:
-        # Parse arguments
-        args = parse_args()
-        
+        # Load configuration
+        cfg = load_config(config)
+
         # Setup logging
-        setup_logging(args.log_level)
-        
-        # Set up signal handlers
-        signal.signal(signal.SIGINT, handle_signal)
-        signal.signal(signal.SIGTERM, handle_signal)
-        
-        logger.info("=== Service Starting ===")
-        logger.info(f"Version: {__version__}")
-        logger.info("Press Ctrl+C to stop")
-        logger.info("=====================")
-        
-        # Run the async main function
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("Service stopped by user")
+        log_level = "DEBUG" if verbose else cfg.log_level
+        setup_logging(log_level)
+
+        # Start metrics server if enabled
+        if cfg.metrics_enabled:
+            start_http_server(8000)
+
+        # Create and run server
+        server = ToolServer(cfg)
+        asyncio.run(server.start())
     except Exception as e:
-        logger.error("Service error:", exc_info=True)
-        sys.exit(1)
-    finally:
-        logger.info("=== Service Stopped ===")
-        logger.info("All resources cleaned up")
-        logger.info("=====================")
-
-async def main():
-    """Async main function"""
-    import mcp.server.stdio
-    
-    try:
-        async with mcp.server.stdio.stdio_server() as (read, write):
-            await server.run(read, write)
-    finally:
-        await service.cleanup()
-```
-
-## Advanced Features
-
-### 1. Progress Tracking
-
-```python
-async def send_progress(
-    progress: int,
-    total: int,
-    description: str
-) -> None:
-    """Send progress updates safely"""
-    try:
-        if (
-            hasattr(server, "request_context") and
-            server.request_context is not None and
-            server.request_context.meta is not None and
-            server.request_context.meta.progressToken is not None
-        ):
-            await server.request_context.session.send_progress_notification(
-                progress_token=server.request_context.meta.progressToken,
-                progress=progress,
-                total=total,
-                description=description
-            )
-    except Exception as e:
-        logger.warning(f"Progress notification failed: {str(e)}")
-```
-
-### 2. Caching
-
-```python
-class CacheManager:
-    """Manage cached data with timeouts"""
-    
-    def __init__(self, max_size: int = 100):
-        self._cache = {}
-        self._timestamps = {}
-        self._max_size = max_size
-        
-    def get(self, key: str) -> Optional[Any]:
-        """Get cached value if available"""
-        return self._cache.get(key)
-        
-    def set(self, key: str, value: Any):
-        """Cache a value with timestamp"""
-        if len(self._cache) >= self._max_size:
-            oldest = min(self._timestamps.items(), key=lambda x: x[1])[0]
-            del self._cache[oldest]
-            del self._timestamps[oldest]
-            
-        self._cache[key] = value
-        self._timestamps[key] = datetime.now()
-```
-
-### 3. Resource Management
-
-```python
-class ResourceManager:
-    """Manage shared resources"""
-    
-    def __init__(self):
-        self._resources = {}
-        self._locks = {}
-        
-    async def acquire(self, resource_id: str):
-        """Acquire resource lock"""
-        if resource_id not in self._locks:
-            self._locks[resource_id] = asyncio.Lock()
-        await self._locks[resource_id].acquire()
-        
-    async def release(self, resource_id: str):
-        """Release resource lock"""
-        if resource_id in self._locks:
-            self._locks[resource_id].release()
-```
-
-## Testing and Quality Assurance
-
-### 1. Unit Tests
-
-```python
-import pytest
-from unittest.mock import Mock, AsyncMock
-from mcp.server import McpError
-
-@pytest.mark.asyncio
-async def test_tool_execution():
-    # Arrange
-    mock_service = AsyncMock()
-    mock_service.process_request.return_value = ProcessingResult(...)
-    
-    # Act
-    result = await handle_call_tool("my-tool", {"param1": "value"})
-    
-    # Assert
-    assert len(result) == 1
-    assert result[0].type == "text"
-    data = json.loads(result[0].text)
-    assert "type" in data
-```
-
-### 2. Integration Tests
-
-```python
-@pytest.mark.asyncio
-async def test_full_workflow():
-    # Test complete workflow
-    tools = await handle_list_tools()
-    assert len(tools) > 0
-    
-    result = await handle_call_tool(
-        tools[0].name,
-        {"param1": "test"}
-    )
-    assert result is not None
-```
-
-### 3. Error Handling Tests
-
-```python
-@pytest.mark.asyncio
-async def test_error_handling():
-    # Test invalid tool
-    with pytest.raises(McpError) as exc:
-        await handle_call_tool("invalid", {})
-    assert "Unknown tool" in str(exc.value)
-    
-    # Test missing parameter
-    with pytest.raises(McpError) as exc:
-        await handle_call_tool("my-tool", {})
-    assert "Missing required parameter" in str(exc.value)
-```
-
-## Deployment and Operations
-
-### 1. Service Management Scripts
-
-#### Run Service Script (run_service.sh)
-```bash
-#!/bin/bash
-
-# Get the directory where the script is located
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# Add src directory to Python path
-export PYTHONPATH="$DIR/src:$PYTHONPATH"
-
-# Run the service using uv
-cd "$DIR" && uv run -m my_mcp_tool
-```
-
-#### Service Management Script (service.sh)
-```bash
-#!/bin/bash
-
-# Service Management Script
-# Helps install and manage the service on macOS
-
-SERVICE_NAME="com.my-mcp-tool"
-PLIST_PATH="$HOME/Library/LaunchAgents/$SERVICE_NAME.plist"
-LOG_PATH="$HOME/Library/Logs/my-mcp-tool.log"
-ERROR_LOG_PATH="$HOME/Library/Logs/my-mcp-tool.error.log"
-
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-print_status() {
-    echo -e "${GREEN}==>${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}Error:${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}Warning:${NC} $1"
-}
-
-check_dependencies() {
-    if ! command -v uv &> /dev/null; then
-        print_error "uv is not installed"
-        exit 1
-    fi
-}
-
-install_service() {
-    print_status "Installing service..."
-    
-    # Create logs directory
-    mkdir -p "$HOME/Library/Logs"
-    
-    # Copy plist file
-    cp "$SERVICE_NAME.plist" "$PLIST_PATH"
-    if [ $? -ne 0 ]; then
-        print_error "Failed to copy plist file"
-        exit 1
-    fi
-    
-    # Load the service
-    launchctl load "$PLIST_PATH"
-    if [ $? -ne 0 ]; then
-        print_error "Failed to load service"
-        exit 1
-    fi
-    
-    print_status "Service installed successfully"
-    print_status "Logs will be available at:"
-    echo "  - Standard output: $LOG_PATH"
-    echo "  - Error log: $ERROR_LOG_PATH"
-}
-
-uninstall_service() {
-    print_status "Uninstalling service..."
-    launchctl unload "$PLIST_PATH" 2>/dev/null
-    rm -f "$PLIST_PATH"
-    print_status "Service uninstalled successfully"
-}
-
-start_service() {
-    print_status "Starting service..."
-    launchctl start "$SERVICE_NAME"
-    print_status "Service started"
-}
-
-stop_service() {
-    print_status "Stopping service..."
-    launchctl stop "$SERVICE_NAME"
-    print_status "Service stopped"
-}
-
-restart_service() {
-    print_status "Restarting service..."
-    stop_service
-    sleep 2
-    start_service
-}
-
-check_status() {
-    if launchctl list | grep -q "$SERVICE_NAME"; then
-        print_status "Service is installed and running"
-        echo "Recent logs:"
-        echo "----------------------------------------"
-        tail -n 5 "$LOG_PATH" 2>/dev/null || echo "No logs available yet"
-        echo "----------------------------------------"
-    else
-        print_warning "Service is not running"
-    fi
-}
-
-show_logs() {
-    if [ -f "$LOG_PATH" ]; then
-        tail -f "$LOG_PATH"
-    else
-        print_error "Log file not found"
-    fi
-}
-
-show_help() {
-    echo "Service Management Script"
-    echo
-    echo "Usage: $0 [command]"
-    echo
-    echo "Commands:"
-    echo "  install    Install and start the service"
-    echo "  uninstall  Stop and remove the service"
-    echo "  start      Start the service"
-    echo "  stop       Stop the service"
-    echo "  restart    Restart the service"
-    echo "  status     Check service status"
-    echo "  logs       Show and follow service logs"
-    echo "  help       Show this help message"
-}
-
-# Check dependencies
-check_dependencies
-
-# Parse command
-case "$1" in
-    "install")
-        install_service
-        ;;
-    "uninstall")
-        uninstall_service
-        ;;
-    "start")
-        start_service
-        ;;
-    "stop")
-        stop_service
-        ;;
-    "restart")
-        restart_service
-        ;;
-    "status")
-        check_status
-        ;;
-    "logs")
-        show_logs
-        ;;
-    "help"|"")
-        show_help
-        ;;
-    *)
-        print_error "Unknown command: $1"
-        echo
-        show_help
-        exit 1
-        ;;
-esac
-```
-
-### 2. Launch Configuration (com.my-mcp-tool.plist)
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.my-mcp-tool</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/local/bin/uv</string>
-        <string>run</string>
-        <string>my-mcp-tool</string>
-        <string>--log-level</string>
-        <string>INFO</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>WorkingDirectory</key>
-    <string>/path/to/your/tool</string>
-    <key>StandardOutPath</key>
-    <string>~/Library/Logs/my-mcp-tool.log</string>
-    <key>StandardErrorPath</key>
-    <string>~/Library/Logs/my-mcp-tool.error.log</string>
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-        <key>PYTHONPATH</key>
-        <string>/path/to/your/tool</string>
-    </dict>
-</dict>
-</plist>
+        logger.error("startup_failed", error=str(e), exc_info=True)
+        raise
 ```
 
 ## Best Practices
 
-1. **Error Handling**
-   - Use specific error types
-   - Provide clear error messages
-   - Include context in errors
-   - Clean up resources in error cases
+### 1. Input Validation
 
-2. **Logging**
-   - Use structured logging
-   - Include request IDs
-   - Log appropriate detail levels
-   - Handle sensitive data
+Enhanced Pydantic models with strict validation:
 
-3. **Resource Management**
-   - Implement proper cleanup
-   - Use context managers
-   - Handle timeouts
-   - Manage concurrent access
-
-4. **Security**
-   - Validate all inputs
-   - Sanitize output data
-   - Use secure defaults
-   - Implement rate limiting
-
-5. **Performance**
-   - Implement caching
-   - Use connection pooling
-   - Batch operations when possible
-   - Monitor resource usage
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Tool Not Found**
-   - Check tool registration
-   - Verify tool name
-   - Check for typos
-
-2. **Invalid Parameters**
-   - Validate input schema
-   - Check parameter types
-   - Verify required fields
-
-3. **Resource Issues**
-   - Check resource availability
-   - Verify permissions
-   - Monitor resource usage
-
-### Debugging
-
-1. Enable Debug Logging
 ```python
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+from pydantic import BaseModel, Field, validator
+from typing import List
+import re
+
+class ToolInput(BaseModel):
+    path: Path = Field(..., description="File path")
+    count: int = Field(default=10, ge=0, le=100)
+    mode: str = Field(..., pattern="^(read|write)$")
+    tags: List[str] = Field(default_factory=list)
+
+    @validator("path")
+    def validate_path(cls, v):
+        if not v.is_absolute():
+            raise ValueError("Path must be absolute")
+        return v
+
+    @validator("tags")
+    def validate_tags(cls, v):
+        if not all(re.match(r"^[a-zA-Z0-9_-]+$", tag) for tag in v):
+            raise ValueError("Tags must be alphanumeric")
+        return v
+
+    class Config:
+        frozen = True
 ```
 
-2. Monitor Resources
+### 2. Resource Management
+
+Enhanced resource manager with timeouts and cleanup:
+
 ```python
-async def monitor_resources():
-    while True:
-        memory = psutil.Process().memory_info().rss / 1024 / 1024
-        logger.debug(f"Memory: {memory:.2f} MB")
-        await asyncio.sleep(60)
+from contextlib import asynccontextmanager
+import asyncio
+from typing import Dict, Any
+
+class ResourceManager:
+    def __init__(self):
+        self._resources: Dict[str, Any] = {}
+        self._locks: Dict[str, asyncio.Lock] = {}
+        self._timeouts: Dict[str, float] = {}
+
+    @asynccontextmanager
+    async def acquire(self, resource_id: str, timeout: float = 30.0):
+        if resource_id not in self._locks:
+            self._locks[resource_id] = asyncio.Lock()
+
+        try:
+            await asyncio.wait_for(
+                self._locks[resource_id].acquire(),
+                timeout=timeout
+            )
+            yield self._resources.get(resource_id)
+        finally:
+            if resource_id in self._locks:
+                self._locks[resource_id].release()
+
+    async def cleanup(self, max_age: float = 3600.0):
+        """Cleanup old resources"""
+        current_time = asyncio.get_event_loop().time()
+        to_remove = [
+            rid for rid, timestamp in self._timeouts.items()
+            if current_time - timestamp > max_age
+        ]
+        
+        for rid in to_remove:
+            if rid in self._resources:
+                del self._resources[rid]
+            if rid in self._timeouts:
+                del self._timeouts[rid]
 ```
 
-3. Test Connectivity
+## Testing & Quality Assurance
+
+### 1. Comprehensive Testing
+
 ```python
-async def test_connectivity():
+# conftest.py
+import pytest
+import asyncio
+from pathlib import Path
+from typing import AsyncGenerator
+from my_mcp_tool.server import ToolServer
+from my_mcp_tool.config import ServerConfig
+
+@pytest.fixture
+async def server() -> AsyncGenerator[ToolServer, None]:
+    config = ServerConfig()
+    server = ToolServer(config)
+    yield server
+
+# test_server.py
+import pytest
+from unittest.mock import AsyncMock, patch
+
+@pytest.mark.asyncio
+async def test_tool_execution(server: ToolServer):
+    # Arrange
+    input_data = {
+        "param1": "test",
+        "param2": 42
+    }
+    
+    # Act
+    with patch("my_mcp_tool.server.process_tool", new_callable=AsyncMock) as mock:
+        mock.return_value = "success"
+        result = await server.call_tool("my_tool", input_data)
+    
+    # Assert
+    assert len(result) == 1
+    assert result[0].type == "text"
+    assert result[0].text == "success"
+    mock.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_invalid_input(server: ToolServer):
+    # Arrange
+    invalid_input = {
+        "param1": "test",
+        "param2": -1  # Invalid value
+    }
+    
+    # Act & Assert
+    with pytest.raises(ValidationError):
+        await server.call_tool("my_tool", invalid_input)
+```
+
+## Security & Production Readiness
+
+### 1. Security Enhancements
+
+```python
+# utils/security.py
+import secrets
+from pathlib import Path
+from typing import Optional
+
+def generate_token() -> str:
+    """Generate secure token"""
+    return secrets.token_urlsafe(32)
+
+def sanitize_path(path: str, base_dir: Optional[Path] = None) -> Path:
+    """Sanitize and validate path"""
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(TEST_URL)
-            response.raise_for_status()
-        return True
+        clean_path = Path(path).resolve()
+        if base_dir:
+            if not clean_path.is_relative_to(base_dir):
+                raise ValueError("Path outside base directory")
+        return clean_path
     except Exception as e:
-        logger.error(f"Connectivity test failed: {str(e)}")
-        return False
+        raise ValueError(f"Invalid path: {e}")
+
+def rate_limit(key: str, limit: int, window: int = 60) -> bool:
+    """Simple rate limiting"""
+    # Implementation using Redis or similar
+    pass
 ```
 
-Remember to follow these guidelines and best practices when creating your MCP tools. This will ensure your tools are reliable, maintainable, and provide a great user experience.
+### 2. Production Configuration
+
+```python
+# Production config example
+server_config = {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "log_level": "INFO",
+    "metrics_enabled": True,
+    "rate_limit": {
+        "enabled": True,
+        "limit": 100,
+        "window": 60
+    },
+    "security": {
+        "token_required": True,
+        "allowed_origins": ["https://api.example.com"],
+        "max_request_size": 1048576
+    },
+    "timeouts": {
+        "operation": 30.0,
+        "connection": 5.0
+    }
+}
+```
+
+## Deployment
+
+### 1. Container Support
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+COPY . .
+
+RUN pip install uv && \
+    uv pip install --system -e .
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["uvx", "my-mcp-tool"]
+```
+
+## Conclusion
+
+Building production-ready MCP tools requires attention to:
+
+1. Core Implementation
+   - Strong type safety
+   - Comprehensive error handling
+   - Efficient resource management
+   - Async operation support
+
+2. Quality & Testing
+   - Unit and integration tests
+   - Performance testing
+   - Security testing
+   - Code quality tools
+
+3. Production Features
+   - Monitoring & metrics
+   - Health checks
+   - Rate limiting
+   - Security measures
+
+4. Operations
+   - Container support
+   - Configuration management
+   - Logging & tracing
+   - Documentation
+
+Following these patterns ensures reliable, maintainable, and secure tools that integrate well with AI models in production environments.
