@@ -1,10 +1,11 @@
 # MCP Client Development Guide: Building Robust and Flexible LLM Integrations
 
 [![Website](https://img.shields.io/badge/Website-modelcontextprotocol.io-blue)](https://modelcontextprotocol.io/)
-[![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.2.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
 [![MCP TypeScript SDK](https://img.shields.io/badge/TypeScript_SDK-v1.1.1-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.2.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
+[![MCP Kotlin SDK](https://img.shields.io/badge/Kotlin_SDK-v0.3.0-blue)](https://github.com/modelcontextprotocol/kotlin-sdk)
 
-Hi there! This guide is meant to be a helpful resource for anyone looking to build clients for the **Model Context Protocol (MCP)**. I've tried my best to cover the important stuff and provide accurate examples, but please create an issue on this GitHub repository if you find any errors, inconsistencies, or areas that could be improved. Your feedback is appreciated! Whether you're just starting out with MCP or you're already familiar and want to dive deeper, I hope you'll find some useful examples and tips here. This guide is all about making it easier to create solid LLM integrations, so hopefully, it helps you build something cool!
+Hi there! This guide is meant to be a helpful resource for anyone looking to build clients for the **Model Context Protocol (MCP)**. I've tried my best to cover the important stuff and provide accurate examples, but please create an issue on this GitHub repository if you find any errors, inconsistencies, or areas that could be improved. Your feedback is appreciated! Whether you're just starting out with MCP or you're already familiar and want to dive deeper, I hope you'll find some useful examples and tips here. This guide is all about making it easier to create solid LLM integrations, so hopefully, it helps you build something cool! For this guide, I'll be focusing primarily on TypeScript implementation details. A dedicated Python-specific guide will be released separately.
 
 ## Table of Contents
 
@@ -113,34 +114,6 @@ flowchart LR
 *   **Python:** The `Session` class manages requests, notifications, and error handling.
 *   **TypeScript:** The `Protocol` or `Client` classes provide hooks for request/notification handlers.
 
-**TypeScript Example (Protocol Layer):**
-
-```typescript
-class Protocol<Request, Notification, Result> {
-  // Handle incoming requests
-  setRequestHandler<T>(schema: T, handler: (request: T, extra: any) => Promise<Result>): void {
-    // Implementation for setting request handlers
-  }
-
-  // Handle incoming notifications
-  setNotificationHandler<T>(schema: T, handler: (notification: T) => Promise<void>): void {
-    // Implementation for setting notification handlers
-  }
-
-  // Send requests and await responses
-  request<T>(request: Request, schema: T, options?: any): Promise<T> {
-    // Implementation for sending requests
-    return; // Placeholder
-  }
-
-  // Send one-way notifications
-  notification(notification: Notification): Promise<void> {
-    // Implementation for sending notifications
-    return; // Placeholder
-  }
-}
-```
-
 **Python Example (Protocol Layer):**
 
 ```python
@@ -162,17 +135,24 @@ class Session(BaseSession[RequestT, NotificationT, ResultT]):
         # Handling an incoming notification
 ```
 
-#### Transport Layer
+**TypeScript Example (Protocol Layer):**
 
-Responsible for the underlying communication channel between client and server. Common options include:
+```typescript
+class Protocol<Request, Notification, Result> {
+  // Handle incoming requests
+  setRequestHandler<T>(schema: T, handler: (request: T, extra: any) => Promise<Result>): void {
+    // Implementation for setting request handlers
+  }
 
-1. **Stdio Transport:**
-    *   Ideal for local processes.
-    *   Uses standard input (stdin) and standard output (stdout).
-2. **HTTP with SSE:**
-    *   Suitable for remote connections or scenarios requiring one-way streaming (e.g., event updates).
-    *   Uses HTTP POST for client-to-server and Server-Sent Events (SSE) for server-to-client communication.
+  // Handle incoming notifications
+  setNotificationHandler<T>(schema: T, handler: (notification: T) => Promise<void>): void {
+    // Implementation for setting notification handlers
+  }
 
+  // Send requests and await responses
+  request<T>(request: Request, schema: T, options?: any): Promise<T> {
+    // Implementation for sending requests
+    return; // Placeholder
 **All communication uses JSON-RPC 2.0 to package requests, responses, and notifications.**
 
 ### Connection Lifecycle
