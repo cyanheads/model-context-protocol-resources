@@ -6,6 +6,17 @@
 
 A collection of powerful Model Context Protocol (MCP) servers created by [cyanheads](https://github.com/cyanheads) that extend Large Language Model capabilities through standardized interfaces.
 
+## 📚 MCP Client Development
+
+Looking to build your own MCP client? Check out my comprehensive [MCP Client Development Guide](guides/mcp-client-development-guide.md) that covers:
+
+- Core architecture and components
+- Connection lifecycle management
+- Tool and resource handling
+- Error handling and security best practices
+- Step-by-step implementation examples in Python and TypeScript
+- Advanced topics like sampling and multi-server connections
+
 ## 🌟 Featured Servers
 
 ### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
