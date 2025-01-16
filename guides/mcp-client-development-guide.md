@@ -37,7 +37,7 @@ Welcome to the comprehensive MCP Client Development Guide. This documentation de
     *   [5.6. Progress / Partial Results](#56-progress--partial-results)
     *   [5.7. Multi-Server Aggregation](#57-multi-server-aggregation)
     *   [5.8. Tool Error Objects](#58-tool-error-objects)
-    *   [5.9. Sampling from Server to Client](#59-sampling-from-server-to-client)
+    *   [5.9. Handling List Endpoint Updates](#510-handling-list-endpoint-updates)
 6. [Error Handling, Security, and Best Practices](#6-error-handling-security-and-best-practices)
     *   [6.1. Error Handling](#61-error-handling)
     *   [6.2. Security](#62-security)
@@ -46,7 +46,6 @@ Welcome to the comprehensive MCP Client Development Guide. This documentation de
 7. [Debugging and Next Steps](#7-debugging-and-next-steps)
     *   [7.1. Debugging Tools](#71-debugging-tools)
     *   [7.2. Debugging Tips](#72-debugging-tips)
-    *   [7.3. Next Steps](#73-next-steps)
 8. [Conclusion](#conclusion)
 
 ## 1. Introduction
@@ -292,44 +291,419 @@ async function connectToServer(command: string, args: string[]) {
 
 ### 4.3. Discovering Tools, Prompts, and Resources
 
-After initialization, query the server for its capabilities:
+The discovery endpoints (`tools/list`, `prompts/list`, and `resources/list`) are fundamental to MCP's functionality. They serve as the primary mechanism for clients to discover server capabilities and are essential for enabling dynamic interactions between LLMs and MCP servers.
 
-**Python:**
+#### 4.3.1. Listing Tools (tools/list)
 
-```python
-async def discover_capabilities(session: ClientSession):
-    try:
-        tools_response = await session.list_tools()
-        print("Tools:", [t.name for t in tools_response.tools])
+The `tools/list` endpoint is crucial for discovering available tools that an LLM can use to perform actions. This endpoint returns detailed information about each tool, including its name, description, and input schema.
 
-        prompts_response = await session.list_prompts()
-        print("Prompts:", [p.name for p in prompts_response.prompts])
-
-        resources_response = await session.list_resources()
-        for res in resources_response.resources:
-            print("Resource:", res.uri, res.name)
-    except Exception as e:
-        print(f"Error during discovery: {e}")
+**Request Format:**
+```json
+{
+  "method": "tools/list"
+}
 ```
 
-**TypeScript:**
+**Response Format:**
+```json
+{
+  "tools": [
+    {
+      "name": "calculate_sum",
+      "description": "Add two numbers together",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "a": { "type": "number" },
+          "b": { "type": "number" }
+        },
+        "required": ["a", "b"]
+      }
+    }
+  ]
+}
+```
 
+**Python Implementation:**
+```python
+async def discover_tools(session: ClientSession):
+    try:
+        tools_response = await session.list_tools()
+        print("Available tools:")
+        for tool in tools_response.tools:
+            print(f"- {tool.name}: {tool.description}")
+            print(f"  Input schema: {tool.inputSchema}")
+    except Exception as e:
+        print(f"Error discovering tools: {e}")
+```
+
+**TypeScript Implementation:**
 ```typescript
-async function discoverCapabilities(client: Client) {
+async function discoverTools(client: Client) {
   try {
     const tools = await client.listTools();
-    console.log("Tools:", tools.tools.map((t) => t.name));
-
-    const prompts = await client.listPrompts();
-    console.log("Prompts:", prompts.prompts.map((p) => p.name));
-
-    const resources = await client.listResources();
-    resources.resources.forEach((r) => console.log("Resource:", r.uri, r.name));
+    console.log("Available tools:");
+    tools.tools.forEach(tool => {
+      console.log(`- ${tool.name}: ${tool.description}`);
+      console.log(`  Input schema:`, tool.inputSchema);
+    });
   } catch (error) {
-    console.error("Error during discovery:", error);
+    console.error("Error discovering tools:", error);
   }
 }
 ```
+
+#### 4.3.2. Listing Prompts (prompts/list)
+
+The `prompts/list` endpoint discovers available prompt templates that can guide LLM interactions. Each prompt includes a name, description, and optional arguments.
+
+**Request Format:**
+```json
+{
+  "method": "prompts/list"
+}
+```
+
+**Response Format:**
+```json
+{
+  "prompts": [
+    {
+      "name": "analyze-code",
+      "description": "Analyze code for potential improvements",
+      "arguments": [
+        {
+          "name": "language",
+          "description": "Programming language",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Python Implementation:**
+```python
+async def discover_prompts(session: ClientSession):
+    try:
+        prompts_response = await session.list_prompts()
+        print("Available prompts:")
+        for prompt in prompts_response.prompts:
+            print(f"- {prompt.name}: {prompt.description}")
+            if prompt.arguments:
+                print("  Arguments:")
+                for arg in prompt.arguments:
+                    print(f"    - {arg.name}: {arg.description}")
+    except Exception as e:
+        print(f"Error discovering prompts: {e}")
+```
+
+**TypeScript Implementation:**
+```typescript
+async function discoverPrompts(client: Client) {
+  try {
+    const prompts = await client.listPrompts();
+    console.log("Available prompts:");
+    prompts.prompts.forEach(prompt => {
+      console.log(`- ${prompt.name}: ${prompt.description}`);
+      if (prompt.arguments) {
+        console.log("  Arguments:");
+        prompt.arguments.forEach(arg => {
+          console.log(`    - ${arg.name}: ${arg.description}`);
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error discovering prompts:", error);
+  }
+}
+```
+
+#### 4.3.3. Listing Resources (resources/list)
+
+The `resources/list` endpoint discovers available data sources that can provide context to the LLM. Resources can be either direct (concrete URIs) or templates (URI patterns).
+
+**Request Format:**
+```json
+{
+  "method": "resources/list"
+}
+```
+
+**Response Format:**
+```json
+{
+  "resources": [
+    {
+      "uri": "file:///logs/app.log",
+      "name": "Application Logs",
+      "description": "Real-time application log data",
+      "mimeType": "text/plain"
+    }
+  ],
+  "resourceTemplates": [
+    {
+      "uriTemplate": "file:///data/{year}/{month}/report.csv",
+      "name": "Monthly Reports",
+      "description": "Historical monthly report data",
+      "mimeType": "text/csv"
+    }
+  ]
+}
+```
+
+Resource templates enable dynamic access to resources through parameterized URIs. Clients can expand these templates by replacing variables with actual values. For example:
+
+```python
+async def access_monthly_report(session: ClientSession, year: str, month: str):
+    """Example of using a resource template to access monthly reports"""
+    try:
+        # List available resources to get templates
+        resources = await session.list_resources()
+        
+        # Find the monthly report template
+        template = next(
+            (t for t in resources.resourceTemplates 
+             if t.name == "Monthly Reports"), None)
+        
+        if template:
+            # Expand the template with actual values
+            uri = template.uriTemplate.replace("{year}", year).replace("{month}", month)
+            
+            # Read the resource using the expanded URI
+            contents = await session.read_resource(uri)
+            return contents
+            
+    except Exception as e:
+        print(f"Error accessing monthly report: {e}")
+        return None
+```
+
+This allows servers to expose parameterized access to collections of resources while maintaining a clean interface. The LLM can understand these templates and request specific resources by providing the appropriate parameters.
+
+**Python Implementation:**
+```python
+async def discover_resources(session: ClientSession):
+    try:
+        resources_response = await session.list_resources()
+        print("Available resources:")
+        for resource in resources_response.resources:
+            print(f"- {resource.name} ({resource.uri})")
+            print(f"  Description: {resource.description}")
+            if resource.mimeType:
+                print(f"  MIME Type: {resource.mimeType}")
+    except Exception as e:
+        print(f"Error discovering resources: {e}")
+```
+
+**TypeScript Implementation:**
+```typescript
+async function discoverResources(client: Client) {
+  try {
+    const resources = await client.listResources();
+    console.log("Available resources:");
+    resources.resources.forEach(resource => {
+      console.log(`- ${resource.name} (${resource.uri})`);
+      console.log(`  Description: ${resource.description}`);
+      if (resource.mimeType) {
+        console.log(`  MIME Type: ${resource.mimeType}`);
+      }
+    });
+  } catch (error) {
+    console.error("Error discovering resources:", error);
+  }
+}
+```
+
+#### 4.3.4. Integrating Discovery with LLM Interactions
+
+When working with LLMs, the discovery endpoints provide crucial information that helps the LLM understand and use available capabilities. Here's how to manage and format this context effectively:
+
+```python
+class LLMContextManager:
+    """Manages and formats MCP capabilities as LLM context"""
+    
+    def __init__(self, session: ClientSession):
+        self.session = session
+        self.context = None
+        self.last_update = None
+        self.logger = logging.getLogger(__name__)
+        
+        # Configure logging
+        self.logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        self.logger.addHandler(handler)
+    
+    async def prepare_llm_context(self) -> Dict[str, Any]:
+        """
+        Gather and format server capabilities for LLM context.
+        Can be used as system prompt, context parameter, or conversation history.
+        
+        Handles various error cases:
+        - MCP protocol errors
+        - Network connectivity issues
+        - Invalid capability formats
+        - Missing or malformed schemas
+        """
+        try:
+            self.logger.info("Refreshing LLM context from MCP capabilities")
+            
+            # Gather capabilities with error handling
+            try:
+                tools = await self.session.list_tools()
+                self.logger.debug(f"Retrieved {len(tools.tools)} tools")
+            except McpError as e:
+                self.logger.error(f"Failed to list tools: {e.message}")
+                tools = types.ListToolsResponse(tools=[])
+            
+            try:
+                prompts = await self.session.list_prompts()
+                self.logger.debug(f"Retrieved {len(prompts.prompts)} prompts")
+            except McpError as e:
+                self.logger.error(f"Failed to list prompts: {e.message}")
+                prompts = types.ListPromptsResponse(prompts=[])
+            
+            try:
+                resources = await self.session.list_resources()
+                self.logger.debug(f"Retrieved {len(resources.resources)} resources")
+            except McpError as e:
+                self.logger.error(f"Failed to list resources: {e.message}")
+                resources = types.ListResourcesResponse(resources=[])
+            
+            # Format capabilities with validation
+            self.context = {
+                "available_tools": [
+                    {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": self._validate_schema(tool.name, tool.inputSchema),
+                        "example": self._generate_tool_example(tool)
+                    }
+                    for tool in tools.tools
+                    if self._is_valid_tool(tool)
+                ],
+                "available_prompts": [
+                    {
+                        "name": prompt.name,
+                        "description": prompt.description,
+                        "arguments": prompt.arguments
+                    }
+                    for prompt in prompts.prompts
+                    if self._is_valid_prompt(prompt)
+                ],
+                "available_resources": [
+                    {
+                        "name": resource.name,
+                        "uri": resource.uri,
+                        "description": resource.description
+                    }
+                    for resource in resources.resources
+                    if self._is_valid_resource(resource)
+                ]
+            }
+            
+            self.last_update = time.time()
+            self.logger.info("Successfully updated LLM context")
+            return self.context
+            
+        except Exception as e:
+            self.logger.error(f"Unexpected error preparing LLM context: {e}")
+            # Return empty but valid context on error
+            return {
+                "available_tools": [],
+                "available_prompts": [],
+                "available_resources": []
+            }
+    
+    def _generate_tool_example(self, tool) -> Optional[Dict[str, Any]]:
+        """Generate an example use of a tool based on its schema"""
+        if not (tool.inputSchema and "properties" in tool.inputSchema):
+            return None
+            
+        example_args = {}
+        for prop_name, prop in tool.inputSchema["properties"].items():
+            if prop.get("type") == "string":
+                example_args[prop_name] = "example_string"
+            elif prop.get("type") in ["number", "integer"]:
+                example_args[prop_name] = 42
+            elif prop.get("type") == "boolean":
+                example_args[prop_name] = True
+            
+        return {
+            "name": tool.name,
+            "arguments": example_args
+        }
+    
+    def as_system_prompt(self) -> str:
+        """Format context as a system prompt"""
+        if not self.context:
+            return ""
+        
+        parts = ["You have access to the following capabilities:"]
+        
+        if self.context["available_tools"]:
+            parts.append("\nTOOLS:")
+            for tool in self.context["available_tools"]:
+                parts.append(f"- {tool['name']}: {tool['description']}")
+        
+        if self.context["available_prompts"]:
+            parts.append("\nPROMPTS:")
+            for prompt in self.context["available_prompts"]:
+                parts.append(f"- {prompt['name']}: {prompt['description']}")
+        
+        if self.context["available_resources"]:
+            parts.append("\nRESOURCES:")
+            for resource in self.context["available_resources"]:
+                parts.append(f"- {resource['name']}: {resource['description']}")
+        
+        return "\n".join(parts)
+    
+    def format_for_claude(self) -> Dict[str, Any]:
+        """Format context for Anthropic's Claude"""
+        if not self.context:
+            return {}
+        
+        return {
+            "tools": [
+                {
+                    "name": t["name"],
+                    "description": t["description"],
+                    "parameters": t["parameters"]
+                }
+                for t in self.context["available_tools"]
+            ]
+        }
+
+# Example usage with Claude:
+async def use_with_claude(session: ClientSession, user_input: str):
+    # Initialize context manager and prepare MCP context
+    context_manager = LLMContextManager(session)
+    await context_manager.prepare_llm_context()
+    
+    # Pass the formatted context as the system prompt and tools to Claude
+    anthropic_client = Anthropic()
+    response = anthropic_client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        system=context_manager.as_system_prompt(),  # MCP context as system prompt
+        messages=[{"role": "user", "content": user_input}],
+        **context_manager.format_for_claude()  # MCP tools formatted for Claude's tools parameter
+    )
+    return response
+```
+
+This enhanced context manager:
+1. Provides rich context about available capabilities
+2. Includes usage examples and access patterns
+3. Formats context appropriately for different LLMs
+4. Maintains context freshness with timestamps
+5. Supports multiple context injection methods:
+   - As system prompts
+   - As function/tool definitions
+   - As conversation context
 
 ### 4.4. Handling Tool Calls and Schema Validation
 
@@ -595,9 +969,32 @@ async function getPromptExample(client: Client) {
 
 MCP standardizes server communication but doesn't mandate a specific LLM. Integrate with Claude (Anthropic), OpenAI, or other LLMs using their respective client libraries.
 
-**Key Idea: Context Re-injection**
+**Key Concepts:**
 
-After each tool call, you typically want to re-inject the previous conversation history, along with the tool's results, back into the LLM's context. This allows the LLM to maintain awareness of the ongoing interaction and make informed decisions about subsequent steps.
+1. **Discovery Integration**
+   - Query available tools, prompts, and resources using list endpoints
+   - Format capabilities for LLM context
+   - Update context when capabilities change
+   - Provide structured information about available actions
+
+2. **Context Re-injection**
+   - Maintain conversation history
+   - Include tool results in context
+   - Track available capabilities
+   - Update context after tool calls
+   - Preserve tool call history
+
+3. **Dynamic Adaptation**
+   - Handle capability changes through list endpoint updates
+   - Update tool availability in real-time
+   - Manage resource access based on current state
+   - Track prompt modifications and updates
+
+4. **Context Management**
+   - After each tool call, re-inject the previous conversation history
+   - Include tool results in the context
+   - Allow LLM to maintain awareness of the interaction
+   - Enable informed decisions about subsequent steps
 
 **Simplified Python Example (using Anthropic's client):**
 
@@ -615,7 +1012,7 @@ async def process_user_query(session: ClientSession, user_input: str):
 
         # 2) Send query + tool list to LLM
         llm_response = anthropic_client.messages.create(
-            model="claude-3-opus-20240229",
+            model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             messages=messages,
             tools=[
@@ -660,7 +1057,7 @@ async def process_user_query(session: ClientSession, user_input: str):
 
                     # 3d) Send updated messages back to the LLM
                     llm_response = anthropic_client.messages.create(
-                        model="claude-3-opus-20240229",
+                        model="claude-3-5-sonnet-20241022",
                         max_tokens=1000,
                         messages=messages,
                     )
@@ -783,7 +1180,7 @@ class MCPClient:
 
         # Send query to LLM (Anthropic example)
         claude_response = self.anthropic.messages.create(
-            model="claude-3-opus-20240229",
+            model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             messages=messages,
             tools=[
@@ -827,7 +1224,7 @@ class MCPClient:
                     )
 
                     claude_response = self.anthropic.messages.create(
-                        model="claude-3-opus-20240229",
+                        model="claude-3-5-sonnet-20241022",
                         max_tokens=1000,
                         messages=messages,
                     )
@@ -924,7 +1321,7 @@ async function main() {
 
     // Send query to LLM (Anthropic example)
     let claudeResponse = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 1000,
       messages: messages,
       tools: tools.tools.map((t) => ({
@@ -958,7 +1355,7 @@ async function main() {
           });
 
           claudeResponse = await anthropic.messages.create({
-            model: "claude-3-opus-20240229",
+            model: "claude-3-5-sonnet-20241022",
             max_tokens: 1000,
             messages: messages,
           });
@@ -1012,17 +1409,29 @@ main().catch((err) => {
 
 ### 5.1. Sampling
 
-**Sampling** allows servers to request completions from the LLM through the client. The client can:
+**Sampling** enables bidirectional LLM interactions in MCP, allowing both clients to use LLMs and servers to request LLM completions. This section covers both client-side sampling management and server-to-client sampling requests.
 
-*   Prompt the user for approval before making the LLM call.
-*   Manage costs associated with LLM usage.
-*   Filter or modify the LLM's response before returning it to the server.
+#### Client-Side Sampling Management
+
+Clients can control how LLM interactions are handled:
+
+*   Prompt the user for approval before making LLM calls
+*   Manage costs associated with LLM usage
+*   Filter or modify LLM responses
+*   Control model selection and parameters
+
+#### Server-to-Client Sampling
+
+Servers can request completions from the LLM through the client using `sampling/createMessage`. This enables sophisticated agentic behaviors while maintaining security and user control.
 
 **Typical Flow:**
 
-1. **Server** sends a `sampling/createMessage` request to the **Client**.
-2. **Client** calls the LLM, potentially after user approval or modification of the request.
-3. **Client** returns the LLM's response to the **Server**.
+1. **Server** sends a `sampling/createMessage` request to the **Client**
+2. **Client** reviews and potentially modifies the request
+3. **Client** obtains user approval (optional)
+4. **Client** calls the LLM
+5. **Client** reviews and potentially modifies the completion
+6. **Client** returns the result to the **Server**
 
 **Example `sampling/createMessage` Request:**
 
@@ -1043,7 +1452,10 @@ main().catch((err) => {
     "includeContext": "thisServer",
     "maxTokens": 100,
     "modelPreferences": {
-      "hints": [{ "name": "claude-3" }, { "name": "gpt-4" }],
+      "hints": [
+        { "name": "claude-3-5-sonnet-20241022" },
+        { "name": "claude-3-5-haiku-20241022" }
+      ],
       "costPriority": 0.8,
       "speedPriority": 0.5,
       "intelligencePriority": 0.7
@@ -1052,12 +1464,51 @@ main().catch((err) => {
 }
 ```
 
-**Model Preferences:**
+#### Model Preferences
 
-*   `hints`: An ordered array of model name suggestions (e.g., "claude-3", "gpt-4"). Clients can map these to equivalent models from different providers.
-*   `costPriority`: Importance of minimizing cost (0.0 to 1.0).
-*   `speedPriority`: Importance of low latency (0.0 to 1.0).
-*   `intelligencePriority`: Importance of model capabilities (0.0 to 1.0).
+The `modelPreferences` object allows servers to specify their requirements for model selection:
+
+1. **Priority Values (0.0 to 1.0):**
+   - `costPriority`: Higher values prioritize cheaper models
+   - `speedPriority`: Higher values prioritize faster response times
+   - `intelligencePriority`: Higher values prioritize more capable models
+
+   These values help clients make trade-offs between different model characteristics. For example:
+   - High cost priority (0.8) + low intelligence priority (0.2): Prefer simpler, cheaper models
+   - High speed priority (0.9) + low cost priority (0.3): Prefer faster models regardless of cost
+   - High intelligence priority (0.9) + high cost priority (0.8): Seek the best value among capable models
+
+2. **Model Hints:**
+   The `hints` array provides ordered suggestions for model selection:
+   ```json
+   "hints": [
+     { "name": "claude-3-5-sonnet-20241022" },  // First choice
+     { "name": "claude-3-5-haiku-20241022" }    // Fallback option
+   ]
+   ```
+   
+   Important notes about hints:
+   - Hints are suggestions only - clients may not have access to the exact models specified
+   - Clients can map hints to equivalent models from different providers
+   - The order indicates preference (first hint is most preferred)
+   - Partial matches are supported (e.g., "claude-3" could match any Claude 3 model)
+   - Clients should balance hints with priority values when selecting models
+
+#### Human-in-the-Loop Controls
+
+Sampling is designed with human oversight in mind:
+
+**For Prompts:**
+*   Clients should show users the proposed prompt
+*   Users should be able to modify or reject prompts
+*   System prompts can be filtered or modified
+*   Context inclusion is controlled by the client
+
+**For Completions:**
+*   Clients should show users the completion
+*   Users should be able to modify or reject completions
+*   Clients can filter or modify completions
+*   Users control which model is used
 
 ### 5.2. Multi-Server Connections
 
@@ -1135,19 +1586,282 @@ Servers can provide partial results or progress updates for long-running tool ca
 
 ### 5.7. Multi-Server Aggregation
 
-Clients can manage a single conversation context spanning multiple servers.
+Clients can manage a single conversation context spanning multiple servers. This enables powerful workflows that combine capabilities from different sources.
 
-**Example Flow:**
+```python
+class MultiServerManager:
+    """Manages connections and capabilities across multiple MCP servers"""
+    
+    def __init__(self):
+        self.servers: Dict[str, ClientSession] = {}
+        self.capability_managers: Dict[str, MCPCapabilityManager] = {}
+        self.logger = logging.getLogger(__name__)
+    
+    async def add_server(self, name: str, script_path: str) -> bool:
+        """Add and connect to a new server"""
+        try:
+            # Connect to server
+            params = StdioServerParameters(
+                command="python" if script_path.endswith(".py") else "node",
+                args=[script_path]
+            )
+            
+            async with stdio_client(params) as streams:
+                session = await ClientSession(streams[0], streams[1])
+                await session.initialize()
+                
+                # Create capability manager
+                cap_manager = MCPCapabilityManager(session)
+                await cap_manager.refresh_all()
+                
+                self.servers[name] = session
+                self.capability_managers[name] = cap_manager
+                self.logger.info(f"Successfully added server: {name}")
+                return True
+                
+        except McpError as e:
+            self.logger.error(f"MCP error adding server {name}: {e.message} (code: {e.code})")
+            return False
+        except Exception as e:
+            self.logger.error(f"Failed to add server {name}: {e}")
+            return False
+    
+    def get_aggregated_capabilities(self) -> Dict[str, Any]:
+        """Get aggregated capabilities from all servers"""
+        aggregated = {
+            "tools": [],
+            "prompts": [],
+            "resources": []
+        }
+        
+        # Aggregate capabilities with server prefixes
+        for server_name, cap_manager in self.capability_managers.items():
+            try:
+                caps = cap_manager.get_capabilities()
+                
+                # Add tools with server prefix
+                for tool in caps.get("available_tools", []):
+                    tool_copy = copy.deepcopy(tool)
+                    tool_copy["name"] = f"{server_name}.{tool['name']}"
+                    tool_copy["server"] = server_name
+                    tool_copy["description"] = f"[{server_name}] {tool['description']}"
+                    aggregated["tools"].append(tool_copy)
+                
+                # Add prompts with server prefix
+                for prompt in caps.get("available_prompts", []):
+                    prompt_copy = copy.deepcopy(prompt)
+                    prompt_copy["name"] = f"{server_name}.{prompt['name']}"
+                    prompt_copy["server"] = server_name
+                    prompt_copy["description"] = f"[{server_name}] {prompt['description']}"
+                    aggregated["prompts"].append(prompt_copy)
+                
+                # Add resources with server prefix
+                for resource in caps.get("available_resources", []):
+                    resource_copy = copy.deepcopy(resource)
+                    resource_copy["name"] = f"{server_name}.{resource['name']}"
+                    resource_copy["server"] = server_name
+                    resource_copy["description"] = f"[{server_name}] {resource['description']}"
+                    aggregated["resources"].append(resource_copy)
+                    
+            except Exception as e:
+                self.logger.error(f"Error aggregating capabilities from {server_name}: {e}")
+                continue
+        
+        return aggregated
+    
+    async def route_tool_call(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
+        """Route a tool call to the appropriate server"""
+        try:
+            if "." not in tool_name:
+                raise ValueError(f"Tool name {tool_name} must include server prefix")
+            
+            server_name, actual_tool_name = tool_name.split(".", 1)
+            if server_name not in self.servers:
+                raise ValueError(f"Unknown server: {server_name}")
+            
+            session = self.servers[server_name]
+            self.logger.info(f"Routing tool call {tool_name} to server {server_name}")
+            return await session.call_tool(actual_tool_name, arguments)
+            
+        except McpError as e:
+            self.logger.error(f"MCP error in tool call {tool_name}: {e.message}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Error routing tool call {tool_name}: {e}")
+            raise
+    
+    async def handle_updates(self):
+        """Handle capability updates across all servers"""
+        for server_name, cap_manager in self.capability_managers.items():
+            try:
+                await cap_manager.refresh_all()
+            except Exception as e:
+                self.logger.error(f"Error refreshing capabilities for {server_name}: {e}")
 
-1. Connect to multiple servers.
-2. Aggregate tools from different servers.
-3. Send a query to the LLM, including tools from multiple servers.
-4. Handle tool calls to different servers.
-5. Maintain a unified conversation history and feed it back to the LLM.
+# Example usage with LLM:
 
-**Strategies for handling naming conflicts:**
+class MultiServerLLMClient:
+    """LLM client that works with multiple MCP servers"""
+    
+    def __init__(self):
+        self.server_manager = MultiServerManager()
+        self.anthropic = Anthropic()
+        self.conversation_history = []
+        self.logger = logging.getLogger(__name__)
 
-*   Prefix tool names with the server name.
+    async def should_call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> bool:
+        """
+        Prompts the user to approve a tool call and returns True if approved, False otherwise.
+        
+        Args:
+            tool_name: The name of the tool to call (includes server prefix)
+            arguments: The arguments to pass to the tool
+            
+        Returns:
+            bool: True if the user approves the tool call, False otherwise
+        """
+        try:
+            server_name = tool_name.split(".")[0]
+            self.logger.info(f"Tool call requested: {tool_name}")
+            self.logger.info(f"Server: {server_name}")
+            self.logger.info(f"Arguments: {json.dumps(arguments, indent=2)}")
+            
+            # In a real application, you might want to use a more sophisticated method
+            # to get user input, e.g., a GUI prompt or a webhook to an approval system
+            response = input(f"Approve tool call to {tool_name}? (y/n): ").lower()
+            return response == "y"
+            
+        except Exception as e:
+            self.logger.error(f"Error in tool approval for {tool_name}: {e}")
+            return False
+    
+    async def setup_servers(self):
+        """Set up connections to multiple servers"""
+        servers = {
+            "filesystem": "/path/to/filesystem-server.js",
+            "database": "/path/to/database-server.py",
+            "github": "/path/to/github-server.js"
+        }
+        
+        for name, path in servers.items():
+            success = await self.server_manager.add_server(name, path)
+            if not success:
+                self.logger.error(f"Failed to set up {name} server")
+    
+    async def process_query(self, user_input: str) -> str:
+        """Process a user query using multiple servers"""
+        try:
+            # Get aggregated capabilities
+            capabilities = self.server_manager.get_aggregated_capabilities()
+            
+            # Create system prompt with clear server distinctions
+            system_prompt = "You have access to tools from multiple servers:\n\n"
+            for tool in capabilities["tools"]:
+                system_prompt += f"- {tool['name']}: {tool['description']}\n"
+                if "parameters" in tool:
+                    system_prompt += f"  Parameters: {json.dumps(tool['parameters'], indent=2)}\n"
+            
+            # Send query to LLM with aggregated capabilities
+            response = await self.anthropic.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1000,
+                messages=self.conversation_history + [
+                    {"role": "user", "content": user_input}
+                ],
+                system=system_prompt,
+                tools=capabilities["tools"]
+            )
+            
+            # Handle tool calls with proper routing
+            final_response = ""
+            for content in response.content:
+                if content.type == "text":
+                    final_response += content.text
+                elif content.type == "tool_use":
+                    try:
+                        # Route tool call to appropriate server
+                        result = await self.server_manager.route_tool_call(
+                            content.name,
+                            content.input
+                        )
+                        
+                        # Add tool interaction to conversation history
+                        self.conversation_history.extend([
+                            {"role": "assistant", "content": [content]},
+                            {"role": "user", "content": result.content}
+                        ])
+                        
+                        # Get LLM's interpretation of the result
+                        interpretation = await self.anthropic.messages.create(
+                            model="claude-3-5-sonnet-20241022",
+                            max_tokens=1000,
+                            messages=self.conversation_history,
+                            system=system_prompt
+                        )
+                        
+                        for content in interpretation.content:
+                            if content.type == "text":
+                                final_response += content.text
+                                
+                    except Exception as e:
+                        error_msg = f"\nError executing tool {content.name}: {e}"
+                        self.logger.error(error_msg)
+                        final_response += error_msg
+            
+            return final_response
+            
+        except Exception as e:
+            error_msg = f"Error processing query: {e}"
+            self.logger.error(error_msg)
+            return error_msg
+
+# Example multi-server workflow:
+async def example_workflow():
+    client = MultiServerLLMClient()
+    await client.setup_servers()
+    
+    # Query that might use multiple servers
+    response = await client.process_query(
+        "Find all Python files in the project, analyze their complexity, "
+        "and create a GitHub issue if any file exceeds cyclomatic complexity of 15"
+    )
+    
+    print(response)
+```
+
+This implementation demonstrates:
+
+1. **Server Management:**
+   - Dynamic server connection handling
+   - Capability aggregation with server prefixes
+   - Update notification handling
+   - Comprehensive error handling and logging
+
+2. **Tool Routing:**
+   - Server-prefixed tool names (e.g., "filesystem.read_file")
+   - Automatic routing to appropriate servers
+   - Error handling for unknown servers/tools
+   - Logging of tool call routing
+
+3. **Context Management:**
+   - Aggregated capabilities from all servers
+   - Server-aware system prompts
+   - Conversation history tracking
+   - Tool result re-injection
+
+4. **Error Handling:**
+   - Specific exception handling for MCP errors
+   - Logging of errors with context
+   - Graceful degradation on server failures
+   - Clear error messages for debugging
+
+5. **Real-World Example:**
+   - Complex workflow combining multiple servers
+   - File analysis with filesystem server
+   - Database interaction for metrics
+   - GitHub integration for issue creation
+
+This architecture enables complex workflows that combine capabilities from multiple servers while maintaining clear boundaries and robust error handling.
 
 ### 5.8. Tool Error Objects
 
@@ -1179,18 +1893,121 @@ except Exception as error:
     )
 ```
 
-### 5.9. Sampling from Server to Client
+### 5.9. Handling List Endpoint Updates
 
-Servers can request completions from the LLM through the client using `sampling/createMessage`.
+MCP servers can notify clients about changes in their available capabilities through notifications:
 
-**Example Flow:**
+- `notifications/tools/list_changed`: Tools have been added, removed, or modified
+- `notifications/prompts/list_changed`: Prompts have been updated
+- `notifications/resources/list_changed`: Resources have changed
 
-1. Server sends `sampling/createMessage` request to the Client.
-2. Client prompts user for approval (optional).
-3. Client modifies the request (optional).
-4. Client calls the LLM.
-5. Client filters or modifies the completion (optional).
-6. Client returns the result to the Server.
+Clients should handle these notifications to maintain an up-to-date view of server capabilities:
+
+```python
+class MCPCapabilityManager:
+    """Manages server capabilities and handles update notifications"""
+    
+    def __init__(self, session: ClientSession):
+        self.session = session
+        self.capabilities = {}
+        self.last_update = None
+        
+        # Set up notification handlers
+        session.setNotificationHandler(
+            "notifications/tools/list_changed",
+            self.handle_tools_changed
+        )
+        session.setNotificationHandler(
+            "notifications/prompts/list_changed",
+            self.handle_prompts_changed
+        )
+        session.setNotificationHandler(
+            "notifications/resources/list_changed",
+            self.handle_resources_changed
+        )
+    
+    async def refresh_all(self):
+        """Refresh all capabilities"""
+        await self.refresh_tools()
+        await self.refresh_prompts()
+        await self.refresh_resources()
+        self.last_update = time.time()
+    
+    async def refresh_tools(self):
+        """Refresh available tools"""
+        try:
+            tools = await self.session.list_tools()
+            self.capabilities["tools"] = tools.tools
+        except Exception as e:
+            logging.error(f"Error refreshing tools: {e}")
+    
+    async def refresh_prompts(self):
+        """Refresh available prompts"""
+        try:
+            prompts = await self.session.list_prompts()
+            self.capabilities["prompts"] = prompts.prompts
+        except Exception as e:
+            logging.error(f"Error refreshing prompts: {e}")
+    
+    async def refresh_resources(self):
+        """Refresh available resources"""
+        try:
+            resources = await self.session.list_resources()
+            self.capabilities["resources"] = resources.resources
+            self.capabilities["resourceTemplates"] = resources.resourceTemplates
+        except Exception as e:
+            logging.error(f"Error refreshing resources: {e}")
+    
+    async def handle_tools_changed(self, notification):
+        """Handle tools/list_changed notification"""
+        await self.refresh_tools()
+    
+    async def handle_prompts_changed(self, notification):
+        """Handle prompts/list_changed notification"""
+        await self.refresh_prompts()
+    
+    async def handle_resources_changed(self, notification):
+        """Handle resources/list_changed notification"""
+        await self.refresh_resources()
+    
+    def get_capabilities(self) -> Dict[str, Any]:
+        """Get current capabilities for LLM context"""
+        return {
+            "available_tools": [
+                {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.inputSchema
+                }
+                for t in self.capabilities.get("tools", [])
+            ],
+            "available_prompts": [
+                {
+                    "name": p.name,
+                    "description": p.description,
+                    "arguments": p.arguments
+                }
+                for p in self.capabilities.get("prompts", [])
+            ],
+            "available_resources": [
+                {
+                    "name": r.name,
+                    "uri": r.uri,
+                    "description": r.description
+                }
+                for r in self.capabilities.get("resources", [])
+            ]
+        }
+```
+
+This capability manager:
+1. Maintains an up-to-date cache of server capabilities
+2. Automatically refreshes capabilities when notified of changes
+3. Handles errors during refresh operations
+4. Provides formatted capabilities for LLM context
+5. Tracks the last update time for cache management
+
+When using multiple servers, each server should have its own capability manager instance to track its specific capabilities independently.
 
 **Example `sampling/createMessage` request:**
 
@@ -1211,7 +2028,7 @@ Servers can request completions from the LLM through the client using `sampling/
     "includeContext": "thisServer",
     "maxTokens": 200,
     "modelPreferences": {
-      "hints": [{ "name": "claude-3" }],
+      "hints": [{ "name": "claude-3-5-sonnet-20241022" }],
       "costPriority": 0.2,
       "speedPriority": 0.8,
       "intelligencePriority": 0.9
@@ -1354,12 +2171,6 @@ async def handle_request(session: ClientSession, request):
 *   **Inspect Messages:** Carefully examine the JSON-RPC messages exchanged between the client and server. Look for invalid formats, missing fields, or incorrect values. Use a network monitoring tool (e.g., Wireshark, tcpdump) to inspect raw messages if necessary.
 *   **Test with Simple Cases:** Start with basic scenarios (e.g., listing tools, calling a simple tool) before moving on to more complex interactions.
 *   **Check for Errors:** Pay close attention to error messages and codes. They often provide valuable clues about the nature of the problem.
-
-### 7.3. Next Steps
-
-*   **Explore Example Servers:** The MCP documentation provides links to various example servers (e.g., filesystem, Git, Slack) that you can use for testing and inspiration.
-*   **Use Production-Ready Servers:** Integrate with official MCP servers for popular services like GitHub, Docker, and more.
-*   **Contribute to MCP:** Engage with the MCP community through GitHub Discussions. Share your experiences, ask questions, propose improvements, and contribute to the protocol's development.
 
 ## Conclusion
 
