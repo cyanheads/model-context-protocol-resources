@@ -61,6 +61,34 @@ A comprehensive system utilities toolkit for LLM Agents featuring:
   - QR code generation in multiple formats
   - Secure hash comparisons
 
+### [Mentor MCP Server](https://github.com/cyanheads/mentor-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+
+A second opinion and mentorship system powered by Deepseek-Reasoning (R1) featuring:
+
+- 🔍 **Code Analysis**
+  - Comprehensive code reviews with bug detection
+  - Style and best practices evaluation
+  - Performance optimization insights
+  - Security vulnerability assessment
+
+- 🎨 **Design & Architecture**
+  - UI/UX design critiques
+  - Architectural pattern recommendations
+  - Accessibility evaluation
+  - Consistency and usability checks
+
+- 📝 **Content Enhancement**
+  - Writing feedback and improvement
+  - Documentation review and clarity
+  - Grammar and style analysis
+  - Structural recommendations
+
+- 🚀 **Strategic Planning**
+  - Feature enhancement brainstorming
+  - Innovation and feasibility analysis
+  - Second opinions on approaches
+  - User value assessment
+
 ### [Obsidian MCP Server](https://github.com/cyanheads/obsidian-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
 A powerful interface for LLMs to interact with Obsidian vaults featuring:
