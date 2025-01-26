@@ -1,12 +1,16 @@
-# Model Context Protocol Tools
+# Model Context Protocol Resource: Guides and Servers
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.0.4-green.svg)](https://modelcontextprotocol.io/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.4.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.2.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
+[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
+[![Last Updated](https://img.shields.io/badge/Last%20Updated-January%202025-brightgreen.svg)]()
 
-A collection of powerful Model Context Protocol (MCP) servers created by [cyanheads](https://github.com/cyanheads) that extend Large Language Model capabilities through standardized interfaces.
+A collection of Model Context Protocol (MCP) guides and servers created by [cyanheads](https://github.com/cyanheads) that extend Large Language Model (LLM) agent capabilities through standardized interfaces.
 
-## 📚 MCP Client Development
+## Guides
+
+### 📚 MCP Client Development
 
 Looking to build your own MCP client? Check out my comprehensive [MCP Client Development Guide](guides/mcp-client-development-guide.md) that covers:
 
@@ -17,106 +21,79 @@ Looking to build your own MCP client? Check out my comprehensive [MCP Client Dev
 - Step-by-step implementation examples in Python and TypeScript
 - Advanced topics like sampling and multi-server connections
 
-## 🌟 Featured Servers
+## MCP Servers
 
-### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
+### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
-[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
+ATLAS (Adaptive Task & Logic Automation System) is a robust task management system designed for LLMs, featuring:
 
-ATLAS (Adaptive Task & Logic Automation System) empowers LLMs with hierarchical task management capabilities.
+- 📋 **Hierarchical Task Management**
+  - Parent-child task relationships with dependency tracking
+  - Milestone and task type support with status transitions
+  - Rich metadata and schema validation
+  - Bulk operations with transactional safety
 
-#### ✨ Features
+- ⚡ **Enterprise-Grade Performance**
+  - SQLite backend with advanced caching
+  - Optimized queries and connection pooling
+  - Comprehensive monitoring and backup systems
+  - Cross-platform support with atomic operations
 
-- 📋 **Task Organization**
-  - Hierarchical structure with parent-child relationships
-  - Strong type validation (TASK, MILESTONE)
-  - Status management with strict transition rules
-  - Rich metadata support with schema validation
-  - Dependency validation and cycle detection
-  - Automatic subtask management
-  - Bulk operations with transaction support
+- 🛡️ **Built-in Safety**
+  - Strict path and input validation
+  - Automatic error recovery
+  - Transaction management
+  - Comprehensive audit logging
 
-- 🛡️ **Validation & Safety**
-  - Path validation and sanitization
-  - Directory traversal prevention
-  - Special character validation
-  - Parent-child path validation
-  - Path depth limits
-  - Project name validation
-  - Consistent path formatting
+### [Toolkit MCP Server](https://github.com/cyanheads/toolkit-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
-- ⚡ **Performance**
-  - SQLite backend with Write-Ahead Logging (WAL)
-  - Advanced caching system with TTL and LRU eviction
-  - Memory pressure monitoring
-  - Query optimization
-  - Connection pooling
-  - Transaction batching
-  - Index-based fast retrieval
+A comprehensive system utilities toolkit for LLM Agents featuring:
 
-- 🔍 **Monitoring & Maintenance**
-  - Comprehensive event system
-  - Memory usage monitoring
-  - Database optimization tools
-  - Relationship repair utilities
-  - Cache statistics tracking
-  - Health monitoring
-  - Performance metrics collection
-  - Structured logging support
-  - Automated backup scheduling
+- 🌍 **Network & System Tools**
+  - IP geolocation with smart caching
+  - Network diagnostics and connectivity testing
+  - System resource monitoring
+  - Performance metrics tracking
 
-- 🌐 **Platform Support**
-  - Cross-platform path resolution
-  - Platform-specific file permissions
-  - Intelligent symlink support
-  - Process signal handling
-  - Directory structure support
-  - Atomic file operations
+- 🔐 **Security & Generation**
+  - Cryptographic operations (MD5, SHA-256, etc.)
+  - UUID generation
+  - QR code generation in multiple formats
+  - Secure hash comparisons
 
-- ⚠️ **Error Handling**
-  - Error severity classification
-  - Comprehensive error context
-  - Transaction rollback
-  - Automatic retry with backoff
-  - Cache and memory recovery
-  - Connection pool management
-  - Batch operation recovery
+### [Obsidian MCP Server](https://github.com/cyanheads/obsidian-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
-### [Git MCP Server](https://github.com/cyanheads/git-mcp-server)
+A powerful interface for LLMs to interact with Obsidian vaults featuring:
 
-[![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
+- 📝 **Knowledge Base Management**
+  - Atomic file operations and content manipulation
+  - YAML frontmatter handling with intelligent merging
+  - Comprehensive tag and property management
+  - Automatic timestamp tracking
 
-A secure interface enabling LLMs to perform Git operations through standardized protocols.
+- 🔍 **Advanced Search Capabilities**
+  - Full-text search with configurable context
+  - Complex queries using JsonLogic
+  - Tag and metadata filtering
+  - Glob pattern support
 
-#### ✨ Features
+### [Git MCP Server](https://github.com/cyanheads/git-mcp-server) [![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
 
-- 🔄 **Core Operations**
-  - Repository management
-  - Commit handling
-  - Branch operations
-  - Remote synchronization
-  - Tag management
+A secure Git operations interface for LLMs that provides:
 
-- 🛡️ **Safety Features**
-  - Path validation
-  - State verification
-  - Error handling
-  - Atomic operations
+- 🔄 **Complete Git Workflow Support**
+  - Repository, branch, and tag management
+  - Commit operations and remote synchronization
+  - Safe state handling and atomic operations
 
-- 🚀 **Efficiency**
-  - Bulk operations
-  - Smart defaults
-  - Sequential execution
-  - Operation batching
-
-## 🔗 Links
-
-- [Atlas MCP Server Repository](https://github.com/cyanheads/atlas-mcp-server)
-- [Git MCP Server Repository](https://github.com/cyanheads/git-mcp-server)
+- 🚀 **Smart Operations**
+  - Bulk action support with batching
+  - Intelligent defaults
+  - Built-in safety validations
 
 ## 📄 License
 
-Apache License 2.0
+[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ---
 
