@@ -6,7 +6,7 @@
 [![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
-A collection of guides, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard.
+A collection of guides, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard. It's a work in progress, and I'll be adding more resources and servers as I continue to experiment and learn. Feel free to contribute or reach out if you have any questions or suggestions! Thanks for stopping by! 🚀
 
 ## 📋 Table of Contents
 
