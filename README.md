@@ -43,6 +43,18 @@ Looking to build your own MCP client? Check out my comprehensive [MCP Client Dev
 - Step-by-step implementation examples in Python and TypeScript
 - Advanced topics like sampling and multi-server connections
 
+### MCP Server Development
+
+Looking to build your own MCP server? Check out my comprehensive [MCP Server Development Guide](guides/mcp-server-development-guide.md) that covers:
+
+- Core server architecture
+- Building your first MCP server
+- Exposing capabilities (tools, resources, and prompts)
+- Advanced server features (sampling, roots, streaming, etc.)
+- Security and best practices
+- Troubleshooting and resources
+- Example implementations
+
 ## 🖥️ MCP Servers
 
 ### Atlas MCP Server
