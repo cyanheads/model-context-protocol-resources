@@ -2,7 +2,7 @@
 
 [![Website](https://img.shields.io/badge/Website-modelcontextprotocol.io-blue)](https://modelcontextprotocol.io/)
 [![MCP TypeScript SDK](https://img.shields.io/badge/TypeScript_SDK-v1.1.1-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.2.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
+[![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.3.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
 [![MCP Kotlin SDK](https://img.shields.io/badge/Kotlin_SDK-v0.3.0-blue)](https://github.com/modelcontextprotocol/kotlin-sdk)
 
 Hi there! This guide is meant to be a helpful resource for anyone looking to build clients for the **Model Context Protocol (MCP)**. I've tried my best to cover the important stuff and provide accurate examples, but please create an issue on this GitHub repository if you find any errors, inconsistencies, or areas that could be improved. Your feedback is appreciated! Whether you're just starting out with MCP or you're already familiar and want to dive deeper, I hope you'll find some useful examples and tips here. This guide is all about making it easier to create solid LLM integrations, so hopefully, it helps you build something cool! 
