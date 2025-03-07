@@ -1,16 +1,36 @@
-# Model Context Protocol Resource: Guides and Servers
+# Model Context Protocol Resources
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
-[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.4.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.2.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
-[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
-[![Last Updated](https://img.shields.io/badge/Last%20Updated-January%202025-brightgreen.svg)]()
+[![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
-A collection of Model Context Protocol (MCP) guides and servers created by [cyanheads](https://github.com/cyanheads) that extend Large Language Model (LLM) agent capabilities through standardized interfaces.
+A collection of guides, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard.
 
-## Guides
+## 📋 Table of Contents
 
-### 📚 MCP Client Development
+- [Introduction to MCP](#introduction-to-mcp)
+- [Guides](#guides)
+- [MCP Servers](#mcp-servers)
+  - [Atlas](#atlas-mcp-server)
+  - [Toolkit](#toolkit-mcp-server)
+  - [Mentor](#mentor-mcp-server)
+  - [Obsidian](#obsidian-mcp-server)
+  - [Git](#git-mcp-server)
+- [SDK Support](#sdk-support)
+- [Getting Started](#getting-started)
+- [License](#license)
+
+## 🔍 Introduction to MCP
+
+The Model Context Protocol (MCP) is a standardized communication protocol enabling Large Language Models (LLMs) to interact with external systems and services. Benefits include:
+
+- **Consistent Interface**: Standardized methods for LLMs to access tools and resources
+- **Enhanced Capabilities**: Gives LLMs the ability to interact with databases, APIs, and local systems
+- **Security & Control**: Provides structured access patterns with built-in validation
+- **Extensibility**: Easy to implement new capabilities as system requirements evolve
+
+## 📚 Guides
+
+### MCP Client Development
 
 Looking to build your own MCP client? Check out my comprehensive [MCP Client Development Guide](guides/mcp-client-development-guide.md) that covers:
 
@@ -21,31 +41,41 @@ Looking to build your own MCP client? Check out my comprehensive [MCP Client Dev
 - Step-by-step implementation examples in Python and TypeScript
 - Advanced topics like sampling and multi-server connections
 
-## MCP Servers
+## 🖥️ MCP Servers
 
-### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+### Atlas MCP Server
 
-ATLAS (Adaptive Task & Logic Automation System) is a robust task management system designed for LLMs, featuring:
+[![GitHub](https://img.shields.io/badge/GitHub-atlas--mcp--server-blue.svg)](https://github.com/cyanheads/atlas-mcp-server)
+[![Version](https://img.shields.io/badge/Version-2.0.7-blue.svg)]()
+[![MCP](https://img.shields.io/badge/MCP-1.6.1-green.svg)]()
+[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
-- 📋 **Hierarchical Task Management**
-  - Parent-child task relationships with dependency tracking
-  - Milestone and task type support with status transitions
-  - Rich metadata and schema validation
-  - Bulk operations with transactional safety
+**ATLAS** (Adaptive Task & Logic Automation System) is a comprehensive project management system for LLMs with:
 
-- ⚡ **Enterprise-Grade Performance**
-  - SQLite backend with advanced caching
-  - Optimized queries and connection pooling
-  - Comprehensive monitoring and backup systems
-  - Cross-platform support with atomic operations
+- 📋 **Project Management**
+  - Lifecycle management with metadata and status tracking
+  - Dependency handling with automatic validation
+  - Rich content support with bulk operations
+  - Advanced property-based search with fuzzy matching
 
-- 🛡️ **Built-in Safety**
-  - Strict path and input validation
-  - Automatic error recovery
-  - Transaction management
-  - Comprehensive audit logging
+- 🤝 **Collaboration**
+  - Member & role management with permission controls
+  - Resource sharing and activity tracking
+  - Real-time collaborative whiteboard with version history
+  - Relationship mapping between projects and resources
 
-### [Toolkit MCP Server](https://github.com/cyanheads/toolkit-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+- 🔍 **Graph Database**
+  - Neo4j-powered relationship management
+  - ACID-compliant transactions
+  - Optimized caching and batch operations
+  - Scalable architecture with monitoring
+
+> **Note**: Version 2.0+ uses Neo4j as the database (self-hosted Docker or AuraDB cloud), replacing SQLite used in earlier versions.
+
+### Toolkit MCP Server
+
+[![GitHub](https://img.shields.io/badge/GitHub-toolkit--mcp--server-blue.svg)](https://github.com/cyanheads/toolkit-mcp-server)
+[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
 A comprehensive system utilities toolkit for LLM Agents featuring:
 
@@ -61,63 +91,53 @@ A comprehensive system utilities toolkit for LLM Agents featuring:
   - QR code generation in multiple formats
   - Secure hash comparisons
 
-### [Mentor MCP Server](https://github.com/cyanheads/mentor-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+### Mentor MCP Server
+
+[![GitHub](https://img.shields.io/badge/GitHub-mentor--mcp--server-blue.svg)](https://github.com/cyanheads/mentor-mcp-server)
+[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
 A second opinion and mentorship system powered by Deepseek-Reasoning (R1) featuring:
 
-- 🔍 **Code Analysis**
-  - Comprehensive code reviews with bug detection
-  - Style and best practices evaluation
-  - Performance optimization insights
-  - Security vulnerability assessment
+- 🔍 **Code Analysis**: Comprehensive reviews, bug detection, style evaluation
+- 🎨 **Design & Architecture**: UI/UX critiques, architectural recommendations
+- 📝 **Content Enhancement**: Writing feedback, documentation review
+- 🚀 **Strategic Planning**: Feature brainstorming, approach validation
 
-- 🎨 **Design & Architecture**
-  - UI/UX design critiques
-  - Architectural pattern recommendations
-  - Accessibility evaluation
-  - Consistency and usability checks
+### Obsidian MCP Server
 
-- 📝 **Content Enhancement**
-  - Writing feedback and improvement
-  - Documentation review and clarity
-  - Grammar and style analysis
-  - Structural recommendations
-
-- 🚀 **Strategic Planning**
-  - Feature enhancement brainstorming
-  - Innovation and feasibility analysis
-  - Second opinions on approaches
-  - User value assessment
-
-### [Obsidian MCP Server](https://github.com/cyanheads/obsidian-mcp-server) [![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![GitHub](https://img.shields.io/badge/GitHub-obsidian--mcp--server-blue.svg)](https://github.com/cyanheads/obsidian-mcp-server)
+[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
 
 A powerful interface for LLMs to interact with Obsidian vaults featuring:
 
-- 📝 **Knowledge Base Management**
-  - Atomic file operations and content manipulation
-  - YAML frontmatter handling with intelligent merging
-  - Comprehensive tag and property management
-  - Automatic timestamp tracking
+- 📝 **Knowledge Base Management**: File operations, YAML frontmatter handling
+- 🔍 **Advanced Search**: Full-text search, JsonLogic queries, metadata filtering
+- 🔄 **Integration**: Seamless connection to other MCP servers for enhanced workflows
 
-- 🔍 **Advanced Search Capabilities**
-  - Full-text search with configurable context
-  - Complex queries using JsonLogic
-  - Tag and metadata filtering
-  - Glob pattern support
+### Git MCP Server
 
-### [Git MCP Server](https://github.com/cyanheads/git-mcp-server) [![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
+[![GitHub](https://img.shields.io/badge/GitHub-git--mcp--server-blue.svg)](https://github.com/cyanheads/git-mcp-server)
+[![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
 
 A secure Git operations interface for LLMs that provides:
 
-- 🔄 **Complete Git Workflow Support**
-  - Repository, branch, and tag management
-  - Commit operations and remote synchronization
-  - Safe state handling and atomic operations
+- 🔄 **Complete Git Workflow**: Repository, branch, and tag management
+- 🚀 **Smart Operations**: Bulk actions, intelligent defaults, safety validations
 
-- 🚀 **Smart Operations**
-  - Bulk action support with batching
-  - Intelligent defaults
-  - Built-in safety validations
+## 🧰 SDK Support
+
+These projects work with the official MCP SDKs:
+
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
+[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
+
+## 🚀 Getting Started
+
+1. **Explore the guides** to understand MCP concepts and implementation approaches
+2. **Select a server** that matches your use case and follow its installation instructions
+3. **Connect with an MCP-compatible client** or build your own using the client development guide
+4. **Experiment and contribute** by submitting issues or pull requests
 
 ## 📄 License
 
