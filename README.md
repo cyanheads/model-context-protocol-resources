@@ -1,6 +1,9 @@
 # Model Context Protocol Resources
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
+[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
 A collection of guides, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard.
@@ -15,7 +18,6 @@ A collection of guides, clients, and servers for the Model Context Protocol (MCP
   - [Mentor](#mentor-mcp-server)
   - [Obsidian](#obsidian-mcp-server)
   - [Git](#git-mcp-server)
-- [SDK Support](#sdk-support)
 - [Getting Started](#getting-started)
 - [License](#license)
 
@@ -123,14 +125,6 @@ A secure Git operations interface for LLMs that provides:
 
 - 🔄 **Complete Git Workflow**: Repository, branch, and tag management
 - 🚀 **Smart Operations**: Bulk actions, intelligent defaults, safety validations
-
-## 🧰 SDK Support
-
-These projects work with the official MCP SDKs:
-
-[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
-[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 
 ## 🚀 Getting Started
 
