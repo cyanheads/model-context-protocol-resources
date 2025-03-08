@@ -1,2280 +1,2570 @@
-# MCP Client Development Guide: Building Robust and Flexible LLM Integrations
+# Model Context Protocol (MCP) Client Development Guide: Building Robust and Flexible LLM Integrations
 
 [![Website](https://img.shields.io/badge/Website-modelcontextprotocol.io-blue)](https://modelcontextprotocol.io/)
-[![MCP TypeScript SDK](https://img.shields.io/badge/TypeScript_SDK-v1.1.1-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP TypeScript SDK](https://img.shields.io/badge/TypeScript_SDK-v1.6.1-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
 [![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.3.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
 [![MCP Kotlin SDK](https://img.shields.io/badge/Kotlin_SDK-v0.3.0-blue)](https://github.com/modelcontextprotocol/kotlin-sdk)
+[![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
-Hi there! This guide is meant to be a helpful resource for anyone looking to build clients for the **Model Context Protocol (MCP)**. I've tried my best to cover the important stuff and provide accurate examples, but please create an issue on this GitHub repository if you find any errors, inconsistencies, or areas that could be improved. Your feedback is appreciated! Whether you're just starting out with MCP or you're already familiar and want to dive deeper, I hope you'll find some useful examples and tips here. This guide is all about making it easier to create solid LLM integrations, so hopefully, it helps you build something cool! 
+This guide provides a comprehensive overview of building clients for the **Model Context Protocol (MCP)** using the TypeScript SDK. It covers everything from basic setup to advanced topics, with practical examples and best practices.
 
-Note: For this guide, I'll be focusing on TypeScript implementation details. A dedicated Python-specific guide will be released separately.
+Note: This guide focuses on TypeScript implementation details.
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)
-    *   [Why MCP?](#why-mcp)
-2. [Core Architecture](#2-core-architecture)
-    *   [Overview](#overview)
-    *   [Core Components](#core-components)
-    *   [Connection Lifecycle](#connection-lifecycle)
-    *   [Error Handling](#error-handling)
-3. [Lifecycle: Connection, Exchange, and Termination](#3-lifecycle-connection-exchange-and-termination)
-    *   [Initialization](#initialization)
-    *   [Message Exchange](#message-exchange)
-    *   [Termination](#termination)
-4. [Step-by-Step: Building an MCP Client in TypeScript](#4-step-by-step-building-an-mcp-client-in-typescript)
-    *   [4.1. Installing the MCP SDK](#41-installing-the-mcp-sdk)
-    *   [4.2. Connecting to a Server](#42-connecting-to-a-server)
-    *   [4.3. Discovering Tools, Prompts, and Resources](#43-discovering-tools-prompts-and-resources)
-    *   [4.4. Handling Tool Calls and Schema Validation](#44-handling-tool-calls-and-schema-validation)
-    *   [4.5. Reading Resources](#45-reading-resources)
-    *   [4.6. Using Prompts](#46-using-prompts)
-    *   [4.7. Running Queries with LLM Integration and Context Re-injection](#47-running-queries-with-llm-integration-and-context-re-injection)
-    *   [4.8. Human-in-the-Loop (Tool Call Approval)](#48-human-in-the-loop-tool-call-approval)
-    *   [4.9. Example: Full TypeScript Code](#49-example-full-typescript-code)
-5. [Advanced Topics](#5-advanced-topics)
-    *   [5.1. Sampling](#51-sampling)
-    *   [5.2. Multi-Server Connections](#52-multi-server-connections)
-    *   [5.3. Multi-Step (Agentic) Flows](#53-multi-step-agentic-flows)
-    *   [5.4. Resource Subscriptions](#54-resource-subscriptions)
-    *   [5.5. Roots Feature](#55-roots-feature)
-    *   [5.6. Progress / Partial Results](#56-progress--partial-results)
-    *   [5.7. Multi-Server Aggregation](#57-multi-server-aggregation)
-    *   [5.8. Tool Error Objects](#58-tool-error-objects)
-    *   [5.9. Handling List Endpoint Updates](#59-handling-list-endpoint-updates)
-6. [Error Handling, Security, and Best Practices](#6-error-handling-security-and-best-practices)
-    *   [6.1. Error Handling](#61-error-handling)
-    *   [6.2. Security](#62-security)
-    *   [6.3. Performance & Logging](#63-performance--logging)
-    *   [6.4. Best Practices](#64-best-practices)
-7. [Debugging and Next Steps](#7-debugging-and-next-steps)
-    *   [7.1. Debugging Tools](#71-debugging-tools)
-8. [Conclusion](#conclusion)
+1. [Introduction to MCP Clients](#1-introduction-to-mcp-clients)
+   * [What is MCP?](#what-is-mcp)
+   * [The Role of Clients in the MCP Ecosystem](#the-role-of-clients-in-the-mcp-ecosystem)
+   * [Benefits of Using MCP Clients](#benefits-of-using-mcp-clients)
+   * [Client vs. Server: Understanding the Relationship](#client-vs-server-understanding-the-relationship)
+2. [Core Client Architecture](#2-core-client-architecture)
+   * [Key Components of an MCP Client](#key-components-of-an-mcp-client)
+   * [Protocol Fundamentals](#protocol-fundamentals)
+   * [Client Lifecycle: Connect, Exchange, Terminate](#client-lifecycle-connect-exchange-terminate)
+   * [Message Format and Transport](#message-format-and-transport)
+3. [Building Your First MCP Client](#3-building-your-first-mcp-client)
+   * [Setting Up Your Development Environment](#setting-up-your-development-environment)
+   * [Choosing an SDK](#choosing-an-sdk)
+   * [Implementing the Core Client Interface](#implementing-the-core-client-interface)
+   * [Handling Connections and Authentication](#handling-connections-and-authentication)
+   * [Processing Server Responses](#processing-server-responses)
+4. [Discovering and Using Server Capabilities](#4-discovering-and-using-server-capabilities)
+   * [Working with Tools](#working-with-tools)
+   * [Accessing Resources](#accessing-resources)
+   * [Utilizing Prompts](#utilizing-prompts)
+   * [Schema Validation and Type Safety](#schema-validation-and-type-safety)
+5. [Integrating with LLMs](#5-integrating-with-llms)
+   * [Connecting MCP Clients with LLM Services](#connecting-mcp-clients-with-llm-services)
+   * [Providing Tool Definitions to LLMs](#providing-tool-definitions-to-llms)
+   * [Handling Tool Execution and Results](#handling-tool-execution-and-results)
+   * [Context Management and Re-injection](#context-management-and-re-injection)
+   * [Human-in-the-Loop Approval](#human-in-the-loop-approval)
+6. [Advanced Client Features](#6-advanced-client-features)
+   * [Sampling](#sampling)
+   * [Multi-Server Connections](#multi-server-connections)
+   * [Multi-Step (Agentic) Flows](#multi-step-agentic-flows)
+   * [Resource Subscriptions](#resource-subscriptions)
+   * [Roots](#roots)
+   * [Progress Reporting](#progress-reporting)
+   * [Handling List Endpoint Updates](#handling-list-endpoint-updates)
+7. [Security and Best Practices](#7-security-and-best-practices)
+   * [Authentication and Authorization](#authentication-and-authorization)
+   * [Data Security](#data-security)
+   * [Error Handling](#error-handling)
+   * [General Best Practices](#general-best-practices)
+8. [Troubleshooting and Resources](#8-troubleshooting-and-resources)
+   * [Debugging Tools](#debugging-tools)
+   * [Common Issues and Solutions](#common-issues-and-solutions)
+   * [Implementing Logging](#implementing-logging)
+   * [Debugging Workflow](#debugging-workflow)
+   * [Community Resources and Support](#community-resources-and-support)
+9. [Example Implementations](#9-example-implementations)
+   * [Basic LLM Integration](#basic-llm-integration)
+   * [Multi-Server Client Manager](#multi-server-client-manager)
+   * [Streaming Response Handler](#streaming-response-handler)
+   * [Complete LLM Application](#complete-llm-application)
 
-## 1. Introduction
+## 1. Introduction to MCP Clients
 
-The **Model Context Protocol (MCP)** is an open standard that defines how Large Language Model (LLM) applications, referred to as **host applications**, access data, prompts, and tools. It acts as a universal connector, enabling your host application (an LLM-based chatbot, IDE, or any AI system) to communicate seamlessly with any MCP server. Within the host application, an **MCP client** component is responsible for managing these connections. Each client maintains a 1:1 connection with a specific MCP server.
+### What is MCP?
 
-**Analogy:** Just as USB-C unifies device connectivity, MCP unifies AI application integrations.
+The **Model Context Protocol (MCP)** is an open standard that defines how Large Language Model (LLM) applications access data, prompts, and tools. It acts as a universal connector, enabling your LLM-based application (chatbot, IDE, or any AI system) to communicate seamlessly with any MCP server. Within the application, an **MCP client** component manages these connections. Each client maintains a 1:1 connection with a specific MCP server.
 
-**Capabilities Gained Through MCP:**
+You can find an official introduction to MCP [here](https://modelcontextprotocol.io/introduction).
 
-*   **Tools:** Functionality like running shell commands, querying databases, or interacting with APIs.
-*   **Resources:** Access to file contents, logs, or other data to provide context to the LLM. *Resources are application-controlled.*
-*   **Prompts:** Predefined prompt templates or workflows to guide the LLM's behavior.
-*   **Roots:** A way for clients to inform servers about relevant resources and their locations. *Roots are informational and help guide the server's operations, but are not strictly enforced. They serve as suggestions rather than a core capability like Tools, Resources, or Prompts.*
+**Analogy:** MCP is like a universal adapter for AI applications, allowing them to connect to a wide range of services and data sources without requiring custom integration code for each one.
 
-### Why MCP?
+### The Role of Clients in the MCP Ecosystem
+
+Clients are the bridge between LLM applications and MCP servers. They handle the communication, discovery, and utilization of server capabilities such as:
+
+* **Tools**: Executable functions exposed by servers (e.g., API calls, calculations, system operations)
+* **Resources**: Data sources exposed by servers (e.g., files, database records, live system data)
+* **Prompts**: Pre-defined templates for LLM interactions
+
+Clients are responsible for:
+* Discovering what capabilities servers offer
+* Requesting and receiving data from servers
+* Executing tools on behalf of the LLM
+* Managing connections and error handling
+* Implementing security measures like human approval for tool execution
+
+### Benefits of Using MCP Clients
 
 1. **Single Integration Point:** Add capabilities from any MCP server (filesystems, Git, Slack, or custom solutions) through a single, consistent protocol.
 2. **LLM Independence:** Switch between LLM providers without altering your data integration strategy.
-3. **Security & Human Control:** MCP incorporates built-in patterns for human approval and robust security checks, ensuring that tools and data are used responsibly. *Tool calls can be approved by the user before execution.*
-4. **Extensibility:** Easily integrate new tools, data sources, and prompts by connecting to additional MCP servers.
-## 2. Core Architecture
+3. **Security & Human Control:** MCP incorporates built-in patterns for human approval and robust security checks. Tool calls can be approved by the user before execution.
+4. **Extensibility:** Easily integrate new tools, data sources, and prompts as your application evolves.
+5. **Standardization:** Follow industry best practices for LLM context integration without reinventing patterns.
+6. **Modularity:** Keep your LLM interaction logic separate from your data and tool access logic.
 
-### Overview
+### Client vs. Server: Understanding the Relationship
 
-MCP adopts a client-server architecture:
+In the MCP architecture:
 
-*   **Host Application:** The application that embeds the MCP client (e.g., Claude Desktop, an IDE, a custom chatbot). The host application contains the LLM and manages user interactions.
-*   **MCP Client:** A component *within* the host application that maintains a 1:1 connection with each MCP server. Responsible for protocol communication, capability management, and mediating between the host application and MCP servers.
-*   **MCP Server:** An independent process that provides context, tools, prompts, or other capabilities to the MCP client.
+* **Clients** are typically embedded within LLM applications (like Claude Desktop, VS Code plugins, or custom applications) that initiate connections to servers and request services.
+* **Servers** are independent processes that listen for client connections, process requests, and provide responses through exposed capabilities.
 
-```mermaid
-flowchart LR
-    subgraph "Host (e.g., Claude Desktop)"
-        client1[MCP Client]
-        client2[MCP Client]
+A single client can connect to multiple servers, and a single server can serve multiple clients. This many-to-many relationship allows for flexible and powerful integrations.
+
+You can find the official quickstart documentation [here](https://modelcontextprotocol.io/quickstart/client).
+
+## 2. Core Client Architecture
+
+### Key Components of an MCP Client
+
+An MCP client consists of several key components working together:
+
+1. **Protocol Layer:** This layer handles the high-level communication patterns, including message framing, request/response linking, and notification handling. It uses the `Client` class to manage the protocol details.
+
+2. **Transport Layer:** This layer manages the actual communication between clients and servers. MCP supports multiple transport mechanisms, such as Stdio and HTTP with Server-Sent Events (SSE). All transports use JSON-RPC 2.0 for message exchange.
+
+3. **Capability Interfaces:** These are the APIs that clients use to interact with server capabilities (tools, resources, and prompts).
+
+### Protocol Fundamentals
+
+MCP is built on a client-server architecture:
+
+* **Host Applications** (like Claude Desktop, VS Code, or custom applications) embed MCP clients
+* **Clients** maintain 1:1 connections with servers, inside the host application
+* **Servers** provide context, tools, and prompts to clients
+
+```
+graph LR
+    subgraph "Host Application"
+        LLM
+        Client1[MCP Client 1]
+        Client2[MCP Client 2]
     end
-    subgraph "Server Process A"
-        server1[MCP Server]
-    end
-    subgraph "Server Process B"
-        server2[MCP Server]
-    end
+    ServerA[MCP Server A]
+    ServerB[MCP Server B]
 
-    client1 -->|Request/Response| server1
-    client1 -->|Notification| server1
-    server1 -->|Request/Response| client1
-    server1 -->|Notification| client1
-    client2 -->|Request/Response| server2
-    client2 -->|Notification| server2
-    server2 -->|Request/Response| client2
-    server2 -->|Notification| client2
+    Client1 --> ServerA
+    Client2 --> ServerB
 ```
 
-### Core Components
+### Client Lifecycle: Connect, Exchange, Terminate
 
-#### Protocol Layer
+The lifecycle of an MCP connection involves three main stages:
 
-*   Handles message framing, request-response linking, and communication using the JSON-RPC 2.0 standard.
-*   **TypeScript:** The `Client` class provides hooks for request/notification handlers.
+1. **Initialization:**
+   * The client sends an `initialize` request, including its protocol version and capabilities.
+   * The server responds with its protocol version and capabilities.
+   * The client sends an `initialized` notification to acknowledge.
+   * Normal message exchange begins.
 
-**TypeScript Example (Protocol Layer):**
+2. **Message Exchange:** After initialization, clients and servers can exchange messages using these patterns:
+   * **Request-Response:** The client sends a request, and the server responds.
+   * **Notifications:** Either side sends one-way messages (no response expected).
+
+3. **Termination:** The connection can be terminated in several ways:
+   * Clean shutdown via a `close()` method.
+   * Transport disconnection.
+   * Error conditions.
+
+### Message Format and Transport
+
+MCP uses JSON-RPC 2.0 as its message format. There are three main types of messages:
+
+1. **Requests:** These expect a response. They include a `method` and optional `params`.
 
 ```typescript
-import { Client, type RequestHandler, type NotificationHandler } from "@modelcontextprotocol/sdk/client/index.js";
-
-class MyMCPClient {
-  private client: Client;
-
-  constructor() {
-    this.client = new Client({ name: "my-client", version: "1.0.0" }, {});
-  }
-
-  // Handle incoming requests
-  setRequestHandler<T, R>(method: string, handler: RequestHandler<T, R>): void {
-    this.client.setRequestHandler(method, handler);
-  }
-
-  // Handle incoming notifications
-  setNotificationHandler<T>(method: string, handler: NotificationHandler<T>): void {
-    this.client.setNotificationHandler(method, handler);
-  }
-
-  // ... other methods for sending requests and notifications
+{
+  jsonrpc: "2.0",
+  id: number | string,
+  method: string,
+  params?: object
 }
 ```
 
-**All communication uses JSON-RPC 2.0 to package requests, responses, and notifications.**
+2. **Responses:** These are sent in response to requests. They include either a `result` (on success) or an `error` (on failure).
 
-### Connection Lifecycle
-
-The connection lifecycle consists of three phases: Initialization, Message Exchange, and Termination.
-
-### Error Handling
-
-MCP uses standard JSON-RPC 2.0 error codes for error handling.
-
-## 3. Lifecycle: Connection, Exchange, and Termination
-
-### Initialization
-
-1. **Client** sends `initialize` request to **Server**, including protocol version and client capabilities. Also, the client can provide a list of suggested roots to the server using the `roots` parameter.
-2. **Server** responds with its `initialize` response, including its capabilities.
-3. **Client** sends `initialized` notification to confirm the handshake.
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-    Client->>Server: initialize (with protocol version, capabilities, and optional roots)
-    Server->>Client: initializeResponse (with server capabilities)
-    Client->>Server: initialized
-    Note over Client,Server: Connection ready
+```typescript
+{
+  jsonrpc: "2.0",
+  id: number | string,
+  result?: object,
+  error?: {
+    code: number,
+    message: string,
+    data?: unknown
+  }
+}
 ```
 
-### Message Exchange
+3. **Notifications:** These are one-way messages that don't expect a response. Like requests, they have a `method` and optional `params`.
 
-*   **Requests:** Expect a response from the other party.
-*   **Notifications:** One-way messages that do not expect a response.
-*   Both client and server can initiate requests.
+```typescript
+{
+  jsonrpc: "2.0",
+  method: string,
+  params?: object
+}
+```
 
-### Termination
+#### Transports
 
-*   Either side can initiate a graceful close using `close()`.
-*   Connections might also terminate due to transport errors (e.g., network issues).
-*   Clients should handle cleanup, confirm the delivery of final messages, and manage error codes. They should also implement reconnection logic where appropriate.
+MCP clients can use different transport mechanisms for communication with servers:
 
-## 4. Step-by-Step: Building an MCP Client in TypeScript
+1. **Standard Input/Output (stdio):** This transport launches the server as a child process and communicates via standard input and output streams. It's ideal for local integrations and command-line tools.
 
-This section provides a practical guide to building and running an MCP client in TypeScript that can:
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-1. Connect to an MCP server via stdio.
-2. Discover prompts, resources, and tools.
-3. Send queries to an LLM (e.g., Claude) and orchestrate tool usage based on the LLM's response.
-4. Handle user input and display responses.
-5. Re-inject context after tool calls to maintain conversation flow.
+const client = new Client(
+  { name: "example-client", version: "1.0.0" },
+  { capabilities: { tools: {}, resources: {}, prompts: {} } }
+);
 
-### 4.1. Installing the MCP SDK
+const transport = new StdioClientTransport({
+  command: "./server", // Path to the server executable
+  args: ["--option", "value"] // Optional arguments
+});
 
-**TypeScript:**
+await client.connect(transport);
+await client.initialize();
+```
+
+2. **HTTP with Server-Sent Events (SSE):** This transport uses HTTP POST requests for client-to-server communication and Server-Sent Events for server-to-client streaming. It's suitable for remote connections.
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+
+const client = new Client(
+  { name: "example-client", version: "1.0.0" },
+  { capabilities: { tools: {}, resources: {}, prompts: {} } }
+);
+
+const transport = new SSEClientTransport(
+  new URL("http://localhost:3000/sse")
+);
+
+await client.connect(transport);
+await client.initialize();
+```
+
+#### Custom Transports
+
+MCP allows for custom transport implementations. A custom transport must implement the `Transport` interface:
+
+```typescript
+interface Transport {
+  // Start processing messages
+  start(): Promise<void>;
+
+  // Send a JSON-RPC message
+  send(message: JSONRPCMessage): Promise<void>;
+
+  // Close the connection
+  close(): Promise<void>;
+
+  // Callbacks
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  onmessage?: (message: JSONRPCMessage) => void;
+}
+```
+
+## 3. Building Your First MCP Client
+
+### Setting Up Your Development Environment
+
+1. **Install Node.js and npm:** Ensure you have Node.js (version 18 or later) and npm (Node Package Manager) installed on your system.
+
+2. **Create a Project Directory:**
+
+```bash
+mkdir my-mcp-client
+cd my-mcp-client
+```
+
+3. **Initialize a Node.js Project:**
+
+```bash
+npm init -y
+```
+
+4. **Install the MCP TypeScript SDK:**
 
 ```bash
 npm install @modelcontextprotocol/sdk
 ```
 
-### 4.2. Connecting to a Server
+5. **Install TypeScript and other dependencies:**
 
-**TypeScript (Stdio Example):**
+```bash
+npm install typescript zod
+```
+
+6. **Create a `tsconfig.json` file:**
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./build"
+  },
+  "include": ["src/**/*"]
+}
+```
+
+7. **Create a `src` directory and an `index.ts` file:**
+
+```bash
+mkdir src
+touch src/index.ts
+```
+
+### Choosing an SDK
+
+The `@modelcontextprotocol/sdk` provides a convenient way to build MCP clients in TypeScript. It handles the protocol details, allowing you to focus on integrating server capabilities with your application.
+
+### Implementing the Core Client Interface
+
+Let's create a simple client that connects to a server, discovers its capabilities, and calls a tool. Create `src/index.ts` with the following content:
 
 ```typescript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-async function connectToServer(command: string, args: string[]): Promise<Client | null> {
-  const client = new Client({ name: "my-ts-client", version: "1.0.0" }, {});
-  const transport = new StdioClientTransport({ command, args });
-  
+async function main() {
+  // Create an MCP client instance
+  const client = new Client(
+    { name: 'ExampleClient', version: '1.0.0' },
+    { capabilities: { tools: {}, resources: {}, prompts: {} } }
+  );
+
   try {
+    // Create a transport
+    const transport = new StdioClientTransport({
+      command: './server.js', // Path to your server executable
+      args: []
+    });
+
+    // Connect to the server
+    console.log('Connecting to server...');
     await client.connect(transport);
     
-    // Initialize the client and declare roots
-    const initializeResponse = await client.initialize({
-      roots: [
-        { uri: "file:///path/to/project", name: "My Project" },
-        { uri: "https://api.example.com/v1", name: "Example API" },
-      ],
-    });
-    
-    // Example initialize response format:
-    // {
-    //   capabilities: {
-    //     tools: {},           // Server supports tools
-    //     resources: {},       // Server supports resources
-    //     prompts: {},        // Server supports prompts
-    //     roots: {},          // Server supports roots feature
-    //     sampling: {}        // Server supports sampling
-    //   },
-    //   serverInfo: {
-    //     name: "example-server",
-    //     version: "1.0.0"
-    //   }
-    // }
-    
-    console.log("Server capabilities:", initializeResponse.capabilities);
-    console.log("Successfully connected to the server.");
-    return client;
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Failed to connect to the server:", error.message);
-      if (error.cause) {
-        console.error("Caused by:", error.cause);
-      }
-    } else {
-      console.error("Failed to connect to the server:", error);
-    }
-    
-    try {
-      await transport.close();
-    } catch (closeError) {
-      console.error("Error closing transport:", closeError);
-    }
-    
-    return null;
-  }
-}
-```
+    // Initialize the connection
+    console.log('Initializing connection...');
+    await client.initialize();
+    console.log('Connection established successfully');
 
-### 4.3. Discovering Tools, Prompts, and Resources
-
-The discovery endpoints (`tools/list`, `prompts/list`, and `resources/list`) are fundamental to MCP's functionality. They serve as the primary mechanism for clients to discover server capabilities and are essential for enabling dynamic interactions between LLMs and MCP servers.
-
-#### 4.3.1. Listing Tools (tools/list)
-
-The `tools/list` endpoint is crucial for discovering available tools that an LLM can use to perform actions. This endpoint returns detailed information about each tool, including its name, description, and input schema.
-
-**Request Format:**
-
-```json
-{
-  "method": "tools/list"
-}
-```
-
-**Response Format:**
-
-```json
-{
-  "tools": [
-    {
-      "name": "calculate_sum",
-      "description": "Add two numbers together",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "a": { "type": "number" },
-          "b": { "type": "number" }
-        },
-        "required": ["a", "b"]
-      }
-    }
-  ]
-}
-```
-
-**TypeScript Implementation:**
-
-```typescript
-import { Client, type Tool } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function discoverTools(client: Client) {
-  try {
+    // Discover server capabilities
     const tools = await client.listTools();
-    console.log("Available tools:");
-    tools.tools.forEach((tool: Tool) => {
-      console.log(`- ${tool.name}: ${tool.description}`);
-      console.log(`  Input schema:`, tool.inputSchema);
-    });
-  } catch (error) {
-    console.error("Error discovering tools:", error);
-  }
-}
-```
+    console.log('Available tools:', tools.tools);
 
-#### 4.3.2. Listing Prompts (prompts/list)
+    const resources = await client.listResources();
+    console.log('Available resources:', resources.resources);
+    console.log('Available resource templates:', resources.resourceTemplates);
 
-The `prompts/list` endpoint discovers available prompt templates that can guide LLM interactions. Each prompt includes a name, description, and optional arguments.
-
-**Request Format:**
-
-```json
-{
-  "method": "prompts/list"
-}
-```
-
-**Response Format:**
-
-```json
-{
-  "prompts": [
-    {
-      "name": "analyze-code",
-      "description": "Analyze code for potential improvements",
-      "arguments": [
-        {
-          "name": "language",
-          "description": "Programming language",
-          "required": true
-        }
-      ]
-    }
-  ]
-}
-```
-
-**TypeScript Implementation:**
-
-```typescript
-import { Client, type Prompt } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function discoverPrompts(client: Client) {
-  try {
     const prompts = await client.listPrompts();
-    console.log("Available prompts:");
-    prompts.prompts.forEach((prompt: Prompt) => {
-      console.log(`- ${prompt.name}: ${prompt.description}`);
-      if (prompt.arguments) {
-        console.log("  Arguments:");
-        prompt.arguments.forEach((arg) => {
-          console.log(`    - ${arg.name}: ${arg.description}`);
-        });
-      }
-    });
+    console.log('Available prompts:', prompts.prompts);
+
+    // If the server has an 'echo' tool, call it
+    if (tools.tools.some(tool => tool.name === 'echo')) {
+      console.log('Calling echo tool...');
+      const result = await client.callTool('echo', { message: 'Hello, World!' });
+      console.log('Echo result:', result.content[0].text);
+    }
+
+    // Close the connection
+    await client.close();
+    console.log('Connection closed');
   } catch (error) {
-    console.error("Error discovering prompts:", error);
+    console.error('Error:', error);
   }
 }
+
+main();
 ```
 
-#### 4.3.3. Listing Resources (resources/list)
+### Handling Connections and Authentication
 
-The `resources/list` endpoint discovers available data sources that can provide context to the LLM. Resources can be either direct (concrete URIs) or templates (URI patterns).
-
-**Request Format:**
-
-```json
-{
-  "method": "resources/list"
-}
-```
-
-**Response Format:**
-
-```json
-{
-  "resources": [
-    {
-      "uri": "file:///logs/app.log",
-      "name": "Application Logs",
-      "description": "Real-time application log data",
-      "mimeType": "text/plain"
-    }
-  ],
-  "resourceTemplates": [
-    {
-      "uriTemplate": "file:///data/{year}/{month}/report.csv",
-      "name": "Monthly Reports",
-      "description": "Historical monthly report data",
-      "mimeType": "text/csv"
-    }
-  ]
-}
-```
-
-Resource templates enable dynamic access to resources through parameterized URIs. Clients can expand these templates by replacing variables with actual values. For example:
+For the stdio transport, connections are handled automatically. For SSE transport, you might need to handle authentication by adding headers to your requests:
 
 ```typescript
-import { Client, type Resource, type ResourceTemplate } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
-async function accessMonthlyReport(client: Client, year: string, month: string): Promise<string | null> {
+// Create an SSE transport with authentication
+const transport = new SSEClientTransport(
+  new URL("https://api.example.com/mcp/sse")
+);
+
+// Add authentication headers
+transport.setHeaders({
+  'Authorization': `Bearer ${apiToken}`
+});
+
+await client.connect(transport);
+await client.initialize();
+```
+
+### Processing Server Responses
+
+When interacting with a server, you'll need to process its responses. Here's how to handle different types of responses:
+
+```typescript
+// Calling a tool and handling the response
+async function callTool(client, toolName, args) {
   try {
-    const resources = await client.listResources();
-    const template = resources.resourceTemplates.find(
-      (t: ResourceTemplate) => t.name === "Monthly Reports"
-    );
-
-    if (template) {
-      const uri = template.uriTemplate
-        .replace("{year}", year)
-        .replace("{month}", month);
-
-      const contents = await client.readResource(uri);
-      return contents.contents[0].text || null;
-    }
-  } catch (error) {
-    console.error("Error accessing monthly report:", error);
-    return null;
-  }
-  return null;
-}
-```
-
-This allows servers to expose parameterized access to collections of resources while maintaining a clean interface. The LLM can understand these templates and request specific resources by providing the appropriate parameters.
-
-**TypeScript Implementation:**
-
-```typescript
-import { Client, type Resource } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function discoverResources(client: Client) {
-  try {
-    const resources = await client.listResources();
-    console.log("Available resources:");
-    resources.resources.forEach((resource: Resource) => {
-      console.log(`- ${resource.name} (${resource.uri})`);
-      console.log(`  Description: ${resource.description}`);
-      if (resource.mimeType) {
-        console.log(`  MIME Type: ${resource.mimeType}`);
-      }
-    });
-  } catch (error) {
-    console.error("Error discovering resources:", error);
-  }
-}
-```
-
-#### 4.3.4. Integrating Discovery with LLM Interactions
-
-When working with LLMs, the discovery endpoints provide crucial information that helps the LLM understand and use available capabilities. Here's how to manage and format this context effectively:
-
-```typescript
-import { Client, Tool, Prompt, Resource, ResourceTemplate } from "@modelcontextprotocol/sdk/client/index.js";
-import { z } from "zod";
-
-class LLMContextManager {
-  private client: Client;
-  private context: Record<string, any> | null = null;
-  private lastUpdate: number | null = null;
-
-  constructor(client: Client) {
-    this.client = client;
-  }
-
-  async prepareLlmContext(): Promise<Record<string, any>> {
-    try {
-      console.info("Refreshing LLM context from MCP capabilities");
-
-      const tools = await this.safeListTools();
-      const prompts = await this.safeListPrompts();
-      const resources = await this.safeListResources();
-
-      this.context = {
-        available_tools: tools.tools
-          .filter(this.isValidTool)
-          .map((tool) => ({
-            name: tool.name,
-            description: tool.description,
-            parameters: this.validateSchema(tool.name, tool.inputSchema),
-            example: this.generateToolExample(tool),
-          })),
-        available_prompts: prompts.prompts
-          .filter(this.isValidPrompt)
-          .map((prompt) => ({
-            name: prompt.name,
-            description: prompt.description,
-            arguments: prompt.arguments,
-          })),
-        available_resources: resources.resources
-          .filter(this.isValidResource)
-          .map((resource) => ({
-            name: resource.name,
-            uri: resource.uri,
-            description: resource.description,
-          })),
-      };
-
-      this.lastUpdate = Date.now();
-      console.info("Successfully updated LLM context");
-      return this.context;
-    } catch (error) {
-      console.error("Unexpected error preparing LLM context:", error);
-      return {
-        available_tools: [],
-        available_prompts: [],
-        available_resources: [],
-      };
-    }
-  }
-
-  private async safeListTools(): Promise<{ tools: Tool[] }> {
-    try {
-      const tools = await this.client.listTools();
-      console.debug(`Retrieved ${tools.tools.length} tools`);
-      return tools;
-    } catch (error) {
-      console.error("Failed to list tools:", error);
-      return { tools: [] };
-    }
-  }
-
-  private async safeListPrompts(): Promise<{ prompts: Prompt[] }> {
-    try {
-      const prompts = await this.client.listPrompts();
-      console.debug(`Retrieved ${prompts.prompts.length} prompts`);
-      return prompts;
-    } catch (error) {
-      console.error("Failed to list prompts:", error);
-      return { prompts: [] };
-    }
-  }
-
-  private async safeListResources(): Promise<{ resources: Resource[]; resourceTemplates: ResourceTemplate[] }> {
-    try {
-      const resources = await this.client.listResources();
-      console.debug(`Retrieved ${resources.resources.length} resources`);
-      return resources;
-    } catch (error) {
-      console.error("Failed to list resources:", error);
-      return { resources: [], resourceTemplates: [] };
-    }
-  }
-
-  private validateSchema(toolName: string, schema: any): any {
-    try {
-      const zodSchema = this.createZodSchema(schema);
-      return zodSchema.shape;
-    } catch (error) {
-      console.warn(`Invalid schema for tool ${toolName}:`, error);
-      return {};
-    }
-  }
-
-  private createZodSchema(schema: any): z.ZodTypeAny {
-    const type = schema.type;
-
-    if (type === "string") {
-      return z.string();
-    } else if (type === "number") {
-      return z.number();
-    } else if (type === "integer") {
-      return z.number().int();
-    } else if (type === "boolean") {
-      return z.boolean();
-    } else if (type === "array") {
-      const items = schema.items || {};
-      return z.array(this.createZodSchema(items));
-    } else if (type === "object") {
-      const properties = schema.properties || {};
-      const shape: Record<string, z.ZodTypeAny> = {};
-      for (const [key, value] of Object.entries(properties)) {
-        shape[key] = this.createZodSchema(value);
-      }
-      return z.object(shape);
-    } else {
-      return z.any();
-    }
-  }
-
-  private generateToolExample(tool: Tool): Record<string, any> | null {
-    if (!tool.inputSchema || !tool.inputSchema.properties) {
+    const result = await client.callTool(toolName, args);
+    
+    // Check if the tool execution resulted in an error
+    if (result.isError) {
+      console.error(`Tool error: ${result.content[0].text}`);
       return null;
     }
-
-    const exampleArgs: Record<string, any> = {};
-    for (const [propName, prop] of Object.entries(tool.inputSchema.properties)) {
-      if (prop.type === "string") {
-        exampleArgs[propName] = "example_string";
-      } else if (prop.type === "number" || prop.type === "integer") {
-        exampleArgs[propName] = 42;
-      } else if (prop.type === "boolean") {
-        exampleArgs[propName] = true;
-      }
-    }
-
-    return {
-      name: tool.name,
-      arguments: exampleArgs,
-    };
-  }
-
-  private isValidTool(tool: Tool): boolean {
-    return !!tool.name && !!tool.description && !!tool.inputSchema;
-  }
-
-  private isValidPrompt(prompt: Prompt): boolean {
-    return !!prompt.name && !!prompt.description;
-  }
-
-  private isValidResource(resource: Resource): boolean {
-    return !!resource.name && !!resource.uri && !!resource.description;
-  }
-
-  asSystemPrompt(): string {
-    if (!this.context) {
-      return "";
-    }
-
-    const parts = ["You have access to the following capabilities:"];
-
-    if (this.context.available_tools.length > 0) {
-      parts.push("\nTOOLS:");
-      for (const tool of this.context.available_tools) {
-        parts.push(`- ${tool.name}: ${tool.description}`);
-      }
-    }
-
-    if (this.context.available_prompts.length > 0) {
-      parts.push("\nPROMPTS:");
-      for (const prompt of this.context.available_prompts) {
-        parts.push(`- ${prompt.name}: ${prompt.description}`);
-      }
-    }
-
-    if (this.context.available_resources.length > 0) {
-      parts.push("\nRESOURCES:");
-      for (const resource of this.context.available_resources) {
-        parts.push(`- ${resource.name}: ${resource.description}`);
-      }
-    }
-
-    return "\n".join(parts);
-  }
-
-  formatForClaude(): Record<string, any> {
-    if (!this.context) {
-      return {};
-    }
-
-    return {
-      tools: this.context.available_tools.map((t: any) => ({
-        name: t.name,
-        description: t.description,
-        parameters: t.parameters,
-      })),
-    };
-  }
-}
-
-// Example usage with Claude:
-async function useWithClaude(client: Client, user_input: string) {
-  // Initialize context manager and prepare MCP context
-  const contextManager = new LLMContextManager(client);
-  await contextManager.prepareLlmContext();
-
-  // Pass the formatted context as the system prompt and tools to Claude
-  const anthropicClient = new Anthropic();
-  const response = await anthropicClient.messages.create({
-    model: "claude-3-5-sonnet-20241022",
-    system: contextManager.asSystemPrompt(), // MCP context as system prompt
-    messages: [{ role: "user", content: user_input }],
-    tools: contextManager.formatForClaude().tools, // MCP tools formatted for Claude's tools parameter
-  });
-  return response;
-}
-```
-
-This enhanced context manager:
-
-1. Provides rich context about available capabilities
-2. Includes usage examples and access patterns
-3. Formats context appropriately for different LLMs
-4. Maintains context freshness with timestamps
-5. Supports multiple context injection methods:
-    *   As system prompts
-    *   As function/tool definitions
-    *   As conversation context
-
-### 4.4. Handling Tool Calls and Schema Validation
-
-**Calling a Tool:**
-
-**TypeScript:**
-
-```typescript
-import { Client, type CallToolResult } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function callToolExample(client: Client) {
-  try {
-    const toolResult: CallToolResult = await client.callTool("calculate_sum", {
-      a: 2,
-      b: 3,
-    });
-    if (toolResult.isError) {
-      console.error("Tool call error:", toolResult.content[0].text);
-    } else {
-      console.log("Tool result:", toolResult.content[0].text);
-    }
+    
+    // Process successful result
+    console.log(`Tool result: ${result.content[0].text}`);
+    return result.content;
   } catch (error) {
-    console.error("Error calling tool:", error);
+    // Handle protocol or transport errors
+    console.error(`Failed to call tool ${toolName}:`, error);
+    throw error;
+  }
+}
+
+// Reading a resource and handling the response
+async function readResource(client, resourceUri) {
+  try {
+    const result = await client.readResource(resourceUri);
+    
+    // Process the resource contents
+    for (const content of result.contents) {
+      if (content.text) {
+        console.log(`Resource text: ${content.text}`);
+      } else if (content.blob) {
+        console.log(`Resource binary data (base64): ${content.blob.substring(0, 50)}...`);
+      }
+    }
+    
+    return result.contents;
+  } catch (error) {
+    console.error(`Failed to read resource ${resourceUri}:`, error);
+    throw error;
   }
 }
 ```
 
-**Schema Validation:**
+## 4. Discovering and Using Server Capabilities
 
-Validate tool arguments against the `inputSchema` provided by the server using libraries like `zod`.
+### Working with Tools
 
-**TypeScript (using `zod`):**
+Tools are executable functions exposed by servers. Here's how to discover and use them:
 
 ```typescript
-import { Client, type Tool } from "@modelcontextprotocol/sdk/client/index.js";
-import { z, ZodError } from "zod";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { z } from 'zod';
 
-async function validateAndCallTool(
-  client: Client,
-  toolName: string,
-  toolArgs: any
-) {
-  const tools = await client.listTools();
-  const tool = tools.tools.find((t: Tool) => t.name === toolName);
-
-  if (tool) {
+async function discoverAndUseTool(client: Client) {
+  // Discover available tools
+  const toolsResult = await client.listTools();
+  console.log('Available tools:', toolsResult.tools);
+  
+  // Find a specific tool
+  const calculatorTool = toolsResult.tools.find(tool => tool.name === 'calculate');
+  
+  if (calculatorTool) {
+    console.log('Found calculator tool:', calculatorTool);
+    console.log('Input schema:', calculatorTool.inputSchema);
+    
+    // Create a zod schema from the tool's input schema
+    const inputSchema = createZodSchema(calculatorTool.inputSchema);
+    
+    // Validate input against the schema
     try {
-      // Create a Zod schema from the input schema
-      const toolSchema = createZodSchema(tool.inputSchema);
-
-      // Validate arguments
-      const validatedArgs = toolSchema.parse(toolArgs);
-
-      // Call the tool with validated arguments
-      const toolResult = await client.callTool(tool.name, validatedArgs);
-      if (toolResult.isError) {
-        console.error("Tool call error:", toolResult.content[0].text);
-      } else {
-        console.log(`Tool result: ${toolResult.content[0].text}`);
-      }
+      const input = { a: 5, b: 3, operation: 'add' };
+      const validatedInput = inputSchema.parse(input);
+      
+      // Call the tool with validated input
+      const result = await client.callTool('calculate', validatedInput);
+      console.log('Calculation result:', result.content[0].text);
     } catch (error) {
-      if (error instanceof ZodError) {
-        console.error("Invalid arguments:", error.errors);
-      } else {
-        console.error(`Error calling tool ${toolName}:`, error);
-      }
+      console.error('Invalid input:', error);
     }
   } else {
-    console.error(`Tool not found: ${toolName}`);
+    console.log('Calculator tool not found');
   }
 }
 
+// Helper function to create a zod schema from JSON Schema
 function createZodSchema(schema: any): z.ZodTypeAny {
-  // Helper function to map JSON schema types to Zod types
+  // Implementation details omitted for brevity
+  // See the full implementation in the schema validation section
+}
+```
+
+**Key Concepts:**
+
+* **Tool Discovery:** Use `client.listTools()` to discover available tools.
+* **Tool Invocation:** Use `client.callTool(name, args)` to execute a tool.
+* **Input Validation:** Validate tool inputs against the provided schema before calling.
+* **Error Handling:** Check for errors in both the tool result (`isError` flag) and protocol-level errors.
+
+### Accessing Resources
+
+Resources are data sources exposed by servers. Here's how to discover and access them:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+
+async function discoverAndAccessResources(client: Client) {
+  // Discover available resources
+  const resourcesResult = await client.listResources();
+  
+  console.log('Available resources:', resourcesResult.resources);
+  console.log('Available resource templates:', resourcesResult.resourceTemplates);
+  
+  // Access a specific resource
+  if (resourcesResult.resources.length > 0) {
+    const resource = resourcesResult.resources[0];
+    console.log(`Reading resource: ${resource.name} (${resource.uri})`);
+    
+    const contentResult = await client.readResource(resource.uri);
+    
+    for (const content of contentResult.contents) {
+      if (content.text) {
+        console.log('Resource content (text):', content.text);
+      } else if (content.blob) {
+        console.log('Resource content (binary):', `Base64 data, ${content.blob.length} chars`);
+      }
+    }
+  }
+  
+  // Use a resource template
+  const templates = resourcesResult.resourceTemplates;
+  if (templates.length > 0) {
+    const template = templates[0];
+    console.log(`Using template: ${template.name} (${template.uriTemplate})`);
+    
+    // Example: if template is "file:///{path}"
+    const uri = template.uriTemplate.replace('{path}', 'example.txt');
+    
+    try {
+      const contentResult = await client.readResource(uri);
+      console.log('Template resource content:', contentResult.contents[0].text);
+    } catch (error) {
+      console.error('Error accessing template resource:', error);
+    }
+  }
+}
+```
+
+**Key Concepts:**
+
+* **Resource Discovery:** Use `client.listResources()` to discover available resources and templates.
+* **Resource Access:** Use `client.readResource(uri)` to read resource content.
+* **Content Types:** Resources can return text content or binary data (base64 encoded).
+* **Templates:** Resource templates allow dynamic access to resources with parameters.
+
+### Utilizing Prompts
+
+Prompts are pre-defined templates for LLM interactions. Here's how to discover and use them:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+
+async function discoverAndUsePrompts(client: Client) {
+  // Discover available prompts
+  const promptsResult = await client.listPrompts();
+  console.log('Available prompts:', promptsResult.prompts);
+  
+  // Find a specific prompt
+  const codeReviewPrompt = promptsResult.prompts.find(prompt => prompt.name === 'code-review');
+  
+  if (codeReviewPrompt) {
+    console.log('Found code review prompt:', codeReviewPrompt);
+    console.log('Arguments:', codeReviewPrompt.arguments);
+    
+    // Use the prompt with arguments
+    try {
+      const promptArgs = {
+        code: 'function hello() { return "world"; }',
+        language: 'javascript'
+      };
+      
+      const result = await client.getPrompt('code-review', promptArgs);
+      
+      console.log('Prompt result:', result);
+      console.log('Messages to send to LLM:', result.messages);
+      
+      // Now you can send these messages to your LLM
+      // const llmResponse = await sendToLLM(result.messages);
+    } catch (error) {
+      console.error('Error using prompt:', error);
+    }
+  } else {
+    console.log('Code review prompt not found');
+  }
+}
+```
+
+**Key Concepts:**
+
+* **Prompt Discovery:** Use `client.listPrompts()` to discover available prompts.
+* **Prompt Usage:** Use `client.getPrompt(name, args)` to get a prompt with arguments.
+* **Messages:** The prompt result contains messages that can be sent directly to an LLM.
+* **Arguments:** Prompts can accept arguments to customize their content.
+
+### Schema Validation and Type Safety
+
+Schema validation is crucial for ensuring that inputs to tools and prompts are valid. The MCP TypeScript SDK works well with Zod, a TypeScript-first schema validation library:
+
+```typescript
+import { z, ZodError } from 'zod';
+
+// Create a zod schema from a JSON Schema object
+function createZodSchema(schema: any): z.ZodTypeAny {
   const type = schema.type;
 
-  if (type === "string") {
+  if (type === 'string') {
     return z.string();
-  } else if (type === "number") {
+  } else if (type === 'number') {
     return z.number();
-  } else if (type === "integer") {
+  } else if (type === 'integer') {
     return z.number().int();
-  } else if (type === "boolean") {
+  } else if (type === 'boolean') {
     return z.boolean();
-  } else if (type === "array") {
+  } else if (type === 'array') {
     const items = schema.items || {};
     return z.array(createZodSchema(items));
-  } else if (type === "object") {
+  } else if (type === 'object') {
     const properties = schema.properties || {};
     const shape: Record<string, z.ZodTypeAny> = {};
+    
     for (const [key, value] of Object.entries(properties)) {
-      shape[key] = createZodSchema(value);
+      shape[key] = createZodSchema(value as any);
     }
-    return z.object(shape);
+    
+    let baseSchema = z.object(shape);
+    
+    // Handle required properties
+    if (schema.required && Array.isArray(schema.required)) {
+      const requiredShape: Record<string, z.ZodTypeAny> = {};
+      
+      for (const key of Object.keys(shape)) {
+        const isRequired = schema.required.includes(key);
+        requiredShape[key] = isRequired ? shape[key] : shape[key].optional();
+      }
+      
+      baseSchema = z.object(requiredShape);
+    }
+    
+    return baseSchema;
   } else {
     return z.any();
   }
 }
-```
 
-### 4.5. Reading Resources
-
-**TypeScript:**
-
-```typescript
-import { Client, type Resource, type ReadResourceResult } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function readResourceExample(client: Client) {
+// Example usage
+async function validateAndCallTool(client, toolName, inputData) {
+  // Get tool schema
+  const tools = await client.listTools();
+  const tool = tools.tools.find(t => t.name === toolName);
+  
+  if (!tool) {
+    throw new Error(`Tool not found: ${toolName}`);
+  }
+  
   try {
-    const resources = await client.listResources();
-    const res = resources.resources.find(
-      (r: Resource) => r.uri === "file:///path/to/app.log"
-    );
-
-    if (res) {
-      const contents: ReadResourceResult = await client.readResource(res.uri);
-      console.log(contents.contents[0].text); // The file's text
-    } else {
-      console.error("Resource not found.");
-    }
+    // Create schema and validate input
+    const schema = createZodSchema(tool.inputSchema);
+    const validatedInput = schema.parse(inputData);
+    
+    // Call the tool with validated input
+    return await client.callTool(toolName, validatedInput);
   } catch (error) {
-    console.error("Error reading resource:", error);
+    if (error instanceof ZodError) {
+      console.error('Validation error:', error.errors);
+      throw new Error(`Invalid input for tool ${toolName}: ${error.message}`);
+    }
+    throw error;
   }
 }
 ```
 
-### 4.6. Using Prompts
+## 5. Integrating with LLMs
 
-**TypeScript:**
+### Connecting MCP Clients with LLM Services
+
+To create a complete LLM application with MCP, you need to connect your MCP client with an LLM service (like Anthropic Claude, OpenAI, or others). Here's a generic approach that can be adapted to any LLM provider:
 
 ```typescript
-import { Client, type Prompt, type GetPromptResult } from "@modelcontextprotocol/sdk/client/index.js";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+// Import your LLM client library
+// import { AnthropicClient } from '@anthropic-ai/sdk';
 
-async function getPromptExample(client: Client) {
-  try {
-    const prompts = await client.listPrompts();
-    const prompt = prompts.prompts.find((p: Prompt) => p.name === "prompt-name");
-
-    if (prompt) {
-      const promptResult: GetPromptResult = await client.getPrompt(prompt.name);
-      console.log("Prompt messages:", promptResult.messages);
-    } else {
-      console.error("Prompt not found.");
-    }
-  } catch (error) {
-    console.error("Error getting prompt:", error);
+// Hypothetical LLM client class (you'll replace this with your actual LLM client)
+class LLMClient {
+  async sendMessage(messages, options = {}) {
+    // Implementation depends on your LLM provider
+    console.log('Sending to LLM:', { messages, options });
+    return {
+      id: 'msg_123',
+      role: 'assistant',
+      content: 'This is a sample response from the LLM.',
+      tool_calls: [] // Will contain tool call requests if any
+    };
   }
+}
+
+async function setupLLMWithMCP() {
+  // Set up MCP client
+  const mcpClient = new Client(
+    { name: 'ExampleClient', version: '1.0.0' },
+    { capabilities: { tools: {}, resources: {}, prompts: {} } }
+  );
+  
+  // Connect to MCP server
+  const transport = new StdioClientTransport({
+    command: './server.js',
+    args: []
+  });
+  
+  await mcpClient.connect(transport);
+  await mcpClient.initialize();
+  
+  // Set up LLM client
+  const llmClient = new LLMClient();
+  
+  return { mcpClient, llmClient };
 }
 ```
 
-### 4.7. Running Queries with LLM Integration and Context Re-injection
+### Providing Tool Definitions to LLMs
 
-MCP standardizes server communication but doesn't mandate a specific LLM. Integrate with Claude (Anthropic), OpenAI, or other LLMs using their respective client libraries.
-
-**Key Concepts:**
-
-1. **Message History Management**
-    * The conversation history is maintained in a `messages` array that includes:
-      ```typescript
-      type Message = {
-        role: "user" | "assistant";
-        content: string | ToolUse[];
-      };
-
-      type ToolUse = {
-        type: "tool_use";
-        name: string;
-        input: Record<string, any>;
-      };
-      ```
-    * Each interaction adds multiple entries to track:
-      - User queries
-      - LLM responses
-      - Tool calls and their results
-      - Follow-up responses
-
-2. **Context Re-injection**
-    * After each tool call, the history is updated with:
-      ```typescript
-      // Record the tool call
-      messages.push({
-        role: "assistant",
-        content: [{
-          type: "tool_use",
-          name: "list_files",
-          input: { path: "/project" }
-        }]
-      });
-
-      // Record the tool result
-      messages.push({
-        role: "user",
-        content: toolResult.content
-      });
-      ```
-    * This history is included in subsequent LLM requests:
-      ```typescript
-      const response = await llm.createMessage({
-        messages: messages,  // Complete history
-        tools: availableTools,
-        // ... other parameters
-      });
-      ```
-
-3. **Example Conversation Flow**
-    ```typescript
-    // Initial state
-    messages = [
-      {
-        role: "user",
-        content: "List Python files and show their sizes"
-      }
-    ];
-
-    // After LLM decides to use list_files tool
-    messages = [
-      {
-        role: "user",
-        content: "List Python files and show their sizes"
-      },
-      {
-        role: "assistant",
-        content: [{
-          type: "tool_use",
-          name: "list_files",
-          input: { path: ".", pattern: "*.py" }
-        }]
-      },
-      {
-        role: "user",
-        content: "Found: main.py (1.2KB), utils.py (800B)"
-      },
-      {
-        role: "assistant",
-        content: "I found 2 Python files:\n- main.py (1.2 KB)\n- utils.py (800 bytes)\nWould you like me to analyze their contents?"
-      }
-    ];
-
-    // After user responds
-    messages.push({
-      role: "user",
-      content: "Yes, show me what's in main.py"
-    });
-    ```
-
-4. **Dynamic Adaptation**
-    * Tool availability is refreshed before each LLM request
-    * Context is maintained across multiple tool calls
-    * The LLM can reference previous results and actions
-    * Each request includes:
-      - Complete conversation history
-      - Current tool capabilities
-      - Previous tool results
-
-**Simplified TypeScript Example (using Anthropic's client):**
+LLMs can use tools exposed by MCP servers, but you need to format these tools according to your LLM provider's API requirements:
 
 ```typescript
-import { Client, type Tool } from "@modelcontextprotocol/sdk/client/index.js";
-import { Anthropic, type Message, type MessageCreateParams } from "@anthropic-ai/sdk";
-import * as readline from "readline";
+async function prepareToolsForLLM(mcpClient) {
+  // Get available tools from MCP server
+  const toolsResult = await mcpClient.listTools();
+  
+  // Format tools for your LLM provider
+  // This format will vary based on your LLM provider's API
+  // This example uses a generic format - adjust as needed
+  const formattedTools = toolsResult.tools.map(tool => ({
+    name: tool.name,
+    description: tool.description || `Tool: ${tool.name}`,
+    parameters: tool.inputSchema
+  }));
+  
+  return formattedTools;
+}
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Using the formatted tools with an LLM
+async function queryLLMWithTools(llmClient, formattedTools, userQuery) {
+  const messages = [
+    { role: 'user', content: userQuery }
+  ];
+  
+  // Pass the tools to the LLM
+  // The exact API will depend on your LLM provider
+  const response = await llmClient.sendMessage(messages, {
+    tools: formattedTools
+  });
+  
+  return response;
+}
+```
 
-async function processUserQuery(client: Client, user_input: string): Promise<string> {
-  let messages: Message[] = [{ role: "user", content: user_input }];
-  let pendingToolCalls: { name: string; input: any }[] = [];
-  let toolResults: { name: string; result: any }[] = [];
-  let iteration = 0;
-  const MAX_ITERATIONS = 5; // Prevent infinite loops
+### Handling Tool Execution and Results
 
-  try {
-    // 1) Discover and validate tools
-    const tools_info = await client.listTools();
-    if (!tools_info.tools || tools_info.tools.length === 0) {
-      return "No tools available to process your request.";
-    }
+When an LLM wants to use a tool, it will include a tool call in its response. You need to detect this, execute the tool via MCP, and return the results to the LLM:
 
-    // 2) Send query + tool list to LLM
-    let llm_response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1000,
-      messages: messages,
-      tools: tools_info.tools.map((t: Tool) => ({
-        name: t.name,
-        description: t.description,
-        input_schema: t.inputSchema,
-      })),
-    });
-
-    // 3) Handle LLM response and potential tool calls
-    let final_response = "";
-
-    while (iteration < MAX_ITERATIONS) {
-      iteration++;
-      pendingToolCalls = [];
-
-      // Process all content from LLM response
-      for (const content of llm_response.content) {
-        if (content.type === "text") {
-          final_response += content.text;
-        } else if (content.type === "tool_use") {
-          pendingToolCalls.push({
-            name: content.name,
-            input: content.input,
+```typescript
+async function processLLMResponse(mcpClient, llmClient, llmResponse, messages) {
+  // Check if the LLM wants to call a tool
+  // This detection logic will depend on your LLM provider's response format
+  if (llmResponse.tool_calls && llmResponse.tool_calls.length > 0) {
+    // Process each tool call
+    for (const toolCall of llmResponse.tool_calls) {
+      const { name, arguments: args, id } = toolCall;
+      
+      console.log(`LLM wants to call tool: ${name}`);
+      console.log('Tool arguments:', args);
+      
+      // Optionally get user approval
+      const userApproved = await getUserApproval(name, args);
+      
+      if (userApproved) {
+        try {
+          // Call the tool using MCP
+          const toolResult = await mcpClient.callTool(name, args);
+          
+          // Add the tool call to the message history
+          messages.push({
+            role: 'assistant',
+            content: null,
+            tool_calls: [{ id, name, arguments: JSON.stringify(args) }]
+          });
+          
+          // Add the tool result to the message history
+          messages.push({
+            role: 'tool',
+            tool_call_id: id,
+            content: toolResult.isError 
+              ? `Error: ${toolResult.content[0].text}` 
+              : toolResult.content[0].text
+          });
+        } catch (error) {
+          console.error(`Error calling tool ${name}:`, error);
+          
+          // Add error information to the message history
+          messages.push({
+            role: 'tool',
+            tool_call_id: id,
+            content: `Error executing tool ${name}: ${error.message}`
           });
         }
+      } else {
+        // User didn't approve the tool call
+        messages.push({
+          role: 'system',
+          content: `Tool call to ${name} was not approved by the user.`
+        });
       }
+    }
+    
+    // Send the updated conversation back to the LLM
+    const newResponse = await llmClient.sendMessage(messages);
+    
+    // Recursively process the new response (which might contain more tool calls)
+    return processLLMResponse(mcpClient, llmClient, newResponse, messages);
+  }
+  
+  // If no tool calls, just return the LLM response
+  return { llmResponse, messages };
+}
 
-      // If no tool calls, we're done
-      if (pendingToolCalls.length === 0) {
-        break;
-      }
+// Helper function to get user approval for tool calls
+async function getUserApproval(toolName, args) {
+  // In a real application, you would show a UI dialog or prompt
+  // For this example, we'll simulate user approval
+  return new Promise(resolve => {
+    console.log(`Approve tool call to ${toolName}?`);
+    console.log('Arguments:', JSON.stringify(args, null, 2));
+    console.log('Type "y" to approve, anything else to deny:');
+    
+    process.stdin.once('data', data => {
+      const input = data.toString().trim().toLowerCase();
+      resolve(input === 'y');
+    });
+  });
+}
+```
 
-      // Execute all pending tool calls (after approval)
-      for (const toolCall of pendingToolCalls) {
-        try {
-          if (await shouldCallTool(client, toolCall.name, toolCall.input)) {
-            const tool_result = await client.callTool(
-              toolCall.name,
-              toolCall.input
-            );
+### Context Management and Re-injection
 
-            // Handle tool errors
-            if (tool_result.isError) {
-              toolResults.push({
-                name: toolCall.name,
-                result: {
-                  error: true,
-                  message: tool_result.content[0].text,
-                },
-              });
-              final_response += `\nError executing ${toolCall.name}: ${tool_result.content[0].text}\n`;
-              continue;
-            }
+Managing conversation context is crucial for effective LLM interactions. Context includes:
 
-            toolResults.push({
-              name: toolCall.name,
-              result: tool_result.content,
-            });
+* Previous user messages
+* LLM responses
+* Tool calls and their results
+* Resource content that has been read
 
-            // Update conversation context
-            messages.push({
-              role: "assistant",
-              content: [
-                {
-                  type: "tool_use",
-                  name: toolCall.name,
-                  input: toolCall.input,
-                },
-              ],
-            });
-            messages.push({
-              role: "user",
-              content: tool_result.content,
-            });
-          } else {
-            final_response += `\nTool call to ${toolCall.name} was not approved.\n`;
-          }
-        } catch (error) {
-          console.error(`Error executing tool ${toolCall.name}:`, error);
-          final_response += `\nError executing ${toolCall.name}: ${error}\n`;
-        }
-      }
+Here's how to manage context:
 
-      // Send updated context back to LLM
-      llm_response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1000,
-        messages: messages,
-        tools: tools_info.tools.map((t: Tool) => ({
-          name: t.name,
-          description: t.description,
-          input_schema: t.inputSchema,
-        })),
+```typescript
+async function manageConversationContext(mcpClient, llmClient, userQuery) {
+  // Initialize conversation history
+  let messages = [
+    { role: 'user', content: userQuery }
+  ];
+  
+  // Get available tools
+  const tools = await prepareToolsForLLM(mcpClient);
+  
+  // Send initial request to LLM
+  let llmResponse = await llmClient.sendMessage(messages, { tools });
+  
+  // Process response and handle any tool calls
+  const result = await processLLMResponse(mcpClient, llmClient, llmResponse, messages);
+  
+  // The final messages array now contains the complete conversation context
+  // including tool calls and results
+  return result.messages;
+}
+```
+
+### Human-in-the-Loop Approval
+
+A key security feature of MCP is human-in-the-loop approval for tool execution. This prevents the LLM from taking potentially harmful actions without user consent:
+
+```typescript
+class SecurityManager {
+  // Define security policies for different tools
+  private toolPolicies = {
+    'file-write': { requiresApproval: true, maxCallsPerMinute: 5 },
+    'execute-command': { requiresApproval: true, maxCallsPerMinute: 2 },
+    'read-data': { requiresApproval: false, maxCallsPerMinute: 20 }
+  };
+  
+  // Rate limiting state
+  private toolCallCounts: Record<string, { count: number, timestamp: number }> = {};
+  
+  // Check if a tool call should be allowed
+  async checkToolCall(toolName: string, args: any): Promise<boolean> {
+    // Get policy for this tool (default is to require approval)
+    const policy = this.toolPolicies[toolName] || { requiresApproval: true, maxCallsPerMinute: 10 };
+    
+    // Check rate limits
+    if (!this.checkRateLimit(toolName, policy.maxCallsPerMinute)) {
+      console.error(`Rate limit exceeded for tool ${toolName}`);
+      return false;
+    }
+    
+    // If approval required, ask user
+    if (policy.requiresApproval) {
+      return await this.getUserApproval(toolName, args);
+    }
+    
+    // No approval needed and rate limit not exceeded
+    return true;
+  }
+  
+  private checkRateLimit(toolName: string, maxCallsPerMinute: number): boolean {
+    const now = Date.now();
+    
+    // Initialize count if not exists
+    if (!this.toolCallCounts[toolName]) {
+      this.toolCallCounts[toolName] = { count: 0, timestamp: now };
+    }
+    
+    const record = this.toolCallCounts[toolName];
+    
+    // Reset counter if more than a minute has passed
+    if (now - record.timestamp > 60000) {
+      record.count = 0;
+      record.timestamp = now;
+    }
+    
+    // Increment counter
+    record.count++;
+    
+    // Check if limit exceeded
+    return record.count <= maxCallsPerMinute;
+  }
+  
+  private async getUserApproval(toolName: string, args: any): Promise<boolean> {
+    console.log(`Tool "${toolName}" requires approval.`);
+    console.log('Arguments:', JSON.stringify(args, null, 2));
+    console.log('Type "y" to approve, anything else to deny:');
+    
+    return new Promise(resolve => {
+      process.stdin.once('data', data => {
+        const input = data.toString().trim().toLowerCase();
+        resolve(input === 'y');
       });
-    }
-
-    if (iteration >= MAX_ITERATIONS) {
-      final_response += "\nReached maximum number of tool call iterations.";
-    }
-
-    // 4) Return the final result to the user
-    return final_response;
-  } catch (error) {
-    console.error("Error processing user query:", error);
-    if (error instanceof Error) {
-      return `An error occurred while processing your request: ${error.message}`;
-    }
-    return "An error occurred while processing your request.";
+    });
   }
 }
 ```
 
-**Explanation of Message History Management:**
+## 6. Advanced Client Features
 
-1. The `messages` array maintains the complete conversation history, including:
-   - User inputs
-   - LLM responses
-   - Tool calls and their results
+### Sampling
 
-2. After each tool call, two entries are appended to `messages`:
-   ```typescript
-   // First: Record the tool call itself
-   messages.push({
-     role: "assistant",
-     content: [
-       {
-         type: "tool_use",
-         name: toolCall.name,
-         input: toolCall.input,
-       },
-     ],
-   });
-
-   // Second: Record the tool's result
-   messages.push({
-     role: "user",
-     content: tool_result.content,
-   });
-   ```
-
-3. This history is used in subsequent LLM requests to maintain context:
-   ```typescript
-   // Example of how the messages array evolves:
-   const messageHistory = [
-     // Initial user query
-     {
-       role: "user",
-       content: "What Python files are in the project?",
-     },
-     // LLM decides to use list_files tool
-     {
-       role: "assistant",
-       content: [
-         {
-           type: "tool_use",
-           name: "list_files",
-           input: { path: ".", pattern: "*.py" },
-         },
-       ],
-     },
-     // Tool result
-     {
-       role: "user",
-       content: [
-         {
-           type: "text",
-           text: "Found: main.py, utils.py, test_app.py",
-         },
-       ],
-     },
-     // LLM processes result and responds
-     {
-       role: "assistant",
-       content: "I found 3 Python files in the project: main.py, utils.py, and test_app.py. Would you like me to analyze their contents?",
-     },
-     // User follows up
-     {
-       role: "user",
-       content: "Yes, show me what's in main.py",
-     },
-     // And so on...
-   ];
-
-   // Each new LLM request includes the full history
-   const llm_response = await anthropic.messages.create({
-     model: "claude-3-5-sonnet-20241022",
-     max_tokens: 1000,
-     messages: messageHistory,  // Pass complete history
-     tools: tools_info.tools,  // Tools remain available
-   });
-   ```
-
-This context management ensures that:
-- The LLM understands the full conversation flow
-- Tool calls and their results are properly tracked
-- The LLM can reference previous actions and results
-- The conversation maintains coherence across multiple interactions
-
-### 4.8. Human-in-the-Loop (Tool Call Approval)
-
-MCP emphasizes human oversight. Before executing a tool, you can prompt the user for confirmation:
-
-**TypeScript (Example):**
+Sampling allows MCP servers to request LLM completions through the client. This enables sophisticated AI behaviors while maintaining security and privacy:
 
 ```typescript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import * as readline from "readline";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
-async function shouldCallTool(
-  client: Client,
-  toolName: string,
-  toolArgs: any
-): Promise<boolean> {
-  /**
-   * Prompts the user to approve a tool call and returns True if approved, False otherwise.
-   */
-  console.log(`LLM requested to call tool: ${toolName}`);
-  console.log(`Arguments: ${JSON.stringify(toolArgs)}`);
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+// Set up a handler for sampling requests
+function setupSamplingHandler(client, llmClient) {
+  client.setRequestHandler('sampling/complete', async (request) => {
+    const { messages, options } = request.params;
+    
+    console.log('Server requested LLM sampling with messages:', messages);
+    
+    // Optionally get user approval for the sampling request
+    const approved = await getUserApproval('LLM Sampling', { messages });
+    
+    if (!approved) {
+      throw new Error('Sampling request was denied by the user');
+    }
+    
+    // Send the messages to the LLM
+    const completion = await llmClient.sendMessage(messages, options);
+    
+    // Return the completion to the server
+    return {
+      completion: {
+        role: 'assistant',
+        content: completion.content
+      }
+    };
   });
-
-  const answer = await new Promise<string>((resolve) => {
-    rl.question("Approve tool execution? (y/n): ", resolve);
-  });
-
-  rl.close();
-
-  return answer.toLowerCase() === "y";
 }
 ```
 
-### 4.9. Example: Full TypeScript Code
+### Multi-Server Connections
+
+A single application can maintain connections to multiple MCP servers, each providing different capabilities:
 
 ```typescript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { Anthropic } from "@anthropic-ai/sdk";
-import * as readline from "readline";
-import { z } from "zod";
-
-async function main() {
-  if (process.argv.length < 3) {
-    console.error("Usage: node client.ts <server-script>");
-    process.exit(1);
+class MCPConnectionManager {
+  private connections: Map<string, Client> = new Map();
+  
+  async connectToServer(id: string, command: string, args: string[]): Promise<Client> {
+    // Create a new client
+    const client = new Client(
+      { name: 'multi-server-client', version: '1.0.0' },
+      { capabilities: { tools: {}, resources: {}, prompts: {} } }
+    );
+    
+    // Connect using stdio transport
+    const transport = new StdioClientTransport({ command, args });
+    await client.connect(transport);
+    await client.initialize();
+    
+    // Store the connection
+    this.connections.set(id, client);
+    
+    console.log(`Connected to server: ${id}`);
+    return client;
   }
-  const serverScript = process.argv[2];
+  
+  getClient(id: string): Client | undefined {
+    return this.connections.get(id);
+  }
+  
+  getAllClients(): Client[] {
+    return Array.from(this.connections.values());
+  }
+  
+  async disconnectAll(): Promise<void> {
+    const disconnections = Array.from(this.connections.entries()).map(async ([id, client]) => {
+      try {
+        await client.close();
+        console.log(`Disconnected from server: ${id}`);
+      } catch (error) {
+        console.error(`Error disconnecting from server ${id}:`, error);
+      }
+    });
+    
+    await Promise.all(disconnections);
+    this.connections.clear();
+  }
+  
+  // Get all available tools across all servers
+  async getAllTools(): Promise<{ serverId: string, tools: any[] }[]> {
+    const results = await Promise.all(
+      Array.from(this.connections.entries()).map(async ([id, client]) => {
+        try {
+          const tools = await client.listTools();
+          return { serverId: id, tools: tools.tools };
+        } catch (error) {
+          console.error(`Error getting tools from server ${id}:`, error);
+          return { serverId: id, tools: [] };
+        }
+      })
+    );
+    
+    return results;
+  }
+}
+```
 
-  // Setup client & transport
-  const client = new Client({ name: "my-ts-client", version: "1.0.0" }, {});
-  const transport = new StdioClientTransport({
-    command: serverScript.endsWith(".ts") ? "npx" : "node",
-    args: serverScript.endsWith(".ts")
-      ? ["ts-node", serverScript]
-      : [serverScript],
-  });
-  await client.connect(transport);
-  await client.initialize();
+### Multi-Step (Agentic) Flows
 
-  // List available tools
-  const tools = await client.listTools();
-  console.log("Tools available:", tools.tools.map((t) => t.name));
+MCP enables complex multi-step workflows where the LLM chains together multiple tool calls and resource reads:
 
-  const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY || "",
-  });
-
-  // Simple REPL
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  console.log("Type your queries or 'quit' to exit.\n");
-
-  for await (const line of rl) {
-    const query = line.trim();
-    if (!query || query.toLowerCase() === "quit") {
+```typescript
+async function performComplexTask(mcpClient, llmClient, task: string) {
+  // Prepare tools
+  const tools = await prepareToolsForLLM(mcpClient);
+  
+  // Start conversation with task description
+  let messages = [
+    { role: 'user', content: `Perform this task: ${task}. You have access to tools to help you.` }
+  ];
+  
+  // Maximum iterations to prevent infinite loops
+  const MAX_ITERATIONS = 10;
+  let iterations = 0;
+  
+  while (iterations < MAX_ITERATIONS) {
+    iterations++;
+    console.log(`Iteration ${iterations}/${MAX_ITERATIONS}`);
+    
+    // Get LLM response
+    const response = await llmClient.sendMessage(messages, { tools });
+    
+    // Check if LLM wants to use tools
+    if (response.tool_calls && response.tool_calls.length > 0) {
+      // Process tool calls and update messages
+      const result = await processLLMResponse(mcpClient, llmClient, response, messages);
+      messages = result.messages;
+    } else {
+      // LLM has completed the task
+      messages.push({
+        role: 'assistant',
+        content: response.content
+      });
+      
+      console.log('Task completed successfully');
       break;
     }
-
-    let messages = [{ role: "user", content: query }];
-
-    // Send query to LLM (Anthropic example)
-    let claudeResponse = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1000,
-      messages: messages,
-      tools: tools.tools.map((t) => ({
-        name: t.name,
-        description: t.description,
-        input_schema: t.inputSchema,
-      })),
+  }
+  
+  if (iterations >= MAX_ITERATIONS) {
+    console.log('Reached maximum iterations - task may not be complete');
+    messages.push({
+      role: 'system',
+      content: 'Reached maximum number of iterations. Please provide a final response or summary.'
     });
-
-    console.log("LLM response:", claudeResponse);
-
-    // Check if LLM wants to call a tool
-    for (const content of claudeResponse.content) {
-      if (content.type === "tool_use") {
-        // Human-in-the-loop approval
-        if (
-          await shouldCallTool(client, content.name, content.input)
-        ) {
-          // Execute a tool call
-          const result = await client.callTool(content.name, content.input);
-          console.log("Tool Result:", result);
-
-          messages.push({
-            role: "assistant",
-            content: [content],
-          });
-
-          messages.push({
-            role: "user",
-            content: result.content,
-          });
-
-          claudeResponse = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
-            max_tokens: 1000,
-            messages: messages,
-          });
-          console.log("LLM response:", claudeResponse);
-        } else {
-          console.log(
-            `Tool call to ${content.name} was not approved.`
-          );
-        }
-      }
-    }
+    
+    // Get final summary from LLM
+    const finalResponse = await llmClient.sendMessage(messages);
+    messages.push({
+      role: 'assistant',
+      content: finalResponse.content
+    });
   }
-
-  rl.close();
-  console.log("Shutting down MCP client...");
-  await client.close();
-}
-
-async function shouldCallTool(
-  client: Client,
-  toolName: string,
-  toolArgs: any
-): Promise<boolean> {
-  /**
-   * Prompts the user to approve a tool call and returns True if approved, False otherwise.
-   */
-  console.log(`LLM requested to call tool: ${toolName}`);
-  console.log(`Arguments: ${JSON.stringify(toolArgs)}`);
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  const answer = await new Promise<string>((resolve) => {
-    rl.question("Approve tool execution? (y/n): ", resolve);
-  });
-
-  rl.close();
-
-  return answer.toLowerCase() === "y";
-}
-
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
-```
-
-## 5. Advanced Topics
-
-### 5.1. Sampling
-
-**Sampling** enables bidirectional LLM interactions in MCP, allowing both clients to use LLMs and servers to request LLM completions. This section covers both client-side sampling management and server-to-client sampling requests.
-
-#### Client-Side Sampling Management
-
-Clients can control how LLM interactions are handled:
-
-*   Prompt the user for approval before making LLM calls
-*   Manage costs associated with LLM usage
-*   Filter or modify LLM responses
-*   Control model selection and parameters
-
-#### Server-to-Client Sampling
-
-Servers can request completions from the LLM through the client using `sampling/createMessage`. This enables sophisticated agentic behaviors while maintaining security and user control.
-
-**Typical Flow:**
-
-1. **Server** sends a `sampling/createMessage` request to the **Client**
-2. **Client** reviews and potentially modifies the request
-3. **Client** obtains user approval (optional)
-4. **Client** calls the LLM
-5. **Client** reviews and potentially modifies the completion
-6. **Client** returns the result to the **Server**
-
-**Example `sampling/createMessage` Request:**
-
-```json
-{
-  "method": "sampling/createMessage",
-  "params": {
-    "messages": [
-      {
-        "role": "user",
-        "content": {
-          "type": "text",
-          "text": "What files are in the current directory?"
-        }
-      }
-    ],
-    "systemPrompt": "You are a helpful file system assistant.",
-    "includeContext": "thisServer",
-    "maxTokens": 100,
-    "modelPreferences": {
-      "hints": [
-        { "name": "claude-3-5-sonnet-20241022" },
-        { "name": "claude-3-5-haiku-20241022" }
-      ],
-      "costPriority": 0.8,
-      "speedPriority": 0.5,
-      "intelligencePriority": 0.7
-    }
-  }
+  
+  return {
+    completed: iterations < MAX_ITERATIONS,
+    finalMessages: messages,
+    iterations
+  };
 }
 ```
 
-#### Model Preferences
+### Resource Subscriptions
 
-The `modelPreferences` object allows servers to specify their requirements for model selection:
-
-1. **Priority Values (0.0 to 1.0):**
-    *   `costPriority`: Higher values prioritize cheaper models
-    *   `speedPriority`: Higher values prioritize faster response times
-    *   `intelligencePriority`: Higher values prioritize more capable models
-
-    These values help clients make trade-offs between different model characteristics. For example:
-    *   High cost priority (0.8) + low intelligence priority (0.2): Prefer simpler, cheaper models
-    *   High speed priority (0.9) + low cost priority (0.3): Prefer faster models regardless of cost
-    *   High intelligence priority (0.9) + high cost priority (0.8): Seek the best value among capable models
-
-2. **Model Hints:**
-    The `hints` array provides ordered suggestions for model selection:
-
-    ```json
-    "hints": [
-      { "name": "claude-3-5-sonnet-20241022" },  // First choice
-      { "name": "claude-3-5-haiku-20241022" }    // Fallback option
-    ]
-    ```
-
-    Important notes about hints:
-    *   Hints are suggestions only - clients may not have access to the exact models specified
-    *   Clients can map hints to equivalent models from different providers
-    *   The order indicates preference (first hint is most preferred)
-    *   Partial matches are supported (e.g., "claude-3" could match any Claude 3 model)
-    *   Clients should balance hints with priority values when selecting models
-
-#### Metadata Field
-
-The `metadata` field in sampling requests serves several important purposes:
-
-1. **Provider-Specific Configuration:**
-   - Custom parameters for specific LLM providers (e.g., OpenAI, Anthropic, etc.)
-   - Provider-specific features or capabilities
-   - API-specific settings and flags
-
-2. **Request Context:**
-   - Session identifiers
-   - Request tracking information
-   - Correlation IDs for logging and monitoring
-   - Custom tags for analytics
-
-3. **Behavioral Controls:**
-   - Response format preferences
-   - Output filtering rules
-   - Special handling instructions
-   - Custom stop conditions
-
-Example metadata usage:
-
-```json
-{
-  "metadata": {
-    "provider": {
-      "anthropic": {
-        "topK": 10,
-        "topP": 0.9,
-        "presencePenalty": 0.6
-      }
-    },
-    "tracking": {
-      "sessionId": "abc123",
-      "requestId": "req-456",
-      "source": "code-assistant"
-    },
-    "formatting": {
-      "responseType": "markdown",
-      "codeBlockStyle": "fenced"
-    }
-  }
-}
-```
-
-#### Human-in-the-Loop Controls
-
-Sampling is designed with human oversight in mind:
-
-**For Prompts:**
-
-*   Clients should show users the proposed prompt
-*   Users should be able to modify or reject prompts
-*   System prompts can be filtered or modified
-*   Context inclusion is controlled by the client
-
-**For Completions:**
-
-*   Clients should show users the completion
-*   Users should be able to modify or reject completions
-*   Clients can filter or modify completions
-*   Users control which model is used
-
-### 5.2. Multi-Server Connections
-
-A single MCP client can manage connections to multiple servers simultaneously. Each server might offer different tools, resources, or prompts.
-
-**Benefits:**
-
-*   **Expanded Capabilities:** The LLM can choose from a wider range of tools and data sources.
-*   **Modularity:** Servers can be developed and maintained independently.
-*   **Flexibility:** The client can dynamically connect to different servers based on the task or context.
-
-**Example Scenario:**
-
-*   **Server A:** Provides filesystem access.
-*   **Server B:** Offers a database interface.
-*   **Server C:** Handles interactions with a specific API (e.g., GitHub, Slack).
-
-The client aggregates the capabilities of all connected servers, presenting a unified set of tools and resources to the LLM.
-
-### 5.3. Multi-Step (Agentic) Flows
-
-MCP enables the creation of complex, multi-step workflows, often referred to as "agentic" flows:
-
-1. **LLM** receives a user request.
-2. **LLM** decides to use a tool provided by an MCP server (e.g., to fetch data).
-3. **Client** executes the tool call (potentially after user approval).
-4. **Server** returns the tool's result to the **Client**.
-5. **Client** provides the result to the **LLM**.
-6. **LLM** processes the result and might decide to call another tool, read a resource, or generate a response for the user.
-
-This iterative process can continue for multiple steps, allowing the LLM to perform complex tasks that involve interactions with multiple tools and data sources.
-
-**Human-in-the-Loop:** Human oversight can be incorporated at any stage of the flow. The client can prompt the user to approve tool calls, review intermediate results, or provide additional input.
-
-### 5.4. Resource Subscriptions
-
-Resource subscriptions enable real-time updates for dynamic content and integrate with the sampling context system. Here's how they work:
-
-#### Basic Subscription Flow
-
-1. **Subscribe to Updates:**
-   ```typescript
-   await client.subscribeToResource("logs://app/current");
-   ```
-
-2. **Handle Updates:**
-   ```typescript
-   client.setNotificationHandler(
-     "notifications/resources/updated",
-     async (notification) => {
-       const contents = await client.readResource(notification.uri);
-       // Process updated content
-     }
-   );
-   ```
-
-3. **Unsubscribe When Done:**
-   ```typescript
-   await client.unsubscribeFromResource("logs://app/current");
-   ```
-
-#### Integration with Sampling Context
-
-The `includeContext` parameter in sampling requests works in conjunction with resource subscriptions:
-
-1. **Context Levels:**
-   - `"none"`: No subscribed resources included
-   - `"thisServer"`: Include subscribed resources from the requesting server
-   - `"allServers"`: Include subscribed resources from all connected servers
-
-2. **Automatic Context Updates:**
-   ```typescript
-   // Example: Sampling with resource subscription context
-   const samplingRequest = {
-     messages: [...],
-     includeContext: "thisServer",
-     metadata: {
-       contextPreferences: {
-         includeSubscriptions: true,  // Enable subscription inclusion
-         maxSubscriptionAge: 300,     // Only include updates from last 5 minutes
-         subscriptionTypes: ["logs", "metrics"]  // Filter by resource type
-       }
-     }
-   };
-   ```
-
-3. **Real-time Context Flow:**
-   ```typescript
-   // 1. Subscribe to resource
-   await client.subscribeToResource("metrics://cpu/usage");
-
-   // 2. Resource updates are received
-   client.setNotificationHandler(
-     "notifications/resources/updated",
-     async (notification) => {
-       // 3. Next sampling request automatically includes latest metrics
-       const response = await client.createMessage({
-         messages: currentConversation,
-         includeContext: "thisServer"
-       });
-     }
-   );
-   ```
-
-**Example Scenarios:**
-- Streaming log files for real-time analysis
-- Live system metrics for performance monitoring
-- Real-time data feeds for decision making
-- Continuous file system monitoring
-
-**Best Practices:**
-1. Manage subscription lifecycle carefully
-2. Set appropriate update frequency
-3. Handle update notifications efficiently
-4. Clean up subscriptions when no longer needed
-5. Consider resource caching for performance
-
-### 5.5. Roots Feature
-
-Roots are a way for clients to inform servers about relevant resources and their locations (e.g., project directories, API endpoints). Roots are declared during the `initialize` request.
-
-**Example `initialize` request with roots:**
-
-```json
-{
-  "method": "initialize",
-  "params": {
-    "capabilities": {
-      "roots": {}
-    },
-    "roots": [
-      {
-        "uri": "file:///home/user/projects/my-project",
-        "name": "My Project"
-      },
-      {
-        "uri": "https://api.example.com/v1",
-        "name": "Example API"
-      }
-    ]
-  }
-}
-```
-
-Servers should respect the provided roots, but roots are informational and not strictly enforced.
-
-### 5.6. Progress / Partial Results
-
-Servers can provide partial results or progress updates for long-running tool calls using progress tokens.
-
-**Example Scenario:** A tool that performs a lengthy data analysis task and provides intermediate results.
-
-### 5.7. Multi-Server Aggregation
-
-Clients can manage a single conversation context spanning multiple servers. This enables powerful workflows that combine capabilities from different sources.
-
-**Example Implementation (Conceptual TypeScript):**
+Clients can subscribe to resource updates to receive real-time notifications when resources change:
 
 ```typescript
-import { Client, StdioClientTransport, Tool, Prompt, Resource, ResourceTemplate } from "@modelcontextprotocol/sdk/client/index.js";
-import { Anthropic, Message } from "@anthropic-ai/sdk";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
-class MultiServerManager {
-  private servers: Map<string, Client> = new Map();
-  private capabilityManagers: Map<string, MCPCapabilityManager> = new Map();
-  private logger: Console;
-
-  constructor() {
-    this.logger = console;
+async function setupResourceSubscription(client: Client, resourceUri: string) {
+  try {
+    // Subscribe to the resource
+    await client.subscribeToResource(resourceUri);
+    console.log(`Subscribed to resource: ${resourceUri}`);
+    
+    // Set up a handler for resource update notifications
+    client.setNotificationHandler(
+      'notifications/resources/updated',
+      async (notification) => {
+        console.log(`Resource updated: ${notification.uri}`);
+        
+        // Read the updated resource
+        try {
+          const updatedContent = await client.readResource(notification.uri);
+          console.log('Updated content:', updatedContent.contents[0].text);
+          
+          // You could trigger application logic here
+          // processResourceUpdate(updatedContent);
+        } catch (error) {
+          console.error(`Error reading updated resource ${notification.uri}:`, error);
+        }
+      }
+    );
+    
+    return true;
+  } catch (error) {
+    console.error(`Error subscribing to resource ${resourceUri}:`, error);
+    return false;
   }
+}
 
-  async addServer(name: string, scriptPath: string): Promise<boolean> {
+// Later, when you want to unsubscribe
+async function unsubscribeFromResource(client: Client, resourceUri: string) {
+  try {
+    await client.unsubscribeFromResource(resourceUri);
+    console.log(`Unsubscribed from resource: ${resourceUri}`);
+    return true;
+  } catch (error) {
+    console.error(`Error unsubscribing from resource ${resourceUri}:`, error);
+    return false;
+  }
+}
+```
+
+### Roots
+
+Roots allow clients to inform servers about relevant resource locations. They're declared during initialization:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+async function connectWithRoots() {
+  const client = new Client(
+    { name: 'root-aware-client', version: '1.0.0' },
+    {
+      capabilities: { tools: {}, resources: {}, prompts: {} },
+      initializationOptions: {
+        roots: [
+          {
+            uri: 'file:///path/to/project',
+            name: 'Project Root'
+          },
+          {
+            uri: 'git://github.com/username/repo',
+            name: 'Git Repository'
+          }
+        ]
+      }
+    }
+  );
+  
+  const transport = new StdioClientTransport({
+    command: './server.js',
+    args: []
+  });
+  
+  await client.connect(transport);
+  await client.initialize();
+  
+  return client;
+}
+```
+
+### Progress Reporting
+
+MCP supports progress reporting for long-running operations. Clients can receive progress updates through notifications:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+
+function setupProgressHandling(client: Client) {
+  // Handler for progress notifications
+  client.setNotificationHandler(
+    'notifications/progress',
+    (notification) => {
+      const { token, value, message } = notification;
+      
+      console.log(`Progress for operation ${token}: ${value}% - ${message}`);
+      
+      // You might update a progress bar or other UI element
+      // updateProgressUI(token, value, message);
+    }
+  );
+  
+  return client;
+}
+
+async function callToolWithProgress(client: Client, toolName: string, args: any) {
+  // Generate a unique token for this operation
+  const progressToken = `op-${Date.now()}`;
+  
+  // Call a tool that might take a while and report progress
+  const result = await client.callTool(
+    toolName,
+    args,
+    { 
+      progress: { 
+        token: progressToken // This token will be used in progress notifications
+      } 
+    }
+  );
+  
+  return result;
+}
+```
+
+### Handling List Endpoint Updates
+
+Servers can notify clients when their capabilities change. Clients should handle these notifications to maintain an up-to-date view:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+
+class CapabilityManager {
+  private tools: any[] = [];
+  private resources: any[] = [];
+  private resourceTemplates: any[] = [];
+  private prompts: any[] = [];
+  private client: Client;
+  
+  constructor(client: Client) {
+    this.client = client;
+    
+    // Set up notification handlers for capability changes
+    client.setNotificationHandler(
+      'notifications/tools/list_changed',
+      async () => {
+        console.log('Tools list changed, refreshing...');
+        await this.refreshTools();
+      }
+    );
+    
+    client.setNotificationHandler(
+      'notifications/resources/list_changed',
+      async () => {
+        console.log('Resources list changed, refreshing...');
+        await this.refreshResources();
+      }
+    );
+    
+    client.setNotificationHandler(
+      'notifications/prompts/list_changed',
+      async () => {
+        console.log('Prompts list changed, refreshing...');
+        await this.refreshPrompts();
+      }
+    );
+  }
+  
+  async initialize() {
+    // Fetch all capabilities
+    await Promise.all([
+      this.refreshTools(),
+      this.refreshResources(),
+      this.refreshPrompts()
+    ]);
+    
+    return this;
+  }
+  
+  async refreshTools() {
     try {
-      const client = new Client({ name: `client-${name}`, version: "1.0.0" }, {});
-      const transport = new StdioClientTransport({
-        command: scriptPath.endsWith(".ts") ? "npx" : "node",
-        args: scriptPath.endsWith(".ts") ? ["ts-node", scriptPath] : [scriptPath],
-      });
+      const result = await this.client.listTools();
+      this.tools = result.tools;
+      return this.tools;
+    } catch (error) {
+      console.error('Error refreshing tools:', error);
+      return this.tools;
+    }
+  }
+  
+  async refreshResources() {
+    try {
+      const result = await this.client.listResources();
+      this.resources = result.resources;
+      this.resourceTemplates = result.resourceTemplates;
+      return { resources: this.resources, resourceTemplates: this.resourceTemplates };
+    } catch (error) {
+      console.error('Error refreshing resources:', error);
+      return { resources: this.resources, resourceTemplates: this.resourceTemplates };
+    }
+  }
+  
+  async refreshPrompts() {
+    try {
+      const result = await this.client.listPrompts();
+      this.prompts = result.prompts;
+      return this.prompts;
+    } catch (error) {
+      console.error('Error refreshing prompts:', error);
+      return this.prompts;
+    }
+  }
+  
+  getTools() { return this.tools; }
+  getResources() { return this.resources; }
+  getResourceTemplates() { return this.resourceTemplates; }
+  getPrompts() { return this.prompts; }
+}
+```
 
-      await client.connect(transport);
-      await client.initialize();
+## 7. Security and Best Practices
 
-      const capManager = new MCPCapabilityManager(client);
-      await capManager.refreshAll();
+### Authentication and Authorization
 
-      this.servers.set(name, client);
-      this.capabilityManagers.set(name, capManager);
-      this.logger.info(`Successfully added server: ${name}`);
+When connecting to remote MCP servers, implement appropriate authentication:
+
+```typescript
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+
+function createAuthenticatedTransport(serverUrl: string, apiKey: string) {
+  const transport = new SSEClientTransport(new URL(serverUrl));
+  
+  // Add authentication headers
+  transport.setHeaders({
+    'Authorization': `Bearer ${apiKey}`,
+    'X-Client-ID': 'my-client-app'
+  });
+  
+  return transport;
+}
+
+// For services that use OAuth or other token-based auth
+class TokenRefreshingTransport extends SSEClientTransport {
+  private tokenProvider: () => Promise<string>;
+  private baseHeaders: Record<string, string>;
+  
+  constructor(url: URL, tokenProvider: () => Promise<string>, baseHeaders: Record<string, string> = {}) {
+    super(url);
+    this.tokenProvider = tokenProvider;
+    this.baseHeaders = baseHeaders;
+  }
+  
+  async start(): Promise<void> {
+    // Get a fresh token before starting
+    const token = await this.tokenProvider();
+    this.setHeaders({
+      ...this.baseHeaders,
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return super.start();
+  }
+  
+  async handleTokenRefresh(): Promise<void> {
+    const token = await this.tokenProvider();
+    this.setHeaders({
+      ...this.baseHeaders,
+      'Authorization': `Bearer ${token}`
+    });
+  }
+}
+```
+
+### Data Security
+
+Implement robust data security practices:
+
+1. **Input Validation:**
+   * Validate all inputs (resource URIs, tool parameters) against defined schemas
+   * Sanitize file paths and command arguments
+   * Use strong typing and schema validation
+
+```typescript
+import { z } from 'zod';
+
+// Define validation schemas for different types of inputs
+const securitySchemas = {
+  filePath: z.string().regex(/^[a-zA-Z0-9_\-./]+$/),
+  command: z.string().max(100).refine(cmd => !cmd.includes("&&") && !cmd.includes(";"), {
+    message: "Command contains forbidden characters"
+  }),
+  url: z.string().url(),
+  email: z.string().email()
+};
+
+function validateSecuritySensitiveInput(type: keyof typeof securitySchemas, value: string): boolean {
+  try {
+    securitySchemas[type].parse(value);
+    return true;
+  } catch (error) {
+    console.error(`Security validation failed for ${type}:`, error);
+    return false;
+  }
+}
+
+// Example usage for file paths
+function validateAndReadResource(client: Client, resourceUri: string) {
+  // Validate URI format
+  if (!resourceUri.startsWith('file:///')) {
+    throw new Error('Invalid file URI format');
+  }
+  
+  // Extract file path from URI
+  const filePath = resourceUri.substring('file:///'.length);
+  
+  // Validate file path
+  if (!validateSecuritySensitiveInput('filePath', filePath)) {
+    throw new Error('Invalid or potentially unsafe file path');
+  }
+  
+  // Now safe to read
+  return client.readResource(resourceUri);
+}
+```
+
+2. **Sensitive Data Handling:**
+   * Use TLS for network transport (especially for SSE)
+   * Avoid logging sensitive information
+   * Implement appropriate data retention policies
+
+```typescript
+class SecureLogger {
+  private static readonly REDACTED = '[REDACTED]';
+  
+  // Define patterns for sensitive data
+  private static readonly PATTERNS = [
+    { name: 'API Key', regex: /["']?api[_-]?key["']?\s*[:=]\s*["']([a-zA-Z0-9_\-]+)["']/gi },
+    { name: 'Password', regex: /["']?password["']?\s*[:=]\s*["']([^"']+)["']/gi },
+    { name: 'Social Security Number', regex: /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g }
+  ];
+  
+  static sanitize(message: string): string {
+    let sanitized = message;
+    
+    // Redact sensitive patterns
+    for (const pattern of this.PATTERNS) {
+      sanitized = sanitized.replace(pattern.regex, `${pattern.name}: ${this.REDACTED}`);
+    }
+    
+    return sanitized;
+  }
+  
+  static log(level: string, message: string, data?: any): void {
+    const sanitizedMessage = this.sanitize(message);
+    let sanitizedData = data;
+    
+    if (data) {
+      if (typeof data === 'string') {
+        sanitizedData = this.sanitize(data);
+      } else if (typeof data === 'object') {
+        sanitizedData = JSON.parse(this.sanitize(JSON.stringify(data)));
+      }
+    }
+    
+    console[level](sanitizedMessage, sanitizedData);
+  }
+}
+```
+
+### Error Handling
+
+Implement robust error handling for all MCP operations:
+
+```typescript
+import { Client, ErrorCode } from '@modelcontextprotocol/sdk/client/index.js';
+
+// Result type for error handling
+interface Result<T, E = Error> {
+  success: boolean;
+  value?: T;
+  error?: E;
+}
+
+// Wrapping client operations with proper error handling
+class SafeMcpClient {
+  private client: Client;
+  
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async callTool(toolName: string, args: any): Promise<Result<any>> {
+    try {
+      const result = await this.client.callTool(toolName, args);
+      
+      if (result.isError) {
+        return {
+          success: false,
+          error: new Error(result.content[0].text)
+        };
+      }
+      
+      return {
+        success: true,
+        value: result.content
+      };
+    } catch (error: any) {
+      // Handle different error types
+      if (error.code === ErrorCode.MethodNotFound) {
+        return {
+          success: false,
+          error: new Error(`Tool ${toolName} not found`)
+        };
+      } else if (error.code === ErrorCode.InvalidParams) {
+        return {
+          success: false,
+          error: new Error(`Invalid parameters for tool ${toolName}: ${error.message}`)
+        };
+      } else {
+        return {
+          success: false,
+          error: error
+        };
+      }
+    }
+  }
+  
+  async readResource(resourceUri: string): Promise<Result<any>> {
+    try {
+      const result = await this.client.readResource(resourceUri);
+      return {
+        success: true,
+        value: result.contents
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error
+      };
+    }
+  }
+  
+  // Implement other client methods with similar error handling
+}
+
+// Example usage
+async function safeToolCall(client: Client, toolName: string, args: any) {
+  const safeClient = new SafeMcpClient(client);
+  const result = await safeClient.callTool(toolName, args);
+  
+  if (result.success) {
+    console.log('Tool result:', result.value);
+    return result.value;
+  } else {
+    console.error('Tool error:', result.error.message);
+    // Handle error appropriately
+    return null;
+  }
+}
+```
+
+For transport errors and disconnections, implement reconnection logic:
+
+```typescript
+class ReconnectingClient {
+  private client: Client;
+  private transportFactory: () => any;
+  private isConnecting: boolean = false;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
+  private reconnectDelay: number = 1000; // 1 second
+  
+  constructor(client: Client, transportFactory: () => any) {
+    this.client = client;
+    this.transportFactory = transportFactory;
+    
+    // Set up error handler
+    this.client.onError((error) => {
+      console.error('Client error:', error);
+      this.handleDisconnection();
+    });
+  }
+  
+  async connect() {
+    if (this.isConnecting) return;
+    
+    this.isConnecting = true;
+    try {
+      const transport = this.transportFactory();
+      await this.client.connect(transport);
+      await this.client.initialize();
+      
+      console.log('Connected successfully');
+      this.reconnectAttempts = 0;
+      this.isConnecting = false;
       return true;
     } catch (error) {
-      this.logger.error(`Failed to add server ${name}:`, error);
+      console.error('Connection error:', error);
+      this.isConnecting = false;
+      this.handleDisconnection();
       return false;
     }
   }
+  
+  private async handleDisconnection() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached');
+      return;
+    }
+    
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
+    
+    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    
+    setTimeout(() => {
+      this.connect();
+    }, delay);
+  }
+  
+  getClient() {
+    return this.client;
+  }
+  
+  async close() {
+    this.maxReconnectAttempts = 0; // Prevent reconnection
+    if (this.client) {
+      await this.client.close();
+    }
+  }
+}
+```
 
-  getAggregatedCapabilities(): {
-    tools: (Tool & { server: string })[];
-    prompts: (Prompt & { server: string })[];
-    resources: (Resource & { server: string })[];
-  } {
-    const aggregated: {
-      tools: (Tool & { server: string })[];
-      prompts: (Prompt & { server: string })[];
-      resources: (Resource & { server: string })[];
-    } = {
-      tools: [],
-      prompts: [],
-      resources: [],
-    };
+### General Best Practices
 
-    for (const [serverName, capManager] of this.capabilityManagers) {
-      try {
-        const caps = capManager.getCapabilities();
+1. **Principle of Least Privilege:**
+   * Only request necessary capabilities from servers
+   * Implement user permission checks for sensitive operations
+   * Use fine-grained access controls
 
-        aggregated.tools.push(
-          ...caps.available_tools.map((tool) => ({
-            ...tool,
-            name: `${serverName}.${tool.name}`,
-            server: serverName,
-            description: `[${serverName}] ${tool.description}`,
-          }))
-        );
+2. **Defense in Depth:**
+   * Implement multiple layers of security
+   * Don't rely solely on server-side security
+   * Validate all server responses
 
-        aggregated.prompts.push(
-          ...caps.available_prompts.map((prompt) => ({
-            ...prompt,
-            name: `${serverName}.${prompt.name}`,
-            server: serverName,
-            description: `[${serverName}] ${prompt.description}`,
-          }))
-        );
+3. **Logging and Monitoring:**
+   * Implement comprehensive logging
+   * Monitor connection status
+   * Track resource usage and performance
 
-        aggregated.resources.push(
-          ...caps.available_resources.map((resource) => ({
-            ...resource,
-            name: `${serverName}.${resource.name}`,
-            server: serverName,
-            description: `[${serverName}] ${resource.description}`,
-          }))
-        );
-      } catch (error) {
-        this.logger.error(
-          `Error aggregating capabilities from ${serverName}:`,
-          error
-        );
+4. **Error Handling:**
+   * Use a consistent error handling strategy
+   * Provide meaningful error messages
+   * Implement proper cleanup after errors
+
+5. **Testing and Validation:**
+   * Test with a variety of MCP servers
+   * Validate all inputs and outputs
+   * Test error conditions and recovery
+
+6. **Performance Considerations:**
+   * Use appropriate timeouts
+   * Implement caching where appropriate
+   * Optimize resource usage
+
+7. **Security Reviews:**
+   * Regularly review security practices
+   * Keep dependencies updated
+   * Follow secure coding guidelines
+
+## 8. Troubleshooting and Resources
+
+### Debugging Tools
+
+Several tools are available for debugging MCP clients:
+
+* **MCP Inspector:** An interactive debugging interface for testing MCP servers and clients. See the [MCP Inspector guide](https://github.com/modelcontextprotocol/inspector) for details.
+
+* **Claude Desktop Developer Tools:** Useful for integration testing, log collection, and accessing Chrome DevTools within Claude Desktop.
+  * To enable developer tools, create a `developer_settings.json` file with `{"allowDevTools": true}` in `~/Library/Application Support/Claude/`.
+  * Open DevTools with Command-Option-Shift-i.
+
+* **Client Logging:** Implement custom logging within your client to track errors, performance, and other relevant information.
+
+### Common Issues and Solutions
+
+* **Connection Issues:**
+  * **Problem:** Client fails to connect to the server.
+  * **Solutions:**
+    * Check if the server is running.
+    * Verify the server path or URL.
+    * Check for network connectivity issues.
+    * Examine server logs for error messages.
+
+* **Tool Execution Errors:**
+  * **Problem:** Tool calls fail with errors.
+  * **Solutions:**
+    * Validate input parameters match the tool's schema.
+    * Check for proper error handling in the tool implementation.
+    * Verify that the tool exists on the server.
+    * Look for permission or access issues.
+
+* **Resource Access Problems:**
+  * **Problem:** Unable to read resources.
+  * **Solutions:**
+    * Verify the resource URI format.
+    * Check if the resource exists.
+    * Look for permission issues.
+    * Verify network connectivity for remote resources.
+
+* **LLM Integration Issues:**
+  * **Problem:** LLM isn't using tools correctly.
+  * **Solutions:**
+    * Ensure tool definitions are correctly formatted for your LLM provider.
+    * Verify that context management is working properly.
+    * Check for message format issues.
+    * Look for token limit problems.
+
+### Implementing Logging
+
+* **Client-Side Logging:**
+  * Log connection events, capability discovery, tool calls, resource access, and error conditions.
+  * Use structured logging with timestamps, severity levels, and context.
+  * Implement log levels (debug, info, warn, error) to control verbosity.
+
+```typescript
+class McpClientLogger {
+  private logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
+  private client: Client;
+  
+  constructor(client: Client, logLevel?: 'debug' | 'info' | 'warn' | 'error') {
+    this.client = client;
+    if (logLevel) this.logLevel = logLevel;
+    
+    // Set up client event handlers
+    this.setupLogging();
+  }
+  
+  private setupLogging() {
+    // Log all requests
+    this.client.onRequest((method, params) => {
+      this.log('debug', `Request: ${method}`, params);
+    });
+    
+    // Log all responses
+    this.client.onResponse((method, result) => {
+      this.log('debug', `Response: ${method}`, result);
+    });
+    
+    // Log errors
+    this.client.onError((error) => {
+      this.log('error', 'Client error:', error);
+    });
+    
+    // Log notifications
+    this.client.onNotification((method, params) => {
+      this.log('debug', `Notification: ${method}`, params);
+    });
+  }
+  
+  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: any) {
+    const levels = { debug: 0, info: 1, warn: 2, error: 3 };
+    if (levels[level] >= levels[this.logLevel]) {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+      
+      if (data) {
+        console[level](logMessage, data);
+      } else {
+        console[level](logMessage);
       }
     }
-
-    return aggregated;
   }
+  
+  debug(message: string, data?: any) { this.log('debug', message, data); }
+  info(message: string, data?: any) { this.log('info', message, data); }
+  warn(message: string, data?: any) { this.log('warn', message, data); }
+  error(message: string, data?: any) { this.log('error', message, data); }
+  
+  setLogLevel(level: 'debug' | 'info' | 'warn' | 'error') {
+    this.logLevel = level;
+  }
+}
+```
 
-  async routeToolCall(
-    toolName: string,
-    args: Record<string, any>
-  ): Promise<any> {
+### Debugging Workflow
+
+1. **Initial Development:** Use the MCP Inspector for basic testing, implement core functionality, and add logging.
+2. **Integration Testing:** Test with actual MCP servers, monitor logs, and check error handling.
+3. **LLM Integration Testing:** Test the complete flow with LLM integration, verify tool execution, and check context management.
+
+**Testing Workflow:**
+
+1. Start with isolated testing of MCP client functions.
+2. Test connection and capability discovery.
+3. Test individual tool calls and resource access.
+4. Test error handling and recovery.
+5. Test complete LLM integration.
+
+### Community Resources and Support
+
+* **GitHub Issues:** Report bugs and request features on the [MCP TypeScript SDK repository](https://github.com/modelcontextprotocol/typescript-sdk).
+* **GitHub Discussions:** Ask questions and discuss MCP development.
+* **Documentation:** [Model Context Protocol documentation](https://modelcontextprotocol.io)
+
+## 9. Example Implementations
+
+This section provides complete example implementations to help you understand how to build practical MCP clients.
+
+### Basic LLM Integration
+
+This example shows a simple integration between an MCP client and an LLM:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+// Hypothetical LLM client class
+class LLMClient {
+  async sendMessage(messages, options = {}) {
+    // Implementation depends on your LLM provider
+    console.log('Sending to LLM:', { messages, options });
+    // Simulated response
+    return {
+      id: 'msg_123',
+      role: 'assistant',
+      content: 'This is a sample response from the LLM.',
+      tool_calls: [] // Will contain tool call requests if any
+    };
+  }
+}
+
+async function runBasicLLMIntegration() {
+  // Set up MCP client
+  const mcpClient = new Client(
+    { name: 'BasicIntegrationClient', version: '1.0.0' },
+    { capabilities: { tools: {}, resources: {}, prompts: {} } }
+  );
+  
+  // Connect to MCP server
+  const transport = new StdioClientTransport({
+    command: './server.js',
+    args: []
+  });
+  
+  await mcpClient.connect(transport);
+  await mcpClient.initialize();
+  
+  // Set up LLM client
+  const llmClient = new LLMClient();
+  
+  // Discover available tools
+  const toolsResult = await mcpClient.listTools();
+  console.log('Available tools:', toolsResult.tools);
+  
+  // Format tools for LLM
+  const formattedTools = toolsResult.tools.map(tool => ({
+    name: tool.name,
+    description: tool.description || `Tool: ${tool.name}`,
+    parameters: tool.inputSchema
+  }));
+  
+  // Start conversation
+  const userQuery = 'What tools are available?';
+  const messages = [
+    { role: 'user', content: userQuery }
+  ];
+  
+  // Send to LLM with tool definitions
+  const llmResponse = await llmClient.sendMessage(messages, {
+    tools: formattedTools
+  });
+  
+  // Process LLM response
+  console.log('LLM response:', llmResponse);
+  
+  // Handle any tool calls (if present)
+  if (llmResponse.tool_calls && llmResponse.tool_calls.length > 0) {
+    for (const toolCall of llmResponse.tool_calls) {
+      console.log(`LLM wants to call tool: ${toolCall.name}`);
+      
+      // Execute the tool
+      const toolResult = await mcpClient.callTool(toolCall.name, toolCall.arguments);
+      console.log('Tool result:', toolResult);
+      
+      // Add to messages and continue conversation
+      messages.push({
+        role: 'assistant',
+        content: null,
+        tool_calls: [toolCall]
+      });
+      
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCall.id,
+        content: toolResult.content[0].text
+      });
+      
+      // Send updated messages to LLM
+      const followUpResponse = await llmClient.sendMessage(messages, {
+        tools: formattedTools
+      });
+      
+      console.log('Follow-up response:', followUpResponse);
+    }
+  }
+  
+  // Clean up
+  await mcpClient.close();
+}
+
+runBasicLLMIntegration().catch(console.error);
+```
+
+### Multi-Server Client Manager
+
+This example demonstrates managing connections to multiple MCP servers:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+
+class MultiServerManager {
+  private servers: Map<string, { 
+    client: Client, 
+    config: any,
+    capabilities: { 
+      tools: any[], 
+      resources: any[], 
+      resourceTemplates: any[],
+      prompts: any[] 
+    }
+  }> = new Map();
+  
+  async addServer(id: string, config: any): Promise<boolean> {
     try {
-      if (!toolName.includes(".")) {
-        throw new Error(
-          `Tool name ${toolName} must include server prefix`
-        );
-      }
-
-      const [serverName, actualToolName] = toolName.split(".", 2);
-      if (!this.servers.has(serverName)) {
-        throw new Error(`Unknown server: ${serverName}`);
-      }
-
-      const client = this.servers.get(serverName);
-      this.logger.info(
-        `Routing tool call ${toolName} to server ${serverName}`
+      // Create client
+      const client = new Client(
+        { name: 'MultiServerClient', version: '1.0.0' },
+        { capabilities: { tools: {}, resources: {}, prompts: {} } }
       );
-      return await client!.callTool(actualToolName, args);
+      
+      // Create appropriate transport
+      let transport;
+      if (config.type === 'stdio') {
+        transport = new StdioClientTransport({
+          command: config.command,
+          args: config.args || []
+        });
+      } else if (config.type === 'sse') {
+        transport = new SSEClientTransport(new URL(config.url));
+        if (config.headers) {
+          transport.setHeaders(config.headers);
+        }
+      } else {
+        throw new Error(`Unsupported transport type: ${config.type}`);
+      }
+      
+      // Connect and initialize
+      await client.connect(transport);
+      await client.initialize();
+      
+      // Discover capabilities
+      const [tools, resources, prompts] = await Promise.all([
+        client.listTools(),
+        client.listResources(),
+        client.listPrompts()
+      ]);
+      
+      // Store server information
+      this.servers.set(id, {
+        client,
+        config,
+        capabilities: {
+          tools: tools.tools,
+          resources: resources.resources,
+          resourceTemplates: resources.resourceTemplates,
+          prompts: prompts.prompts
+        }
+      });
+      
+      console.log(`Server ${id} added successfully`);
+      return true;
     } catch (error) {
-      this.logger.error(`Error routing tool call ${toolName}:`, error);
+      console.error(`Error adding server ${id}:`, error);
+      return false;
+    }
+  }
+  
+  getClient(id: string): Client | null {
+    return this.servers.get(id)?.client || null;
+  }
+  
+  getServerInfo(id: string): any {
+    return this.servers.get(id);
+  }
+  
+  getServers(): string[] {
+    return Array.from(this.servers.keys());
+  }
+  
+  async removeServer(id: string): Promise<boolean> {
+    const server = this.servers.get(id);
+    if (!server) return false;
+    
+    try {
+      await server.client.close();
+      this.servers.delete(id);
+      console.log(`Server ${id} removed successfully`);
+      return true;
+    } catch (error) {
+      console.error(`Error removing server ${id}:`, error);
+      return false;
+    }
+  }
+  
+  // Get all tools across all servers
+  getAllTools(): { serverId: string, tool: any }[] {
+    const allTools: { serverId: string, tool: any }[] = [];
+    
+    for (const [id, server] of this.servers.entries()) {
+      for (const tool of server.capabilities.tools) {
+        allTools.push({ serverId: id, tool });
+      }
+    }
+    
+    return allTools;
+  }
+  
+  // Find a specific tool across all servers
+  findTool(toolName: string): { serverId: string, tool: any } | null {
+    for (const [id, server] of this.servers.entries()) {
+      const tool = server.capabilities.tools.find(t => t.name === toolName);
+      if (tool) return { serverId: id, tool };
+    }
+    return null;
+  }
+  
+  // Execute a tool on the appropriate server
+  async executeTool(toolName: string, args: any): Promise<any> {
+    const toolInfo = this.findTool(toolName);
+    if (!toolInfo) {
+      throw new Error(`Tool ${toolName} not found on any server`);
+    }
+    
+    const client = this.getClient(toolInfo.serverId);
+    if (!client) {
+      throw new Error(`Client for server ${toolInfo.serverId} not found`);
+    }
+    
+    console.log(`Executing tool ${toolName} on server ${toolInfo.serverId}`);
+    return await client.callTool(toolName, args);
+  }
+  
+  async close(): Promise<void> {
+    const closePromises = Array.from(this.servers.entries()).map(async ([id, server]) => {
+      try {
+        await server.client.close();
+        console.log(`Server ${id} closed successfully`);
+      } catch (error) {
+        console.error(`Error closing server ${id}:`, error);
+      }
+    });
+    
+    await Promise.all(closePromises);
+    this.servers.clear();
+  }
+}
+
+// Example usage
+async function runMultiServerExample() {
+  const manager = new MultiServerManager();
+  
+  // Add servers
+  await manager.addServer('calculator', {
+    type: 'stdio',
+    command: './calculator-server.js'
+  });
+  
+  await manager.addServer('fileSystem', {
+    type: 'stdio',
+    command: './filesystem-server.js'
+  });
+  
+  // List all available tools
+  const allTools = manager.getAllTools();
+  console.log('All available tools:', allTools);
+  
+  // Execute a tool
+  try {
+    const result = await manager.executeTool('add', { a: 5, b: 3 });
+    console.log('Result:', result);
+  } catch (error) {
+    console.error('Error executing tool:', error);
+  }
+  
+  // Clean up
+  await manager.close();
+}
+
+runMultiServerExample().catch(console.error);
+```
+
+### Streaming Response Handler
+
+This example shows how to handle streaming responses for long-running operations:
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { EventEmitter } from 'events';
+
+class StreamingResponseHandler extends EventEmitter {
+  private client: Client;
+  private activeOperations: Map<string, {
+    progress: number,
+    status: string,
+    startTime: number
+  }> = new Map();
+  
+  constructor(client: Client) {
+    super();
+    this.client = client;
+    
+    // Set up notification handler for progress updates
+    this.client.setNotificationHandler(
+      'notifications/progress',
+      (notification) => {
+        const { token, value, message } = notification;
+        
+        // Update operation status
+        const operation = this.activeOperations.get(token);
+        if (operation) {
+          operation.progress = value;
+          operation.status = message || operation.status;
+          
+          // Emit progress event
+          this.emit('progress', {
+            token,
+            progress: value,
+            status: message,
+            elapsedMs: Date.now() - operation.startTime
+          });
+          
+          // If complete, emit completion event
+          if (value === 100) {
+            this.emit('complete', {
+              token,
+              elapsedMs: Date.now() - operation.startTime
+            });
+            
+            // Clean up
+            this.activeOperations.delete(token);
+          }
+        }
+      }
+    );
+  }
+  
+  async callToolWithProgress(toolName: string, args: any): Promise<any> {
+    // Generate operation token
+    const token = `op-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    
+    // Register the operation
+    this.activeOperations.set(token, {
+      progress: 0,
+      status: 'Starting',
+      startTime: Date.now()
+    });
+    
+    // Emit start event
+    this.emit('start', { token, toolName, args });
+    
+    try {
+      // Call the tool with progress tracking
+      const result = await this.client.callTool(
+        toolName,
+        args,
+        { progress: { token } }
+      );
+      
+      // Emit result event
+      this.emit('result', {
+        token,
+        result,
+        elapsedMs: Date.now() - this.activeOperations.get(token)?.startTime || 0
+      });
+      
+      // Clean up if still active
+      if (this.activeOperations.has(token)) {
+        this.activeOperations.delete(token);
+      }
+      
+      return result;
+    } catch (error) {
+      // Emit error event
+      this.emit('error', {
+        token,
+        error,
+        elapsedMs: Date.now() - this.activeOperations.get(token)?.startTime || 0
+      });
+      
+      // Clean up
+      this.activeOperations.delete(token);
+      
       throw error;
     }
   }
-
-  async handleUpdates(): Promise<void> {
-    for (const [serverName, capManager] of this.capabilityManagers) {
-      try {
-        await capManager.refreshAll();
-      } catch (error) {
-        this.logger.error(
-          `Error refreshing capabilities for ${serverName}:`,
-          error
-        );
-      }
-    }
+  
+  getActiveOperations(): Array<{ token: string, progress: number, status: string, elapsedMs: number }> {
+    return Array.from(this.activeOperations.entries()).map(([token, op]) => ({
+      token,
+      progress: op.progress,
+      status: op.status,
+      elapsedMs: Date.now() - op.startTime
+    }));
   }
 }
 
-class MultiServerLLMClient {
-  private serverManager: MultiServerManager;
-  private anthropic: Anthropic;
-  private conversationHistory: Message[] = [];
-  private logger: Console;
-
-  constructor() {
-    this.serverManager = new MultiServerManager();
-    this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || "",
+// Example usage
+async function runStreamingExample() {
+  // Set up client
+  const client = new Client(
+    { name: 'StreamingClient', version: '1.0.0' },
+    { capabilities: { tools: {}, resources: {}, prompts: {} } }
+  );
+  
+  const transport = new StdioClientTransport({
+    command: './long-running-server.js',
+    args: []
+  });
+  
+  await client.connect(transport);
+  await client.initialize();
+  
+  // Create streaming handler
+  const streamingHandler = new StreamingResponseHandler(client);
+  
+  // Set up event handlers
+  streamingHandler.on('start', (data) => {
+    console.log(`Operation ${data.token} started for tool ${data.toolName}`);
+  });
+  
+  streamingHandler.on('progress', (data) => {
+    console.log(`Operation ${data.token}: ${data.progress}% - ${data.status} (${data.elapsedMs}ms)`);
+  });
+  
+  streamingHandler.on('result', (data) => {
+    console.log(`Operation ${data.token} completed in ${data.elapsedMs}ms`);
+    console.log('Result:', data.result);
+  });
+  
+  streamingHandler.on('error', (data) => {
+    console.error(`Operation ${data.token} failed after ${data.elapsedMs}ms`);
+    console.error('Error:', data.error);
+  });
+  
+  // Call a long-running tool
+  try {
+    const result = await streamingHandler.callToolWithProgress('long-process', {
+      duration: 5000, // 5 seconds
+      steps: 10
     });
-    this.logger = console;
+    
+    console.log('Final result:', result);
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    await client.close();
   }
+}
 
-  async shouldCallTool(
-    toolName: string,
-    arguments_: Record<string, any>
-  ): Promise<boolean> {
-    try {
-      const serverName = toolName.split(".")[0];
-      this.logger.info(`Tool call requested: ${toolName}`);
-      this.logger.info(`Server: ${serverName}`);
-      this.logger.info(`Arguments: ${JSON.stringify(arguments_, null, 2)}`);
+runStreamingExample().catch(console.error);
+```
 
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
+### Complete LLM Application
 
-      const answer = await new Promise<string>((resolve) => {
-        rl.question(`Approve tool call to ${toolName}? (y/n): `, resolve);
-      });
+This example shows a complete LLM application that integrates MCP with an LLM service and includes user interaction:
 
-      rl.close();
-      return answer.toLowerCase() === "y";
-    } catch (error) {
-      this.logger.error(`Error in tool approval for ${toolName}:`, error);
-      return false;
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import readline from 'readline';
+
+// Hypothetical LLM client
+class LLMClient {
+  async sendMessage(messages, options = {}) {
+    console.log('Sending to LLM...');
+    
+    // Simulate LLM response
+    // In a real application, you would call your LLM API here
+    if (messages[messages.length - 1].role === 'user' && 
+        messages[messages.length - 1].content.toLowerCase().includes('list')) {
+      // Simulate a tool call request
+      return {
+        id: 'msg_123',
+        role: 'assistant',
+        content: null,
+        tool_calls: [
+          {
+            id: 'call_1',
+            name: 'list_files',
+            arguments: { directory: '.' }
+          }
+        ]
+      };
     }
-  }
-
-  async setupServers(): Promise<void> {
-    const servers: Record<string, string> = {
-      filesystem: "/path/to/filesystem-server.ts",
-      database: "/path/to/database-server.ts",
-      github: "/path/to/github-server.ts",
+    
+    // Normal response
+    return {
+      id: 'msg_123',
+      role: 'assistant',
+      content: 'I\'m a simulated LLM response. Ask about listing files to see tool usage.'
     };
-
-    for (const [name, path] of Object.entries(servers)) {
-      const success = await this.serverManager.addServer(name, path);
-      if (!success) {
-        this.logger.error(`Failed to set up ${name} server`);
-      }
-    }
   }
+}
 
-  async processQuery(userInput: string): Promise<string> {
-    try {
-      const capabilities = this.serverManager.getAggregatedCapabilities();
-
-      let systemPrompt =
-        "You have access to tools from multiple servers:\n\n";
-      for (const tool of capabilities.tools) {
-        systemPrompt += `- ${tool.name}: ${tool.description}\n`;
-        if (tool.inputSchema && tool.inputSchema.properties) {
-          systemPrompt += `  Parameters: ${JSON.stringify(
-            tool.inputSchema.properties,
-            null,
-            2
-          )}\n`;
-        }
+class MCPLLMApplication {
+  private mcpClient: Client;
+  private llmClient: LLMClient;
+  private messages: any[] = [];
+  private toolDefinitions: any[] = [];
+  private rl: readline.Interface;
+  
+  constructor() {
+    this.rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+  }
+  
+  async initialize() {
+    console.log('Initializing MCP client...');
+    
+    // Create and connect MCP client
+    this.mcpClient = new Client(
+      { name: 'CompleteLLMApp', version: '1.0.0' },
+      { capabilities: { tools: {}, resources: {}, prompts: {} } }
+    );
+    
+    const transport = new StdioClientTransport({
+      command: './file-server.js',
+      args: []
+    });
+    
+    await this.mcpClient.connect(transport);
+    await this.mcpClient.initialize();
+    
+    // Create LLM client
+    this.llmClient = new LLMClient();
+    
+    // Discover tools
+    console.log('Discovering tools...');
+    const toolsResult = await this.mcpClient.listTools();
+    
+    // Format tools for LLM
+    this.toolDefinitions = toolsResult.tools.map(tool => ({
+      name: tool.name,
+      description: tool.description || `Tool: ${tool.name}`,
+      parameters: tool.inputSchema
+    }));
+    
+    console.log(`Discovered ${this.toolDefinitions.length} tools`);
+    
+    return this;
+  }
+  
+  async runConversation() {
+    console.log('\nWelcome to the MCP LLM Application!');
+    console.log('Type your messages below. Type "exit" to quit.\n');
+    
+    while (true) {
+      const userMessage = await this.promptUser('You: ');
+      
+      if (userMessage.toLowerCase() === 'exit') {
+        break;
       }
-
-      this.conversationHistory.push({
-        role: "user",
-        content: userInput,
+      
+      // Add user message to history
+      this.messages.push({
+        role: 'user',
+        content: userMessage
       });
-
-      let response = await this.anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1000,
-        messages: this.conversationHistory,
-        system: systemPrompt,
-        tools: capabilities.tools,
+      
+      // Send to LLM
+      const llmResponse = await this.llmClient.sendMessage(this.messages, {
+        tools: this.toolDefinitions
       });
-
-      let finalResponse = "";
-      for (const content of response.content) {
-        if (content.type === "text") {
-          finalResponse += content.text;
-        } else if (content.type === "tool_use") {
-          try {
-            const result = await this.serverManager.routeToolCall(
-              content.name,
-              content.input
-            );
-
-            this.conversationHistory.push({
-              role: "assistant",
-              content: [content],
-            });
-            this.conversationHistory.push({
-              role: "user",
-              content: result.content,
-            });
-
-            response = await this.anthropic.messages.create({
-              model: "claude-3-5-sonnet-20241022",
-              max_tokens: 1000,
-              messages: this.conversationHistory,
-              system: systemPrompt,
-            });
-
-            for (const content of response.content) {
-              if (content.type === "text") {
-                finalResponse += content.text;
-              }
+      
+      // Check for tool calls
+      if (llmResponse.tool_calls && llmResponse.tool_calls.length > 0) {
+        console.log('\nAssistant wants to use tools:');
+        
+        // Process each tool call
+        for (const toolCall of llmResponse.tool_calls) {
+          console.log(`- ${toolCall.name} with args: ${JSON.stringify(toolCall.arguments)}`);
+          
+          // Ask for approval
+          const approved = await this.promptYesNo('Approve tool execution? (y/n): ');
+          
+          if (approved) {
+            console.log(`Executing tool ${toolCall.name}...`);
+            
+            try {
+              // Call the tool
+              const toolResult = await this.mcpClient.callTool(toolCall.name, toolCall.arguments);
+              
+              // Add tool call to history
+              this.messages.push({
+                role: 'assistant',
+                content: null,
+                tool_calls: [
+                  {
+                    id: toolCall.id,
+                    name: toolCall.name,
+                    arguments: JSON.stringify(toolCall.arguments)
+                  }
+                ]
+              });
+              
+              // Add tool result to history
+              this.messages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: toolResult.isError ? 
+                  `Error: ${toolResult.content[0].text}` : 
+                  toolResult.content[0].text
+              });
+              
+              console.log('Tool result:', toolResult.content[0].text);
+            } catch (error) {
+              console.error(`Error executing tool: ${error.message}`);
+              
+              // Add error to history
+              this.messages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: `Error: ${error.message}`
+              });
             }
-          } catch (error) {
-            const errorMsg = `\nError executing tool ${content.name}: ${error}`;
-            this.logger.error(errorMsg);
-            finalResponse += errorMsg;
+          } else {
+            console.log('Tool execution denied.');
+            
+            // Add denial to history
+            this.messages.push({
+              role: 'system',
+              content: `Tool call to ${toolCall.name} was denied by the user.`
+            });
           }
         }
-      }
-
-      this.conversationHistory.push({
-        role: "assistant",
-        content: finalResponse,
-      });
-
-      return finalResponse;
-    } catch (error) {
-      const errorMsg = `Error processing query: ${error}`;
-      this.logger.error(errorMsg);
-      return errorMsg;
-    }
-  }
-}
-
-async function exampleWorkflow() {
-  const client = new MultiServerLLMClient();
-  await client.setupServers();
-
-  const response = await client.processQuery(
-    "Find all Python files in the project, analyze their complexity, " +
-      "and create a GitHub issue if any file exceeds cyclomatic complexity of 15"
-  );
-
-  console.log(response);
-}
-
-exampleWorkflow().catch((error) => {
-  console.error("Error in example workflow:", error);
-});
-```
-
-This architecture enables complex workflows that combine capabilities from multiple servers while maintaining clear boundaries and robust error handling.
-
-### 5.8. Tool Error Objects
-
-Servers can use the `isError` flag in tool results to indicate tool-level errors.
-
-**Example (TypeScript):**
-
-```typescript
-import { type CallToolResult } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function performOperation(): Promise<any> {
-  // Simulate an operation that might fail
-  throw new Error("Operation failed");
-}
-
-async function handleToolCall(): Promise<CallToolResult> {
-  try {
-    // Tool operation
-    const result = await performOperation();
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Operation successful: ${result}`,
-        },
-      ],
-    };
-  } catch (error) {
-    return {
-      isError: true, // Indicate a tool error
-      content: [
-        {
-          type: "text",
-          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-    };
-  }
-}
-```
-
-### 5.9. Handling List Endpoint Updates
-
-MCP servers can notify clients about changes in their available capabilities through notifications:
-
-*   `notifications/tools/list_changed`: Tools have been added, removed, or modified
-*   `notifications/prompts/list_changed`: Prompts have been updated
-*   `notifications/resources/list_changed`: Resources have changed
-
-Clients should handle these notifications to maintain an up-to-date view of server capabilities:
-
-```typescript
-import { Client, Tool, Prompt, Resource, ResourceTemplate } from "@modelcontextprotocol/sdk/client/index.js";
-
-class MCPCapabilityManager {
-  private client: Client;
-  private capabilities: {
-    tools?: Tool[];
-    prompts?: Prompt[];
-    resources?: Resource[];
-    resourceTemplates?: ResourceTemplate[];
-  } = {};
-  private lastUpdate: number | null = null;
-
-  constructor(client: Client) {
-    this.client = client;
-
-    // Set up notification handlers
-    client.setNotificationHandler(
-      "notifications/tools/list_changed",
-      this.handleToolsChanged.bind(this)
-    );
-    client.setNotificationHandler(
-      "notifications/prompts/list_changed",
-      this.handlePromptsChanged.bind(this)
-    );
-    client.setNotificationHandler(
-      "notifications/resources/list_changed",
-      this.handleResourcesChanged.bind(this)
-    );
-  }
-
-  async refreshAll(): Promise<void> {
-    await this.refreshTools();
-    await this.refreshPrompts();
-    await this.refreshResources();
-    this.lastUpdate = Date.now();
-  }
-
-  async refreshTools(): Promise<void> {
-    try {
-      const tools = await this.client.listTools();
-      this.capabilities.tools = tools.tools;
-    } catch (error) {
-      console.error("Error refreshing tools:", error);
-    }
-  }
-
-  async refreshPrompts(): Promise<void> {
-    try {
-      const prompts = await this.client.listPrompts();
-      this.capabilities.prompts = prompts.prompts;
-    } catch (error) {
-      console.error("Error refreshing prompts:", error);
-    }
-  }
-
-  async refreshResources(): Promise<void> {
-    try {
-      const resources = await this.client.listResources();
-      this.capabilities.resources = resources.resources;
-      this.capabilities.resourceTemplates = resources.resourceTemplates;
-    } catch (error) {
-      console.error("Error refreshing resources:", error);
-    }
-  }
-
-  async handleToolsChanged(): Promise<void> {
-    console.log("Tools list changed, refreshing...");
-    await this.refreshTools();
-  }
-
-  async handlePromptsChanged(): Promise<void> {
-    console.log("Prompts list changed, refreshing...");
-    await this.refreshPrompts();
-  }
-
-  async handleResourcesChanged(): Promise<void> {
-    console.log("Resources list changed, refreshing...");
-    await this.refreshResources();
-  }
-
-  getCapabilities(): {
-    available_tools: {
-      name: string;
-      description: string;
-      parameters: any;
-    }[];
-    available_prompts: {
-      name: string;
-      description: string;
-      arguments: any;
-    }[];
-    available_resources: {
-      name: string;
-      uri: string;
-      description: string;
-    }[];
-  } {
-    return {
-      available_tools: (this.capabilities.tools || []).map((t) => ({
-        name: t.name,
-        description: t.description,
-        parameters: t.inputSchema,
-      })),
-      available_prompts: (this.capabilities.prompts || []).map((p) => ({
-        name: p.name,
-        description: p.description,
-        arguments: p.arguments,
-      })),
-      available_resources: (this.capabilities.resources || []).map((r) => ({
-        name: r.name,
-        uri: r.uri,
-        description: r.description,
-      })),
-    };
-  }
-}
-```
-
-This capability manager:
-
-1. Maintains an up-to-date cache of server capabilities
-2. Automatically refreshes capabilities when notified of changes
-3. Handles errors during refresh operations
-4. Provides formatted capabilities for LLM context
-5. Tracks the last update time for cache management
-
-When using multiple servers, each server should have its own capability manager instance to track its specific capabilities independently.
-
-## 6. Error Handling, Security, and Best Practices
-
-### 6.1. Error Handling
-
-*   **JSON-RPC Error Codes:** MCP uses standard JSON-RPC 2.0 error codes:
-    *   `ParseError` (-32700): Invalid JSON was received.
-    *   `InvalidRequest` (-32600): The JSON sent is not a valid request object.
-    *   `MethodNotFound` (-32601): The method does not exist or is not available.
-    *   `InvalidParams` (-32602): Invalid method parameters.
-    *   `InternalError` (-32603): Internal JSON-RPC error.
-*   **Tool Errors:** Tools should not raise protocol-level errors for logic issues. Instead, they should return a result object with `isError: true` and include error details in the `content` field.
-*   **Graceful Degradation:** Clients should handle transport errors (e.g., server disconnects, timeouts) gracefully. Implement reconnection logic where appropriate.
-
-**Example: Handling JSON-RPC Errors (TypeScript):**
-
-```typescript
-import { Client, type Request, type Response, McpError } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function handleRequest(client: Client, request: Request): Promise<Response> {
-  try {
-    // Process the request
-    const response = await processRequest(request);
-    return response;
-  } catch (error) {
-    if (error instanceof McpError) {
-      if (error.code === -32601) {
-        console.error(`Method not found: ${error.message}`);
-        // Handle method not found error
-      } else if (error.code === -32602) {
-        console.error(`Invalid parameters: ${error.message}`);
-        // Handle invalid parameters error
+        
+        // Get final response with tool results
+        const finalResponse = await this.llmClient.sendMessage(this.messages, {
+          tools: this.toolDefinitions
+        });
+        
+        console.log('\nAssistant:', finalResponse.content);
+        
+        // Add final response to history
+        this.messages.push({
+          role: 'assistant',
+          content: finalResponse.content
+        });
       } else {
-        console.error(`An error occurred: ${error.message}`);
-        // Handle other errors
+        // Normal response
+        console.log('\nAssistant:', llmResponse.content);
+        
+        // Add response to history
+        this.messages.push({
+          role: 'assistant',
+          content: llmResponse.content
+        });
       }
-    } else {
-      console.error(`Unexpected error: ${error}`);
-      // Handle unexpected errors
+      
+      console.log(); // Empty line for readability
     }
-    // Return an appropriate error response
-    return {
-      jsonrpc: "2.0",
-      id: request.id,
-      error: {
-        code: -32000, // Custom error code
-        message: "An error occurred while processing the request.",
-      },
-    };
+    
+    console.log('Goodbye!');
+  }
+  
+  async close() {
+    this.rl.close();
+    await this.mcpClient.close();
+  }
+  
+  private promptUser(prompt: string): Promise<string> {
+    return new Promise(resolve => {
+      this.rl.question(prompt, answer => {
+        resolve(answer);
+      });
+    });
+  }
+  
+  private async promptYesNo(prompt: string): Promise<boolean> {
+    const answer = await this.promptUser(prompt);
+    return answer.toLowerCase().startsWith('y');
   }
 }
-```
 
-### 6.2. Security
-
-1. **Transport Security:**
-    *   Use TLS when connecting to remote servers over a network.
-    *   Validate the server's identity to prevent man-in-the-middle attacks.
-2. **Tool/Resource Access:**
-    *   **Principle of Least Privilege:** Servers should only expose the minimum necessary tools and resources.
-    *   **User Approval:** Obtain user confirmation before executing potentially destructive or sensitive tool calls.
-    *   **Rate Limiting:** Implement rate limiting to prevent abuse and control resource usage.
-3. **Prompt Injection:**
-    *   Be aware that malicious prompts could trick the LLM into calling unauthorized tools or revealing sensitive information.
-    *   Log and monitor prompt usage for suspicious patterns.
-    *   Consider using a separate, restricted LLM for tool selection and execution.
-    *   Implement strict input sanitization.
-4. **Input Validation:**
-    *   Validate *all* inputs received from servers (tool arguments, resource content, prompt data) against their respective schemas.
-    *   Sanitize inputs to prevent injection attacks.
-    *   Use schema validation libraries like `zod`.
-
-**Example: Input Validation with Zod (TypeScript):**
-
-```typescript
-import { z } from "zod";
-
-const toolArgsSchema = z.object({
-  filepath: z.string().refine((val) => !val.includes("..") && !val.startsWith("/"), {
-    message: "Invalid filepath",
-  }),
-  operation: z.enum(["read", "write"]),
-});
-
-type ToolArgs = z.infer<typeof toolArgsSchema>;
-
-function validateToolArgs(args: any): ToolArgs {
+// Run the application
+async function main() {
+  const app = new MCPLLMApplication();
+  
   try {
-    return toolArgsSchema.parse(args);
+    await app.initialize();
+    await app.runConversation();
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error("Invalid tool arguments:", error.errors);
-    }
-    throw new Error("Invalid tool arguments");
+    console.error('Application error:', error);
+  } finally {
+    await app.close();
   }
 }
+
+main();
 ```
 
-### 6.3. Performance & Logging
-
-*   **Logging:** Log all MCP requests, responses, and errors to aid in debugging and monitoring. Differentiate between protocol-level events and application-level events. Use structured logging to make logs easier to parse and analyze.
-*   **Timeouts:** Implement timeouts for tool calls and other long-running operations to prevent the client from hanging indefinitely.
-*   **Concurrency:** If handling multiple requests concurrently, use appropriate synchronization mechanisms (e.g., locks, queues) to avoid race conditions. Consider limiting the number of simultaneous requests to prevent resource exhaustion.
-*   **Resource Management:** Ensure that resources (e.g., file handles, network connections) are properly released when no longer needed. Use `try...finally` blocks or resource management patterns to ensure proper cleanup.
-
-**Example: Logging (TypeScript):**
-
-```typescript
-import { Client, type Request, type Response } from "@modelcontextprotocol/sdk/client/index.js";
-
-async function handleRequest(client: Client, request: Request): Promise<Response> {
-  console.info(`Received request: ${request.method}`);
-  try {
-    const response = await processRequest(request);
-    console.info(`Sending response: ${JSON.stringify(response)}`);
-    return response;
-  } catch (error) {
-    console.error(`Error processing request: ${error}`);
-    // Handle error and return an appropriate error response
-    return {
-      jsonrpc: "2.0",
-      id: request.id,
-      error: {
-        code: -32000,
-        message: "An error occurred while processing the request.",
-      },
-    };
-  }
-}
-```
-
-### 6.4. Best Practices
-
-*   **Schema Validation:** Use schema validation (e.g., `zod`) to ensure that tool arguments and other data structures conform to the expected format.
-*   **Modular Design:** Keep your MCP client code separate from your LLM interaction logic. This improves maintainability and allows you to reuse your client with different LLMs or applications.
-*   **Asynchronous Operations:** Utilize asynchronous programming (`async/await`) to avoid blocking the main thread during network operations or long tool calls.
-*   **Error Handling:** Implement comprehensive error handling to gracefully manage unexpected situations and provide informative feedback to the user or LLM.
-*   **Testing:** Thoroughly test your client implementation, including edge cases, error scenarios, and interactions with different types of servers.
-
-## 7. Debugging and Next Steps
-
-### 7.1. Debugging Tools
-
-*   **MCP Inspector:** A command-line tool for interactively connecting to MCP servers, sending requests, and inspecting responses. This is invaluable for testing and debugging both clients and servers.
-
-## 8. Conclusion
-
-You've now reached the end of this MCP client guide! I hope it's been helpful and you're feeling ready to build something great. Don't forget to share your feedback on the GitHub repo if you have any suggestions. Good luck, and have fun with MCP!
+These example implementations demonstrate how to build sophisticated MCP clients that integrate with LLMs, manage multiple servers, handle streaming responses, and provide complete user experiences.
