@@ -1,9 +1,9 @@
 # Model Context Protocol (MCP) Client Development Guide: Building Robust and Flexible LLM Integrations
 
-[![Website](https://img.shields.io/badge/Website-modelcontextprotocol.io-blue)](https://modelcontextprotocol.io/)
-[![MCP TypeScript SDK](https://img.shields.io/badge/TypeScript_SDK-v1.6.1-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP Python SDK](https://img.shields.io/badge/Python_SDK-v1.3.0-blue)](https://github.com/modelcontextprotocol/python-sdk)
-[![MCP Kotlin SDK](https://img.shields.io/badge/Kotlin_SDK-v0.3.0-blue)](https://github.com/modelcontextprotocol/kotlin-sdk)
+[![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
+[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
 This guide provides a comprehensive overview of building clients for the **Model Context Protocol (MCP)** using the TypeScript SDK. It covers everything from basic setup to advanced topics, with practical examples and best practices.
