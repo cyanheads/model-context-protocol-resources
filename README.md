@@ -1,8 +1,8 @@
 # Model Context Protocol Resources & Guides
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
-[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk) 
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.7.0-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
 [![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
@@ -18,6 +18,7 @@ A collection of guides, clients, and servers for the Model Context Protocol (MCP
   - [Mentor](#mentor-mcp-server)
   - [Obsidian](#obsidian-mcp-server)
   - [Git](#git-mcp-server)
+  - [GitHub](#github-mcp-server)
 - [Getting Started](#getting-started)
 - [License](#license)
 
@@ -67,18 +68,21 @@ Looking to build your own MCP server? Check out my comprehensive [MCP Server Dev
 **ATLAS** (Adaptive Task & Logic Automation System) is a comprehensive project management system for LLMs with:
 
 - 📋 **Project Management**
+
   - Lifecycle management with metadata and status tracking
   - Dependency handling with automatic validation
   - Rich content support with bulk operations
   - Advanced property-based search with fuzzy matching
 
 - 🤝 **Collaboration**
+
   - Member & role management with permission controls
   - Resource sharing and activity tracking
   - Real-time collaborative whiteboard with version history
   - Relationship mapping between projects and resources
 
 - 🔍 **Graph Database**
+
   - Neo4j-powered relationship management
   - ACID-compliant transactions
   - Optimized caching and batch operations
@@ -94,6 +98,7 @@ Looking to build your own MCP server? Check out my comprehensive [MCP Server Dev
 A comprehensive system utilities toolkit for LLM Agents featuring:
 
 - 🌍 **Network & System Tools**
+
   - IP geolocation with smart caching
   - Network diagnostics and connectivity testing
   - System resource monitoring
@@ -137,6 +142,26 @@ A secure Git operations interface for LLMs that provides:
 
 - 🔄 **Complete Git Workflow**: Repository, branch, and tag management
 - 🚀 **Smart Operations**: Bulk actions, intelligent defaults, safety validations
+
+### GitHub MCP Server
+
+[![GitHub](https://img.shields.io/badge/GitHub-github--mcp--server-blue.svg)](https://github.com/cyanheads/github-mcp-server)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://github.com/anthropics/modelcontextprotocol)
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
+
+A comprehensive GitHub API interface for LLMs that provides tools for:
+
+- 📁 **Repository Management**: Create, list, and get repository information
+- 🌿 **Branch Management**: Create, delete, and list branches with protected branch support
+- 🔖 **Issue Management**: Create and list issues with filtering by status and labels
+- 🔄 **Pull Request Management**: Full PR lifecycle with merge options (merge, squash, rebase)
+- 📝 **File Management**: Create and update repository content with commit messages
+- 🚀 **Release Management**: Create tagged releases with draft and prerelease support
+
+> Features atomic feature-oriented architecture with comprehensive validation, error handling,
+> and GitHub API rate limit protection. Uses a consistent response format for all operations
+> that includes proper categorization and metadata.
 
 ## 🚀 Getting Started
 
