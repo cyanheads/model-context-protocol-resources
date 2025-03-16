@@ -34,7 +34,7 @@ The Model Context Protocol (MCP) is a standardized communication protocol enabli
 
 ## 📚 MCP Guides
 
-### MCP Client Development
+### [MCP Client Development Guide](guides/mcp-client-development-guide.md)
 
 Looking to build your own MCP client? Check out my comprehensive [MCP Client Development Guide](guides/mcp-client-development-guide.md) that covers:
 
@@ -45,7 +45,7 @@ Looking to build your own MCP client? Check out my comprehensive [MCP Client Dev
 - Step-by-step implementation examples in Python and TypeScript
 - Advanced topics like sampling and multi-server connections
 
-### MCP Server Development
+### [MCP Server Development Guide](guides/mcp-server-development-guide.md)
 
 Looking to build your own MCP server? Check out my comprehensive [MCP Server Development Guide](guides/mcp-server-development-guide.md) that covers:
 
@@ -59,7 +59,7 @@ Looking to build your own MCP server? Check out my comprehensive [MCP Server Dev
 
 ## 🛠️ MCP Utilities
 
-### MCP Reporter
+### [MCP Reporter](https://github.com/cyanheads/mcp-reporter)
 
 [![GitHub](https://img.shields.io/badge/GitHub-mcp--reporter-blue.svg)](https://github.com/cyanheads/mcp-reporter)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
@@ -92,7 +92,7 @@ A utility I've developed for generating comprehensive reports about Model Contex
 
 ## 🛠️ MCP Servers
 
-### Atlas MCP Server
+### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-atlas--mcp--server-blue.svg)](https://github.com/cyanheads/atlas-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
@@ -141,7 +141,7 @@ ATLAS (Adaptive Task & Logic Automation System) is a Model Context Protocol serv
 
 > **Important Version Note**: Version 1.5.4 is the last version that uses SQLite as the database. Version 2.0 and onwards has been completely rewritten to use Neo4j, which requires either self-hosting using Docker (docker-compose included in repository) or using Neo4j AuraDB cloud service.
 
-### Toolkit MCP Server
+### [Toolkit MCP Server](https://github.com/cyanheads/toolkit-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-toolkit--mcp--server-blue.svg)](https://github.com/cyanheads/toolkit-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
@@ -183,7 +183,7 @@ A Model Context Protocol server providing LLM Agents with system utilities and t
 > All cryptographic operations use Node.js native crypto module for maximum security and performance.
 > Can be easily installed via npm or from source with minimal configuration required.
 
-### Mentor MCP Server
+### [Mentor MCP Server](https://github.com/cyanheads/mentor-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-mentor--mcp--server-blue.svg)](https://github.com/cyanheads/mentor-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
@@ -230,7 +230,7 @@ A Model Context Protocol server providing LLM Agents a second opinion via AI-pow
 > Configurable with timeout settings, retry mechanisms, and token limits for optimal performance.
 > Implements request rate limiting and response caching to ensure efficient API usage.
 
-### Obsidian MCP Server
+### [Obsidian MCP Server](https://github.com/cyanheads/obsidian-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-obsidian--mcp--server-blue.svg)](https://github.com/cyanheads/obsidian-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
@@ -274,7 +274,7 @@ A Model Context Protocol server designed for LLMs to interact with Obsidian vaul
 > Features secure vault access with proper permission boundaries and validation.
 > Supports all Obsidian markdown features including links, embeds, and custom syntax.
 
-### Git MCP Server
+### [Git MCP Server](https://github.com/cyanheads/git-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-git--mcp--server-blue.svg)](https://github.com/cyanheads/git-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
@@ -323,7 +323,7 @@ A Model Context Protocol (MCP) server that provides tools for interacting with G
 > Features standardized error handling, comprehensive validation, and consistent resource URIs
 > for accessing repository information, branches, remotes, tags, files, diffs, and commits.
 
-### GitHub MCP Server
+### [GitHub MCP Server](https://github.com/cyanheads/github-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-github--mcp--server-blue.svg)](https://github.com/cyanheads/github-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
