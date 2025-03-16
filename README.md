@@ -6,12 +6,13 @@
 [![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
 
-A collection of guides, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard. It's a work in progress, and I'll be adding more resources and servers as I continue to experiment and learn. Feel free to reach out if you have any questions or suggestions! Thanks for stopping by! 🚀
+A collection of guides, utilities, clients, and servers for the Model Context Protocol (MCP) that I've developed while exploring and implementing this powerful standard. It's a work in progress, and I'll be adding more as I continue to experiment and learn. Feel free to reach out if you have any questions! Thanks for stopping by! 🚀
 
 ## 📋 Table of Contents
 
 - [Introduction to MCP](#introduction-to-mcp)
-- [Guides](#guides)
+- [MCP Guides](#mcp-guides)
+- [MCP Utilities](#mcp-utilities)
 - [MCP Servers](#mcp-servers)
   - [Atlas](#atlas-mcp-server)
   - [Toolkit](#toolkit-mcp-server)
@@ -31,7 +32,7 @@ The Model Context Protocol (MCP) is a standardized communication protocol enabli
 - **Security & Control**: Provides structured access patterns with built-in validation
 - **Extensibility**: Easy to implement new capabilities as system requirements evolve
 
-## 📚 Guides
+## 📚 MCP Guides
 
 ### MCP Client Development
 
@@ -56,7 +57,40 @@ Looking to build your own MCP server? Check out my comprehensive [MCP Server Dev
 - Troubleshooting and resources
 - Example implementations
 
-## 🖥️ MCP Servers
+## 🛠️ MCP Utilities
+
+### MCP Reporter
+
+[![GitHub](https://img.shields.io/badge/GitHub-mcp--reporter-blue.svg)](https://github.com/cyanheads/mcp-reporter)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
+[![GitHub](https://img.shields.io/github/stars/cyanheads/mcp-reporter?style=social)](https://github.com/cyanheads/mcp-reporter)
+
+A utility I've developed for generating comprehensive reports about Model Context Protocol (MCP) server capabilities, helping developers understand what functionality is available across their MCP server ecosystem. Can also be used programmatically to generate reports for documentation or for feeding into other tools.
+
+- 📊 **Server Analysis**
+
+  - Automatic discovery of all enabled MCP servers
+  - Detailed capability extraction (tools, resources, templates)
+  - Real-time progress monitoring during execution
+  - Comprehensive metadata collection
+
+- 📝 **Report Generation**
+
+  - Well-structured markdown documentation
+  - Detailed input schema documentation
+  - Examples of tool and resource usage
+  - Organized by server with consistent formatting
+
+- 🔧 **Integration Options**
+  - Command-line interface with customizable options
+  - Programmatic API for integration with other tools
+  - Configurable output format and location
+
+## 🛠️ MCP Servers
 
 ### Atlas MCP Server
 
