@@ -11,6 +11,7 @@ A collection of guides, utilities, clients, and servers for the Model Context Pr
 ## 📋 Table of Contents
 
 - [Introduction to MCP](#introduction-to-mcp)
+- [MCP TypeScript Template](#mcp-typescript-template)
 - [MCP Guides](#mcp-guides)
 - [MCP Utilities](#mcp-utilities)
 - [MCP Servers](#mcp-servers)
@@ -32,7 +33,107 @@ The Model Context Protocol (MCP) is a standardized communication protocol enabli
 - **Security & Control**: Provides structured access patterns with built-in validation
 - **Extensibility**: Easy to implement new capabilities as system requirements evolve
 
-## 📚 MCP Guides
+For a more in-depth introduction to MCP, including its design philosophy and technical details, [check out the specification](https://modelcontextprotocol.io/).
+
+## 🚀 [MCP TypeScript Template Repo](https://github.com/cyanheads/mcp-ts-template)
+
+### ✨ Just Launched! The Ultimate Starter Kit for building MCP Servers ✨
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)](https://github.com/cyanheads/mcp-ts-template/issues)
+[![GitHub](https://img.shields.io/github/stars/cyanheads/mcp-ts-template?style=social)](https://github.com/cyanheads/mcp-ts-template)
+
+This is a **TypeScript template** for building Model Context Protocol (MCP) servers. It provides a solid foundation for creating your own MCP server, complete with best practices, utilities, and a modular architecture.
+
+**Whether you're a beginner or an experienced developer**, this template is designed to help you get started quickly and efficiently.
+
+**Perfect for vibe code sessions** - grab this template and your LLM coding agent will instantly understand the architecture and patterns, allowing an easy and efficient MCP server development experience.
+
+### What's Inside?
+
+- **Rock-solid Architecture**: A carefully crafted structure designed for scalability and maintainability
+- **Production-ready Utilities**: Logging, error handling, ID generation, and more - all battle-tested and ready to go
+- **Type Safety**: Comprehensive TypeScript typing to catch errors before they happen
+- **Security First**: Built-in protection against common vulnerabilities
+- **Working Examples**: Fully implemented MCP server tools and resources you can use as reference
+- **Developer Cheat Sheet**: A `.clinerules` file to help your LLM coding agent understand the project instantly
+
+### Get Started in 30 Seconds:
+
+```bash
+git clone https://github.com/cyanheads/mcp-ts-template.git
+cd mcp-ts-template
+npm install
+npm run build
+// Add the MCP server to your client configuration
+```
+
+### Who Should Use This?
+
+- **MCP Beginners**: Skip the learning curve and start with best practices
+- **Experienced Developers**: Save time and focus on your unique features
+- **Teams**: Ensure consistent patterns across your MCP ecosystem
+- **LLM Enthusiasts**: Get to know MCP and give your AI assistant the perfect starting point
+
+### Core Architecture
+
+The template follows a modular architecture designed for clarity and extensibility:
+
+<details>
+<summary>Click to expand architecture diagram</summary>
+
+```mermaid
+flowchart TB
+    subgraph API["API Layer"]
+        direction LR
+        MCP["MCP Protocol"]
+        Val["Validation"]
+        San["Sanitization"]
+
+        MCP --> Val --> San
+    end
+
+    subgraph Core["Core Components"]
+        direction LR
+        Config["Configuration"]
+        Logger["Logging System"]
+        Error["Error Handling"]
+        Server["MCP Server"]
+
+        Config --> Server
+        Logger --> Server
+        Error --> Server
+    end
+
+    subgraph Implementation["Implementation Layer"]
+        direction LR
+        Tool["Tools"]
+        Resource["Resources"]
+        Util["Utilities"]
+
+        Tool --> Server
+        Resource --> Server
+        Util --> Tool
+        Util --> Resource
+    end
+
+    San --> Config
+    San --> Server
+
+    classDef layer fill:#2d3748,stroke:#4299e1,stroke-width:3px,rx:5,color:#fff
+    classDef component fill:#1a202c,stroke:#a0aec0,stroke-width:2px,rx:3,color:#fff
+    class API,Core,Implementation layer
+    class MCP,Val,San,Config,Logger,Error,Server,Tool,Resource,Util component
+```
+
+</details>
+
+Try out this template and build your first MCP server! Check out the [repo documentation](https://github.com/cyanheads/mcp-ts-template) for more details.
+
+## 🛠️ MCP Guides
 
 ### [MCP Client Development Guide](guides/mcp-client-development-guide.md)
 
