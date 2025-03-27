@@ -187,51 +187,50 @@ A utility I've developed for generating comprehensive reports about Model Contex
 ### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-atlas--mcp--server-blue.svg)](https://github.com/cyanheads/atlas-mcp-server)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-2.1.3-blue.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-2.5.0-blue.svg)](https://github.com/cyanheads/atlas-mcp-server/releases)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/atlas-mcp-server?style=social)](https://github.com/cyanheads/atlas-mcp-server)
 
-ATLAS (Adaptive Task & Logic Automation System) is a Model Context Protocol server designed for LLMs to manage complex projects. Built with TypeScript and featuring Neo4j graph database integration, efficient project management, and collaborative features, ATLAS provides LLM Agents project management capabilities through a clean, flexible tool interface.
+ATLAS (Adaptive Task & Logic Automation System) is a task management system for LLM Agents, built on a three-tier architecture integrating Projects, Tasks, and Knowledge. Implemented as a Model Context Protocol server, ATLAS enables AI assistants to manage complex projects through a standardized interface.
 
 - 📋 **Project Management**
 
-  - Lifecycle management with metadata and status tracking
+  - Comprehensive tracking with metadata, status, and rich content
   - Dependency handling with automatic validation
-  - Rich content support with bulk operations
-  - Comprehensive tracking with project metadata and statuses
   - Bulk operations support for efficient management
+  - URL management for external resources and documentation
 
-- 🤝 **Collaboration**
+- ✅ **Task Management**
 
-  - Member & role management with permission controls
-  - Resource sharing and activity tracking
-  - Real-time collaborative whiteboard with version history
-  - Role-based access control (owner, admin, member, viewer)
+  - Task lifecycle management with prioritization
+  - Categorization with tags for better organization
+  - Dependency tracking for structured workflows
+  - Assignment and ownership tracking
 
-- 🔍 **Graph Database**
+- 🧠 **Knowledge Management**
 
-  - Neo4j-powered relationship management
-  - ACID-compliant transactions
-  - Optimized caching and batch operations
-  - Advanced property-based search with fuzzy matching
+  - Structured knowledge repository linked to projects
+  - Domain categorization and tagging for easy retrieval
+  - Citation support for tracking information sources
+  - Searchable content with context preservation
 
-- 🖌️ **Whiteboard System**
+- 🔍 **Graph Database Integration**
 
-  - Real-time collaboration capabilities
-  - Version control with history tracking
-  - Schema validation for data integrity
-  - Seamless project integration
+  - Neo4j-powered native relationship management
+  - ACID-compliant transactions ensuring data integrity
+  - Advanced search with fuzzy matching and wildcards
+  - High performance with optimized query patterns
 
-- 🧠 **ATLAS Skills**
-  - Modular knowledge and best practices system
-  - Hierarchical organization with dependency resolution
-  - Base, language/framework, and tool-specific categories
-  - Customizable parameters for project needs
+- 🔎 **Unified Search**
+  - Cross-entity search spanning projects, tasks, and knowledge
+  - Property-based filtering and case-insensitive options
+  - Content relevance scoring and contextual results
+  - Full-text search with fuzzy matching support
 
-> **Important Version Note**: Version 1.5.4 is the last version that uses SQLite as the database. Version 2.0 and onwards has been completely rewritten to use Neo4j, which requires either self-hosting using Docker (docker-compose included in repository) or using Neo4j AuraDB cloud service.
+> **Important Version Note**: Version 1.5.4 is the last version that uses SQLite as the database. Version 2.0 and onwards has been completely rewritten to use Neo4j, which requires either self-hosting using Docker (docker-compose included in repository) or using Neo4j AuraDB cloud service: https://neo4j.com/product/auradb/. Version 2.5.0 introduces a new 3-node system (Projects, Tasks, Knowledge) that replaces the previous structure.
 
 ### [Toolkit MCP Server](https://github.com/cyanheads/toolkit-mcp-server)
 
