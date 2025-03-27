@@ -21,6 +21,7 @@ A collection of guides, utilities, clients, and servers for the Model Context Pr
   - [Obsidian](#obsidian-mcp-server)
   - [Git](#git-mcp-server)
   - [GitHub](#github-mcp-server)
+  - [Ntfy](#ntfy-mcp-server)
 - [Getting Started](#getting-started)
 - [License](#license)
 
@@ -60,16 +61,6 @@ This is a **TypeScript template** for building Model Context Protocol (MCP) serv
 - **Security First**: Built-in protection against common vulnerabilities
 - **Working Examples**: Fully implemented MCP server tools and resources you can use as reference
 - **Developer Cheat Sheet**: A `.clinerules` file to help your LLM coding agent understand the project instantly
-
-### Get Started in 30 Seconds:
-
-```bash
-git clone https://github.com/cyanheads/mcp-ts-template.git
-cd mcp-ts-template
-npm install
-npm run build
-// Add the MCP server to your client configuration
-```
 
 ### Who Should Use This?
 
@@ -493,6 +484,53 @@ A Model Context Protocol (MCP) server that provides tools for interacting with t
 > Requires a GitHub personal access token with appropriate permissions.
 > Implements robust error handling with standardized error objects and detailed logging.
 > Features automatic rate limit handling to prevent GitHub API throttling.
+
+### [Ntfy MCP Server](https://github.com/cyanheads/ntfy-mcp-server)
+
+[![GitHub](https://img.shields.io/badge/GitHub-ntfy--mcp--server-blue.svg)](https://github.com/cyanheads/ntfy-mcp-server)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.2-blue.svg)](https://github.com/cyanheads/ntfy-mcp-server/releases)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)](https://github.com/cyanheads/ntfy-mcp-server)
+[![GitHub](https://img.shields.io/github/stars/cyanheads/ntfy-mcp-server?style=social)](https://github.com/cyanheads/ntfy-mcp-server)
+
+An MCP server designed to interact with the [ntfy](https://ntfy.sh/) push notification service. It enables LLMs and AI agents to send notifications to your devices with extensive customization options.
+
+- 📱 **Push Notifications**
+
+  - Send notifications to mobile and desktop devices
+  - Support for customizable priorities (1-5 levels)
+  - Emoji tags for quick visual categorization
+  - Title and message customization
+  - Clickable notification actions
+
+- 🔔 **Advanced Features**
+
+  - Action buttons with multiple types (view, http, broadcast)
+  - File attachments with custom naming
+  - Delayed delivery scheduling
+  - Email forwarding options
+  - Firebase Cloud Messaging integration
+
+- 📊 **Configuration Options**
+
+  - Custom ntfy server URL support
+  - Default topic configuration
+  - Markdown formatting
+  - Message expiration settings
+  - Notification caching control
+
+- 🔧 **Integration**
+  - Simple configuration via environment variables
+  - Global npm package installation option
+  - Compatible with all MCP clients
+  - Consistent resource exposure for topic discovery
+  - Type-safe API with comprehensive validation
+
+> Easy setup with ntfy.sh - no account required, just subscribe to your topic in the ntfy app.
+> Supports self-hosted ntfy instances through the NTFY_BASE_URL environment variable.
+> Uses standardized MCP tools and resources for seamless integration with any MCP-compatible LLM agent.
 
 ## 🚀 Getting Started
 
