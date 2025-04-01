@@ -184,6 +184,51 @@ A utility I've developed for generating comprehensive reports about Model Contex
 
 ## 🛠️ MCP Servers
 
+### [Perplexity MCP Server](https://github.com/casey/perplexity-mcp-server)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-^5.8.2-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-^1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)](https://github.com/casey/perplexity-mcp-server/issues) <!-- Assuming repo path, adjust if needed -->
+[![GitHub](https://img.shields.io/github/stars/casey/perplexity-mcp-server?style=social)](https://github.com/casey/perplexity-mcp-server) <!-- Assuming repo path, adjust if needed -->
+
+An MCP server providing tools to interact with the [Perplexity AI API](https://docs.perplexity.ai/docs/getting-started), built using the [mcp-ts-template](https://github.com/cyanheads/mcp-ts-template). This server allows AI agents compatible with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to leverage Perplexity's search-augmented query capabilities. Includes a showThinking parameter to enable reasoning models to show its internal reasoning process.
+
+- 🔧 **Core Utilities**
+
+  - Logging with sensitive data redaction
+  - Error handling with pattern-based classification
+  - ID generation with prefix support
+  - Rate limiting to prevent API abuse
+  - Request context tracking
+  - Input validation and sanitization
+
+- 📝 **Type Safety**
+
+  - Shared type definitions for consistent interfaces
+  - Standardized error structures
+  - MCP protocol type definitions
+  - Tool registration interfaces
+
+- 🔍 **Perplexity Integration**
+
+  - Search-augmented queries via Perplexity API
+  - Support for recency and domain filtering
+  - Related questions suggestions
+  - Reasoning visibility with showThinking parameter
+  - Automatic cost tracking and estimation
+
+- 🔒 **Security**
+  - Input validation using `validator`
+  - Content sanitization via `sanitize-html`
+  - Parameter bounds enforcement
+  - Sensitive data protection
+
+> Built on the mcp-ts-template foundation for consistent architecture and patterns.
+> Requires a Perplexity API key configured via environment variables.
+> Features comprehensive documentation and developer guidelines for extensibility.
+
 ### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-atlas--mcp--server-blue.svg)](https://github.com/cyanheads/atlas-mcp-server)
