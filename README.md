@@ -22,6 +22,7 @@ A collection of guides, utilities, clients, and servers for the Model Context Pr
   - [Git](#git-mcp-server)
   - [GitHub](#github-mcp-server)
   - [Ntfy](#ntfy-mcp-server)
+  - [Scrapeless](#scrapeless-mcp-server)
 - [Getting Started](#getting-started)
 - [License](#license)
 
@@ -575,6 +576,15 @@ An MCP server designed to interact with the [ntfy](https://ntfy.sh/) push notifi
 > Easy setup with ntfy.sh - no account required, just subscribe to your topic in the ntfy app.
 > Supports self-hosted ntfy instances through the NTFY_BASE_URL environment variable.
 > Uses standardized MCP tools and resources for seamless integration with any MCP-compatible LLM agent.
+
+
+### [Scrapeless MCP Server](https://github.com/scrapeless-ai/scrapeless-mcp-server)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![GitHub](https://img.shields.io/github/stars/scrapeless-ai/scrapeless-mcp-server?style=social)](https://github.com/scrapeless-ai/scrapeless-mcp-server)
+
+The Scrapeless Model Context Protocol service acts as an MCP server connector to the Google SERP API, enabling web search within the MCP ecosystem without leaving it. 
 
 ## 🚀 Getting Started
 
