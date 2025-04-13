@@ -277,6 +277,30 @@ ATLAS (Adaptive Task & Logic Automation System) is a task management system for 
 
 > **Important Version Note**: Version 1.5.4 is the last version that uses SQLite as the database. Version 2.0 and onwards has been completely rewritten to use Neo4j, which requires either self-hosting using Docker (docker-compose included in repository) or using Neo4j AuraDB cloud service: https://neo4j.com/product/auradb/. Version 2.5.0 introduces a new 3-node system (Projects, Tasks, Knowledge) that replaces the previous structure.
 
+### [Filesystem MCP Server](https://github.com/cyanheads/filesystem-mcp-server)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-^5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-^1.9.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
+[![GitHub](https://img.shields.io/github/stars/cyanheads/filesystem-mcp-server?style=social)](https://github.com/cyanheads/filesystem-mcp-server)
+
+**Empower your AI agents with robust, platform-agnostic file system capabilities.**
+
+This [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server provides a secure and reliable interface for AI agents to interact with the local filesystem. It enables reading, writing, updating, and managing files and directories, backed by a production-ready TypeScript foundation featuring comprehensive logging, error handling, and security measures.
+
+- **Comprehensive File Operations**: Tools for reading, writing, listing, deleting, moving, and copying files and directories.
+- **Targeted Updates**: `update_file` tool allows precise search-and-replace operations within files, supporting plain text and regex.
+- **Session-Aware Path Management**: `set_filesystem_default` tool establishes a default working directory for resolving relative paths during a session.
+- **Security First**: Built-in path sanitization prevents directory traversal attacks. Optional base directory restriction enhances security.
+- **Robust Foundation**: Includes production-grade utilities for logging, error handling, ID generation, and sanitization.
+- **Type Safety**: Fully implemented in TypeScript for improved reliability and maintainability.
+
+> Built using the [mcp-ts-template](https://github.com/cyanheads/mcp-ts-template) for a consistent and secure foundation.
+> Supports optional base directory restriction for enhanced security.
+> Features detailed logging and standardized error handling.
+
 ### [Toolkit MCP Server](https://github.com/cyanheads/toolkit-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-toolkit--mcp--server-blue.svg)](https://github.com/cyanheads/toolkit-mcp-server)
