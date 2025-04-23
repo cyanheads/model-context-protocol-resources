@@ -1,12 +1,12 @@
 # Model Context Protocol (MCP) Server Development Guide: Building Powerful Tools for LLMs
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
-[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%20latest-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%20latest-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
-[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%20latest-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
-[![MCP SDK - Java](https://img.shields.io/badge/MCP%20SDK-Java%20latest-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
-[![MCP SDK - C#](https://img.shields.io/badge/MCP%20SDK-C%23%20latest-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
-[![Last Updated](https://img.shields.io/badge/Last%20Updated-October%202024-brightgreen.svg)]() <!-- Updated Date -->
+[![MCP SDK - TypeScript](https://img.shields.io/badge/TypeScript-1.10.2-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/Python-1.6.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
+[![MCP SDK - Kotlin](https://img.shields.io/badge/Kotlin-0.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
+[![MCP SDK - Java](https://img.shields.io/badge/Java-0.4.0-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
+[![MCP SDK - C#](https://img.shields.io/badge/C%23-0.0.0-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
+[![Guide Last Updated](https://img.shields.io/badge/Last%20Updated-April%202025-brightgreen.svg)]()
 
 ## Table of Contents
 
