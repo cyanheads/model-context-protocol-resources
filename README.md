@@ -6,7 +6,7 @@
 [![MCP SDK - Kotlin](https://img.shields.io/badge/Kotlin-0.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![MCP SDK - Java](https://img.shields.io/badge/Java-0.4.0-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
 [![MCP SDK - C#](https://img.shields.io/badge/C%23-0.0.0-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
-[Guide Last Updated](https://img.shields.io/badge/Last%20Updated-April%202025-brightgreen.svg)
+[![Guide Last Updated](https://img.shields.io/badge/Guide%20Last%20Updated-April%202025-brightgreen.svg)]()
 
 Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this powerful standard for enhancing Large Language Model (LLM) Agent capabilities. Questions and feedback are welcome! 🚀
 
