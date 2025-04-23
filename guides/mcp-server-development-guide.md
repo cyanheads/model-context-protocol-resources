@@ -1,1153 +1,1321 @@
 # Model Context Protocol (MCP) Server Development Guide: Building Powerful Tools for LLMs
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
-[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%201.6.1-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
-[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%201.3.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
-[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%200.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
-[![Last Updated](https://img.shields.io/badge/Last%20Updated-March%202025-brightgreen.svg)]()
+[![MCP SDK - TypeScript](https://img.shields.io/badge/MCP%20SDK-TypeScript%20latest-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - Python](https://img.shields.io/badge/MCP%20SDK-Python%20latest-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
+[![MCP SDK - Kotlin](https://img.shields.io/badge/MCP%20SDK-Kotlin%20latest-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
+[![MCP SDK - Java](https://img.shields.io/badge/MCP%20SDK-Java%20latest-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
+[![MCP SDK - C#](https://img.shields.io/badge/MCP%20SDK-C%23%20latest-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
+[![Last Updated](https://img.shields.io/badge/Last%20Updated-October%202024-brightgreen.svg)]() <!-- Updated Date -->
 
 ## Table of Contents
 
-1. [Introduction to MCP Servers](#1-introduction-to-mcp-servers)
-2. [Core Server Architecture](#2-core-server-architecture)
-3. [Building Your First MCP Server](#3-building-your-first-mcp-server)
-4. [Exposing Capabilities](#4-exposing-capabilities)
-   * [Defining and Implementing Tools](#defining-and-implementing-tools)
-   * [Managing Resources](#managing-resources)
-   * [Creating and Sharing Prompts](#creating-and-sharing-prompts)
-5. [Advanced Server Features](#5-advanced-server-features)
-   * [Sampling](#sampling)
-   * [Roots](#roots)
-   * [Streaming Responses](#streaming-responses)
-   * [Progress Reporting](#progress-reporting)
-   * [Resource Subscriptions](#resource-subscriptions)
-   * [Multi-Server Coordination](#multi-server-coordination)
-   * [Performance Optimization](#performance-optimization)
-6. [Security and Best Practices](#6-security-and-best-practices)
-7. [Troubleshooting and Resources](#7-troubleshooting-and-resources)
-8. [Example Implementations](#8-example-implementations)
+1.  [Introduction to MCP Servers](#1-introduction-to-mcp-servers)
+2.  [Core Server Architecture](#2-core-server-architecture)
+3.  [Building Your First MCP Server (TypeScript)](#3-building-your-first-mcp-server-typescript)
+4.  [Exposing Capabilities](#4-exposing-capabilities)
+    - [Defining and Implementing Tools](#defining-and-implementing-tools)
+    - [Managing Resources](#managing-resources)
+    - [Creating and Sharing Prompts](#creating-and-sharing-prompts)
+5.  [Advanced Server Features](#5-advanced-server-features)
+    - [Sampling (Client Capability)](#sampling-client-capability)
+    - [Roots (Client Capability)](#roots-client-capability)
+    - [Streaming Responses (Transport Feature)](#streaming-responses-transport-feature)
+    - [Progress Reporting](#progress-reporting)
+    - [Resource Subscriptions](#resource-subscriptions)
+    - [Completions](#completions)
+    - [Logging](#logging)
+    - [Performance Optimization](#performance-optimization)
+6.  [Security and Best Practices](#6-security-and-best-practices)
+7.  [Troubleshooting and Resources](#7-troubleshooting-and-resources)
+8.  [Example Implementations](#8-example-implementations)
 
 ## 1. Introduction to MCP Servers
 
 **What is the Model Context Protocol?**
 
-The Model Context Protocol (MCP) is a standardized communication protocol designed to facilitate interactions between Large Language Model (LLM) applications (clients) and external services (servers). These servers provide contextual information, tools, and resources. MCP enables a clean separation of concerns, allowing LLM applications to focus on core functionality while delegating tasks like data retrieval, external API access, and specialized computations to dedicated servers.
+The Model Context Protocol (MCP) is an open standard designed to standardize how AI applications (clients/hosts) connect to and interact with external data sources and tools (servers). Think of it like USB-C for AI: a universal way to plug capabilities into LLM applications. MCP enables a clean separation of concerns, allowing LLM applications to focus on core AI functionality while delegating tasks like data retrieval, external API access, and specialized computations to dedicated, reusable servers.
 
-You can find an official introduction to MCP [here](https://modelcontextprotocol.io/introduction).
+You can find the official introduction to MCP [here](https://modelcontextprotocol.io/introduction).
 
 **The Role of Servers in the MCP Ecosystem**
 
-Servers are the backbone of the MCP ecosystem, acting as intermediaries between LLM applications and the external world. A server can provide a wide range of capabilities, including:
+Servers are the backbone of the MCP ecosystem. They act as bridges between LLM applications and the external world (local files, databases, web APIs, etc.). A server exposes specific capabilities through the MCP standard:
 
-* **Providing access to real-time data:** Fetching information from databases, APIs, or other sources.
-* **Exposing specialized tools:** Offering functionalities like image processing, code execution, or data analysis.
-* **Managing and sharing prompts:** Storing and providing pre-defined prompts or prompt templates.
-* **Connecting to external systems:** Integrating with other applications, services, or platforms.
+- **Providing access to data:** Fetching information from databases, APIs, filesystems, or other sources (via **Resources**).
+- **Exposing executable functions:** Offering functionalities like API calls, code execution, calculations, or file manipulation (via **Tools**).
+- **Offering guided interactions:** Providing pre-defined prompt templates or workflows for users (via **Prompts**).
+- **Connecting to external systems:** Integrating with other applications, services, or platforms.
 
 **Benefits of Implementing an MCP Server**
 
 Creating an MCP server offers several advantages:
 
-* **Extensibility:** Easily add new capabilities to LLM applications without modifying their core code.
-* **Modularity:** Develop and maintain specialized functionalities in isolated, reusable components.
-* **Interoperability:** Enable different LLM applications to share the same context sources and tools.
-* **Scalability:** Distribute workloads and handle complex tasks efficiently.
-* **Innovation:** Focus on developing unique capabilities and integrations, leveraging the power of LLMs.
+- **Extensibility:** Easily add new capabilities to any MCP-compatible client without modifying the client's core code.
+- **Modularity:** Develop and maintain specialized functionalities in isolated, reusable components.
+- **Interoperability:** Enable different LLM applications (clients) to share and use the same servers (context sources and tools).
+- **Focus:** Concentrate on building unique capabilities and integrations, leveraging the standardized protocol.
+- **Security:** Keep sensitive credentials and complex logic contained within the server, often running in a user's trusted environment.
 
 **Server vs. Client: Understanding the Relationship**
 
 In the MCP architecture:
 
-* **Clients** are typically LLM applications (like Claude Desktop, VS Code, or custom applications) that initiate connections to servers and request services.
-* **Servers** are independent processes that listen for client connections, process requests, and provide responses. They expose capabilities like tools, resources, and prompts.
+- **Hosts:** Applications like Claude Desktop, VS Code extensions (e.g., Copilot, Continue), or custom applications that manage MCP clients and interact with the user/LLM.
+- **Clients:** Protocol handlers _within_ the host application that initiate and manage stateful 1:1 connections to servers.
+- **Servers:** Independent processes (local or remote) that listen for client connections, expose capabilities (Tools, Resources, Prompts), and process requests.
 
-A single client can connect to multiple servers, and a single server can serve multiple clients. This many-to-many relationship allows for flexible and powerful integrations.
+A single host can manage multiple clients connecting to different servers simultaneously. A single server can potentially serve multiple clients (depending on the transport and server implementation).
 
-You can find the official quickstart documentation [here](https://modelcontextprotocol.io/quickstart/server).
+You can find the official server quickstart documentation [here](https://modelcontextprotocol.io/quickstart/server).
 
 ## 2. Core Server Architecture
 
 ### Key Components of an MCP Server
 
-An MCP server consists of several key components working together:
+An MCP server implementation typically involves:
 
-1. **Protocol Layer:** This layer handles the high-level communication patterns, including message framing, request/response linking, and notification handling. It uses classes like `Protocol`, `Client`, and `Server`.
-2. **Transport Layer:** This layer manages the actual communication between clients and servers. MCP supports multiple transport mechanisms, such as Stdio and HTTP with Server-Sent Events (SSE). All transports use JSON-RPC 2.0 for message exchange.
-3. **Capabilities:** These define what the server can do. Capabilities include tools (executable functions), resources (data sources), and prompts (pre-defined text inputs for LLMs).
+1.  **Protocol Handling:** Logic to manage the MCP connection lifecycle, negotiate capabilities, and handle incoming/outgoing JSON-RPC messages (Requests, Responses, Notifications). SDKs abstract much of this.
+2.  **Transport Layer:** The mechanism for sending/receiving messages (e.g., Stdio, Streamable HTTP). The SDK provides implementations.
+3.  **Capability Implementation:** The core logic defining the specific Tools, Resources, and/or Prompts the server offers.
+4.  **Schema Definitions:** Clear definitions (e.g., using JSON Schema or libraries like `zod`) for the inputs and outputs of capabilities.
 
 ### Protocol Fundamentals
 
-MCP is built on a client-server architecture. LLM applications (hosts) initiate connections. Clients maintain 1:1 connections with servers within the host application. Servers provide context, tools, and prompts to clients.
+MCP uses JSON-RPC 2.0 for all communication. It's a stateful protocol, meaning connections are established and maintained. The core interaction involves capability negotiation followed by message exchange based on those capabilities.
 
 ### Server Lifecycle: Connect, Exchange, Terminate
 
 The lifecycle of an MCP connection involves three main stages:
 
-1. **Initialization:**
-   * The client sends an `initialize` request, including its protocol version and capabilities.
-   * The server responds with its protocol version and capabilities.
-   * The client sends an `initialized` notification to acknowledge.
-   * Normal message exchange begins.
+1.  **Initialization:**
 
-2. **Message Exchange:** After initialization, clients and servers can exchange messages using these patterns:
-   * **Request-Response:** Either side sends a request, and the other responds.
-   * **Notifications:** Either side sends one-way messages (no response expected).
+    - The client sends an `initialize` request with its supported `protocolVersion`, `capabilities`, and `clientInfo`.
+    - The server responds with its chosen `protocolVersion`, its `capabilities`, `serverInfo`, and optional `instructions`. Version negotiation occurs here.
+    - The client sends an `initialized` notification to confirm readiness.
+    - _Crucially, no other requests (except potentially `ping` or server `logging`) should be sent before initialization is complete._
 
-3. **Termination:** The connection can be terminated in several ways:
-   * Clean shutdown via a `close()` method.
-   * Transport disconnection.
-   * Error conditions.
+2.  **Message Exchange:** After initialization, clients and servers exchange messages based on negotiated capabilities:
+
+    - **Request-Response:** For operations like `tools/call`, `resources/read`, `prompts/get`, `sampling/createMessage`, etc.
+    - **Notifications:** For updates like `listChanged`, `progress`, `cancelled`, `logging`, etc.
+
+3.  **Termination:** The connection ends when:
+    - The transport is closed (e.g., client closes stdin for stdio, HTTP connection drops).
+    - An unrecoverable error occurs.
+    - Explicit shutdown logic is triggered (though MCP doesn't define a specific `shutdown` message; it relies on transport closure).
 
 ### Message Format and Transport
 
-MCP uses JSON-RPC 2.0 as its message format. There are three main types of messages:
+MCP uses **JSON-RPC 2.0**. Key message types:
 
-1. **Requests:** These expect a response. They include a `method` and optional `params`.
+1.  **Requests:** Must have `jsonrpc: "2.0"`, a unique `id` (string or number, not null), and a `method`. May have `params`.
 
 ```typescript
+// Example Request
 {
-  jsonrpc: "2.0",
-  id: number | string,
-  method: string,
-  params?: object
+  "jsonrpc": "2.0",
+  "id": 123,
+  "method": "tools/call",
+  "params": { "name": "myTool", "arguments": { "arg1": "value" } }
 }
 ```
 
-2. **Responses:** These are sent in response to requests. They include either a `result` (on success) or an `error` (on failure).
+2.  **Responses:** Must have `jsonrpc: "2.0"` and the same `id` as the request. Must contain _either_ `result` (any JSON value) _or_ `error`.
 
 ```typescript
+// Example Success Response
 {
-  jsonrpc: "2.0",
-  id: number | string,
-  result?: object,
-  error?: {
-    code: number,
-    message: string,
-    data?: unknown
+  "jsonrpc": "2.0",
+  "id": 123,
+  "result": { "output": "Success!" }
+}
+
+// Example Error Response
+{
+  "jsonrpc": "2.0",
+  "id": 123,
+  "error": {
+    "code": -32602, // JSON-RPC error code
+    "message": "Invalid parameters",
+    "data": { "details": "Missing required argument 'arg1'" }
   }
 }
 ```
 
-3. **Notifications:** These are one-way messages that don't expect a response. Like requests, they have a `method` and optional `params`.
+3.  **Notifications:** Must have `jsonrpc: "2.0"` and a `method`. Must _not_ have an `id`. May have `params`.
 
 ```typescript
+// Example Notification
 {
-  jsonrpc: "2.0",
-  method: string,
-  params?: object
+  "jsonrpc": "2.0",
+  "method": "notifications/tools/list_changed"
 }
 ```
 
 #### Transports
 
-MCP supports different transport mechanisms for communication. The two built-in transports are:
+MCP defines standard ways to transport these messages:
 
-1. **Standard Input/Output (stdio):** This transport uses standard input and output streams, suitable for local integrations and command-line tools.
+1.  **Standard Input/Output (stdio):** Ideal for local servers launched as subprocesses by the client.
 
-*Example (Server):*
+    - **Communication:** Server reads JSON-RPC from `stdin`, writes to `stdout`. Messages are newline-delimited.
+    - **Logging:** Server can write logs to `stderr`.
+    - **Restrictions:** `stdout` is _only_ for MCP messages. `stdin` _only_ receives MCP messages.
+    - **Lifecycle:** Client manages the server process lifecycle (start, stop).
 
-```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+    _Example (Server - Basic Setup):_
 
-const server = new McpServer({
-  name: "example-server",
-  version: "1.0.0"
-}, { capabilities: {} });
+    ```typescript
+    import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+    import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
-```
+    async function startServer() {
+      const server = new McpServer(
+        {
+          name: "my-stdio-server",
+          version: "1.0.0",
+        },
+        {
+          // Define server capabilities here, e.g., tools: {}
+        }
+      );
 
-*Example (Client):*
+      // Add tool/resource/prompt implementations here...
 
-```typescript
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+      console.error("MCP Server connected via stdio."); // Log to stderr
+    }
 
-const client = new Client({
-  name: "example-client",
-  version: "1.0.0"
-}, { capabilities: {} });
+    startServer().catch((err) => {
+      console.error("Server failed to start:", err);
+      process.exit(1);
+    });
+    ```
 
-const transport = new StdioClientTransport({
-  command: "./server", //  Path to your server executable
-  args: ["--option", "value"] // Optional arguments
-});
-await client.connect(transport);
-```
+2.  **Streamable HTTP:** Suitable for servers running as independent processes (local or remote) that might handle multiple clients. Uses HTTP POST for client messages and can use Server-Sent Events (SSE) for streaming server messages.
 
-When using the stdio transport:
-* The client launches the MCP server as a subprocess.
-* The server receives JSON-RPC messages via `stdin` and responds via `stdout`.
-* Messages must be delimited by newlines.
-* The server may use `stderr` for logging.
-* **Important:** The server must *not* write anything to `stdout` that isn't a valid MCP message, and the client must *not* write anything to the server's `stdin` that isn't a valid MCP message.
+    - **Endpoint:** Server provides a single HTTP endpoint path supporting POST (client messages) and GET (for server-initiated streams).
+    - **Client POST:** Sends JSON-RPC request(s)/notification(s)/response(s). Server responds with 202 (for notifications/responses) or initiates a response stream (SSE or single JSON) for requests.
+    - **Client GET:** Initiates an SSE stream for server-initiated messages (requests/notifications).
+    - **SSE:** Server can send multiple JSON-RPC messages (requests, notifications, responses) over an SSE stream.
+    - **Security:** Requires careful handling of `Origin` headers, binding to `localhost` for local servers, and authentication.
+    - **Session Management:** Supports optional `Mcp-Session-Id` header for stateful sessions.
 
-2. **Server-Sent Events (SSE):** This transport uses HTTP POST requests for client-to-server communication and Server-Sent Events for server-to-client streaming.
+    _Example (Server - Basic Express Setup):_
 
-*Example (Server):*
+    ```typescript
+    import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+    import { StreamableHttpServerTransport } from "@modelcontextprotocol/sdk/server/streamable-http.js"; // Assuming this class exists or similar helper
+    import express, { Request, Response } from "express";
 
-```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
-import express, { Response } from 'express';
+    async function startServer() {
+      const server = new McpServer(
+        {
+          name: "my-http-server",
+          version: "1.0.0",
+        },
+        {
+          // Define server capabilities here
+        }
+      );
 
-const server = new McpServer({
-  name: "example-server",
-  version: "1.0.0"
-}, { capabilities: {} });
+      // Add tool/resource/prompt implementations here...
 
-const app = express();
-app.use(express.json());
+      const app = express();
+      // Middleware for raw body parsing needed by some transport helpers
+      app.use(express.raw({ type: "*/*" }));
 
-app.get("/sse", async (req, res) => {
-  const transport = new SSEServerTransport("/messages", res as Response);
-  await server.connect(transport);
-  // Store the transport instance for later use. For simplicity, we assume a single client here.
-  app.locals.transport = transport;
-});
+      const transport = new StreamableHttpServerTransport(server); // Conceptual
 
-app.post("/messages", async (req, res) => {
-  const transport = app.locals.transport;
-  await transport.handlePostMessage(req, res);
-});
+      // Define the single MCP endpoint
+      app.all("/mcp", (req: Request, res: Response) => {
+        // The transport handler would differentiate GET/POST/DELETE
+        // and manage streams/sessions. This requires a specific
+        // implementation from the SDK or a custom one.
+        transport.handleHttpRequest(req, res); // Conceptual method
+      });
 
-app.listen(3000, () => {
-  console.log('Server listening on port 3000');
-});
+      const port = 3000;
+      app.listen(port, "127.0.0.1", () => {
+        // Bind to localhost for security
+        console.log(`MCP Server listening on http://127.0.0.1:${port}/mcp`);
+      });
+    }
 
-// Note: For simplicity, this example doesn't handle routing for multiple connections.
-// In a production environment, you'd need to route messages to the correct transport instance 
-// based on some identifier (e.g., a session ID).
-```
+    startServer().catch((err) => {
+      console.error("Server failed to start:", err);
+      process.exit(1);
+    });
+    ```
 
-*Example (Client):*
-
-```typescript
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
-
-const client = new Client({
-  name: "example-client",
-  version: "1.0.0"
-}, { capabilities: {} });
-
-const transport = new SSEClientTransport(
-  new URL("http://localhost:3000/sse")
-);
-await client.connect(transport);
-```
+    _(Note: The exact implementation details for `StreamableHttpServerTransport` would depend on the SDK's specific helpers for frameworks like Express/Koa/Node HTTP)._
 
 #### Custom Transports
 
-MCP allows for custom transport implementations. A custom transport must implement the `Transport` interface:
-
-```typescript
-interface Transport {
-  // Start processing messages
-  start(): Promise<void>;
-
-  // Send a JSON-RPC message
-  send(message: JSONRPCMessage): Promise<void>;
-
-  // Close the connection
-  close(): Promise<void>;
-
-  // Callbacks
-  onclose?: () => void;
-  onerror?: (error: Error) => void;
-  onmessage?: (message: JSONRPCMessage) => void;
-}
-```
+You can implement custom transports if needed, adhering to the `Transport` interface (or equivalent in other SDKs) and ensuring JSON-RPC compliance.
 
 #### Error Handling
 
-Transport implementations should handle connection errors, message parsing errors, protocol errors, network timeouts, and resource cleanup. An example:
+Transports must handle connection errors, parsing errors, timeouts, etc., and propagate them appropriately (e.g., via the `onerror` callback).
 
-```typescript
-class ExampleTransport implements Transport {
-  onclose?: () => void;
-  onerror?: (error: Error) => void;
-  onmessage?: (message: JSONRPCMessage) => void;
-
-  async start() {
-    try {
-      // Connection logic
-    } catch (error) {
-      this.onerror?.(new Error(`Failed to connect: ${error}`));
-      throw error;
-    }
-  }
-
-  async send(message: JSONRPCMessage) {
-    try {
-      // Sending logic
-    } catch (error) {
-      this.onerror?.(new Error(`Failed to send message: ${error}`));
-      throw error;
-    }
-  }
-  
-  async close(): Promise<void> {
-    // Close logic
-  }
-}
-```
-
-## 3. Building Your First MCP Server
+## 3. Building Your First MCP Server (TypeScript)
 
 This section guides you through creating a basic MCP server using the TypeScript SDK.
 
 ### Setting Up Your Development Environment
 
-1. **Install Node.js and npm:** Ensure you have Node.js (version 18 or later) and npm (Node Package Manager) installed on your system.
-2. **Create a Project Directory:**
-
-```bash
-mkdir my-mcp-server
-cd my-mcp-server
-```
-
-3. **Initialize a Node.js Project:**
-
-```bash
-npm init -y
-```
-
-4. **Install the MCP TypeScript SDK:**
-
-```bash
-npm install @modelcontextprotocol/sdk
-```
-
-5. **Install TypeScript and other dependencies:**
-
-```bash
-npm install typescript zod
-```
-
-6. **Create a `tsconfig.json` file:**
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "NodeNext",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "outDir": "./build"
-  },
-  "include": ["src/**/*"]
-}
-```
-
-7. **Create a `src` directory and an `index.ts` file:**
-
-```bash
-mkdir src
-touch src/index.ts
-```
+1.  **Install Node.js:** Ensure Node.js (LTS version, e.g., 18.x or 20.x) and npm are installed.
+2.  **Create Project:**
+    ```bash
+    mkdir my-mcp-server
+    cd my-mcp-server
+    npm init -y
+    ```
+3.  **Install Dependencies:**
+    ```bash
+    npm install @modelcontextprotocol/sdk zod
+    npm install -D typescript @types/node
+    ```
+4.  **Configure TypeScript (`tsconfig.json`):**
+    ```json
+    {
+      "compilerOptions": {
+        "target": "ES2022", // Target modern Node.js features
+        "module": "NodeNext", // Use modern ES Modules
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true, // Enable strict type checking
+        "skipLibCheck": true,
+        "outDir": "./build", // Output directory for compiled JS
+        "rootDir": "./src", // Source directory
+        "sourceMap": true // Generate source maps for debugging
+      },
+      "include": ["src/**/*"], // Compile files in src
+      "exclude": ["node_modules"]
+    }
+    ```
+5.  **Update `package.json`:** Add `"type": "module"` for ES Module support and scripts.
+    ```json
+    {
+      "name": "my-mcp-server",
+      "version": "1.0.0",
+      "description": "",
+      "main": "build/index.js",
+      "type": "module", // Enable ES Modules
+      "scripts": {
+        "build": "tsc",
+        "start": "node build/index.js",
+        "dev": "tsc --watch & node --watch build/index.js" // Optional: for development
+      },
+      "keywords": [],
+      "author": "",
+      "license": "ISC",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^latest", // Use actual latest version
+        "zod": "^latest" // Use actual latest version
+      },
+      "devDependencies": {
+        "@types/node": "^latest", // Use actual latest version
+        "typescript": "^latest" // Use actual latest version
+      }
+    }
+    ```
+6.  **Create Source File:**
+    ```bash
+    mkdir src
+    touch src/index.ts
+    ```
 
 ### Choosing an SDK
 
-The `@modelcontextprotocol/sdk` provides a convenient way to build MCP servers in TypeScript. It handles the protocol details, allowing you to focus on implementing your server's capabilities.
+We are using `@modelcontextprotocol/sdk` for TypeScript. It simplifies handling the protocol details.
 
 ### Implementing the Core Server Interface
 
-Let's create a simple server that echoes back any input it receives. Create `src/index.ts` with the following content:
+Let's create a simple server that provides a "greeting" tool.
+
+`src/index.ts`:
 
 ```typescript
 #!/usr/bin/env node
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod"; // Import zod for schema validation
 
-// Create an MCP server instance
-const server = new McpServer({
-  name: 'EchoServer',
-  version: '1.0.0',
+async function main() {
+  // 1. Create an MCP server instance
+  const server = new McpServer(
+    {
+      // Server identification
+      name: "GreetingServer",
+      version: "1.0.1",
+    },
+    {
+      // Declare server capabilities
+      capabilities: {
+        tools: { listChanged: false }, // We support tools, no dynamic changes
+        // resources: {}, // Uncomment if supporting resources
+        // prompts: {},   // Uncomment if supporting prompts
+      },
+    }
+  );
+
+  // 2. Define the input schema for the 'greet' tool using zod
+  const greetInputSchema = z.object({
+    name: z.string().min(1).describe("The name of the person to greet"),
+  });
+
+  // 3. Add the 'greet' tool implementation
+  server.tool(
+    "greet", // Tool name
+    greetInputSchema, // Use the zod schema for input validation
+    async (input) => {
+      // Input is automatically validated against the schema
+      const message = `Hello, ${input.name}! Welcome to MCP.`;
+      console.error(`Tool 'greet' called with name: ${input.name}`); // Log to stderr
+
+      // Return the result conforming to CallToolResultContent
+      return {
+        content: [{ type: "text", text: message }],
+        // isError: false, // Default is false
+      };
+    }
+  );
+
+  // 4. Create a transport (stdio for this example)
+  const transport = new StdioServerTransport();
+
+  // 5. Connect the server to the transport and start listening
+  try {
+    await server.connect(transport);
+    console.error("Greeting MCP Server is running and connected via stdio."); // Log to stderr
+  } catch (error) {
+    console.error("Failed to connect server:", error);
+    process.exit(1);
+  }
+
+  // Keep the server running (for stdio, it runs until stdin closes)
+  // For other transports like HTTP, you'd typically have a server.listen() call
+}
+
+// Run the main function
+main().catch((error) => {
+  console.error("Unhandled error during server startup:", error);
+  process.exit(1);
 });
-
-// Add a tool that echoes back the input
-server.tool(
-  'echo',
-  { message: z.string() }, // Define input schema using zod
-  async ({ message }) => ({
-    content: [{ type: 'text', text: `Echo: ${message}` }],
-  })
-);
-
-// Create a transport (stdio for this example)
-const transport = new StdioServerTransport();
-
-// Connect the server to the transport
-await server.connect(transport);
 ```
 
 ### Handling Connections and Authentication
 
-In this simple example, we're using the `StdioServerTransport`, which handles connections automatically through standard input and output. For more complex scenarios, you might need to implement custom connection handling and authentication, especially when using other transport mechanisms like SSE.
+- **Stdio:** Connection is implicit when the client starts the server process. Authentication typically relies on the OS user context or environment variables passed by the client.
+- **Streamable HTTP:** Requires explicit connection handling (e.g., using Express, Koa, or Node's `http` module). Authentication should be implemented using standard HTTP mechanisms (e.g., Bearer tokens via the MCP [Authorization spec](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization), API keys, OAuth).
 
 ### Processing Client Requests
 
-The `server.tool()` method defines a tool named "echo" that the server can handle. The second argument, `{ message: z.string() }`, uses the `zod` library to define the expected input schema for the tool. The third argument is an asynchronous function that takes the input (validated against the schema) and returns the result. The `McpServer` automatically handles routing client requests to the appropriate tool based on the request's `method`.
+The `McpServer` class (or the lower-level `Server` class) handles parsing incoming JSON-RPC messages and routing requests to the appropriate handlers (like the one defined with `server.tool()`). The SDK manages matching the `method` field (`tools/call`, `resources/read`, etc.) and invoking your registered functions with validated parameters.
 
-To run this server:
+**To run this server:**
 
-1. **Compile the TypeScript code:**
+1.  **Compile:** `npm run build`
+2.  **Run:** `npm start` or `node build/index.js`
+
+**To test it manually:**
+
+Run the server. In another terminal, send a JSON-RPC request to its stdin:
 
 ```bash
-npx tsc
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"greet","arguments":{"name":"World"}}}' | node build/index.js
 ```
 
-2. **Run the compiled JavaScript:**
+You should see the response printed to stdout (and the log message on stderr).
 
-```bash
-node build/index.js
+## 4. Exposing Capabilities
+
+Servers bring value by exposing Tools, Resources, and Prompts.
+
+### Defining and Implementing Tools
+
+Tools are functions the LLM can invoke (with user approval) to perform actions. They are **model-controlled**.
+
+**Key Features & Structure:** (As described in Section 2) - Name, Description, Input Schema (use `zod`), Annotations (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`).
+
+**Implementation Example (using `McpServer` helper):**
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import { ToolAnnotation } from "@modelcontextprotocol/sdk/types.js"; // Import ToolAnnotation type
+
+// Assume 'server' is an initialized McpServer instance
+
+const apiLookupSchema = z.object({
+  query: z.string().describe("Search query for the external API"),
+  maxResults: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(5)
+    .describe("Maximum results to return"),
+});
+
+const apiLookupAnnotations: ToolAnnotation = {
+  title: "External API Lookup",
+  readOnlyHint: true, // This tool only reads data
+  openWorldHint: true, // Interacts with an external system
+};
+
+server.tool(
+  "externalApiLookup", // Tool name
+  apiLookupSchema, // Input schema
+  async (input) => {
+    // Async handler function
+    console.error(`Performing API lookup for query: ${input.query}`);
+    try {
+      // Simulate API call
+      const results = await fetch(
+        `https://api.example.com/search?q=${encodeURIComponent(
+          input.query
+        )}&limit=${input.maxResults}`
+      ).then((res) => {
+        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return res.json();
+      });
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(results) }],
+      };
+    } catch (error: any) {
+      console.error(`API Lookup failed: ${error.message}`);
+      return {
+        content: [
+          { type: "text", text: `Failed to perform lookup: ${error.message}` },
+        ],
+        isError: true, // Indicate tool execution error
+      };
+    }
+  },
+  apiLookupAnnotations // Pass annotations
+);
 ```
 
-Add the following to the `scripts` section of your `package.json`:
+**Best Practices:**
 
-```json
-"scripts": {
-  "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-  "start": "node build/index.js"
+- Clear names/descriptions.
+- Use `zod` for robust schema validation.
+- Handle errors gracefully within the tool (return `isError: true`).
+- Keep tools focused; complex operations might be multiple tools.
+- Use annotations to provide hints about behavior.
+
+**Security:**
+
+- **Validate inputs rigorously.**
+- Implement access control if the tool accesses sensitive resources.
+- Sanitize outputs if they include external data.
+- Be mindful of rate limits on external APIs.
+
+### Managing Resources
+
+Resources expose data/content to the client/LLM. They are **application-controlled**.
+
+**Key Features & Structure:** (As described in Section 2) - URI, Name, Description, MimeType, Size. Text/Binary content. Discovery (List, Templates). Reading (`resources/read`). Updates (List Changes, Subscriptions).
+
+**Implementation Example (File Resource using `McpServer` helper):**
+
+```typescript
+import {
+  McpServer,
+  ResourceTemplate,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url"; // For ES Modules __dirname equivalent
+
+// Assume 'server' is an initialized McpServer instance
+
+// Get directory relative to the current module file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.resolve(__dirname, "../data"); // Example: data dir sibling to src
+
+// Ensure data directory exists
+await fs.mkdir(DATA_DIR, { recursive: true });
+
+// Resource Template for files in DATA_DIR
+server.resource(
+  "data-files", // Resource group name
+  new ResourceTemplate("file:///data/{filename}", {
+    // URI Template
+    // List function: returns available resources matching the template
+    list: async () => {
+      try {
+        const files = await fs.readdir(DATA_DIR);
+        const resourceList = await Promise.all(
+          files.map(async (file) => {
+            const filePath = path.join(DATA_DIR, file);
+            const stats = await fs.stat(filePath);
+            if (stats.isFile()) {
+              return {
+                uri: `file:///data/${file}`,
+                name: file,
+                // Determine mimeType based on extension if needed
+                mimeType: "application/octet-stream",
+                size: stats.size,
+              };
+            }
+            return null;
+          })
+        );
+        return resourceList.filter((r) => r !== null) as McpSchema.Resource[]; // Type assertion
+      } catch (error) {
+        console.error(`Error listing data files: ${error}`);
+        return [];
+      }
+    },
+  }),
+  // Read function: handles 'resources/read' for URIs matching the template
+  async (uri, params) => {
+    // params contains matched template variables, e.g., { filename: '...' }
+    const filename = params.filename as string; // Type assertion
+    if (!filename || typeof filename !== "string") {
+      throw new Error("Invalid filename parameter");
+    }
+    const requestedPath = path.join(DATA_DIR, filename);
+
+    // **CRITICAL SECURITY CHECK:** Prevent path traversal
+    const resolvedDataDir = path.resolve(DATA_DIR);
+    const resolvedRequestedPath = path.resolve(requestedPath);
+    if (!resolvedRequestedPath.startsWith(resolvedDataDir)) {
+      console.error(`Access denied: Path traversal attempt: ${requestedPath}`);
+      throw new Error("Access denied: Invalid path");
+    }
+
+    try {
+      const fileContents = await fs.readFile(requestedPath, "utf-8"); // Assuming text
+      const stats = await fs.stat(requestedPath);
+      return {
+        contents: [
+          {
+            uri: uri.href, // Use the full URI from the request
+            mimeType: "text/plain", // Or determine dynamically
+            text: fileContents,
+            size: stats.size,
+          },
+        ],
+      };
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        throw new Error(`Resource not found: ${uri.href}`); // More specific error
+      }
+      console.error(`Error reading file ${requestedPath}: ${error}`);
+      throw new Error(`Error reading resource: ${error.message}`);
+    }
+  }
+);
+```
+
+**Best Practices:**
+
+- Use clear URIs and names.
+- Provide accurate `mimeType` and `size` if possible.
+- Implement `listChanged` notifications if the resource list is dynamic.
+- Implement `subscribe` for resources that change frequently.
+- **Crucially:** Sanitize and validate paths to prevent directory traversal attacks.
+
+**Security:**
+
+- Validate URIs rigorously.
+- Implement access control based on URI or other factors.
+- Ensure path validation prevents access outside allowed directories.
+
+### Creating and Sharing Prompts
+
+Prompts are pre-defined templates for user interactions, often surfaced as commands. They are **user-controlled**.
+
+**Key Features & Structure:** (As described in Section 2) - Name, Description, Arguments (with schema). Can embed resources. Discovery (`prompts/list`). Usage (`prompts/get`).
+
+**Implementation Example (using `McpServer` helper):**
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+
+// Assume 'server' is an initialized McpServer instance
+
+const summarizeInputSchema = z.object({
+  textToSummarize: z
+    .string()
+    .min(10)
+    .describe("The text content to be summarized"),
+  maxLength: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe("Optional maximum length for the summary"),
+});
+
+server.prompt(
+  "summarize-text", // Prompt name (e.g., used for slash command)
+  summarizeInputSchema, // Input schema
+  (input) => {
+    // Handler function
+    let promptText = `Please summarize the following text concisely:\n\n"${input.textToSummarize}"`;
+    if (input.maxLength) {
+      promptText += `\n\nThe summary should be no more than ${input.maxLength} words.`;
+    }
+
+    // Return the message(s) to be sent to the LLM
+    return {
+      // description: "Summarizes the provided text", // Optional override
+      messages: [
+        {
+          role: "user",
+          content: { type: "text", text: promptText },
+        },
+      ],
+    };
+  }
+);
+```
+
+**Best Practices:**
+
+- Use intuitive names (often mapping to UI commands).
+- Provide clear descriptions for prompts and arguments.
+- Validate arguments using schemas (`zod`).
+- Handle optional arguments gracefully.
+
+**Security:**
+
+- Validate and sanitize all arguments, especially if they are incorporated directly into system interactions or external calls triggered by the prompt's result.
+- Be cautious if prompts embed resources; ensure resource access control is respected.
+
+### Schema Validation and Documentation
+
+- **Use Schemas:** Consistently use JSON Schema (or libraries like `zod` which generate it) to define the `inputSchema` for Tools and the structure of `arguments` for Prompts. This is crucial for interoperability and validation.
+- **Documentation:** Provide clear `description` fields for all capabilities (Tools, Resources, Prompts) and their parameters/arguments. This helps both humans and LLMs understand how to use them correctly. Consider adding examples within descriptions where helpful.
+
+## 5. Advanced Server Features
+
+Beyond the core capabilities, MCP includes features for more sophisticated scenarios.
+
+### Sampling (Client Capability)
+
+While sampling (`sampling/createMessage`) is a request _sent by the server_, it relies on the _client_ supporting the `sampling` capability. Servers don't implement sampling handling themselves; they _initiate_ sampling requests if the connected client supports it.
+
+**Use Case:** Enables agentic behavior where a server needs the LLM's help to complete a task (e.g., a Git server tool asking the LLM to write a commit message based on a diff).
+
+**Server-Side Logic (Conceptual):**
+
+```typescript
+// Inside a tool handler or other server logic...
+async function someToolHandler(input: any, exchange: McpServerExchange) {
+  // 'exchange' provides access to client capabilities/requests
+  if (!exchange.clientCapabilities?.sampling) {
+    return {
+      content: [{ type: "text", text: "Client does not support sampling." }],
+      isError: true,
+    };
+  }
+
+  try {
+    const samplingRequest: McpSchema.CreateMessageRequest = {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Analyze this data: ${JSON.stringify(input)}`,
+          },
+        },
+      ],
+      modelPreferences: { intelligencePriority: 0.7 },
+      maxTokens: 500,
+      // ... other params
+    };
+    // Send request TO the client
+    const samplingResult = await exchange.createMessage(samplingRequest);
+
+    // Process the LLM's response from samplingResult.content
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Analysis complete: ${samplingResult.content.text}`,
+        },
+      ],
+    };
+  } catch (error: any) {
+    console.error(`Sampling request failed: ${error.message}`);
+    return {
+      content: [
+        { type: "text", text: `Failed during analysis: ${error.message}` },
+      ],
+      isError: true,
+    };
+  }
 }
 ```
 
-Now you can run `npm run build` and `npm start`. You can test it by running `./build/index.js` and typing in a JSON-RPC 2.0 message.
+**Key Considerations:**
 
-Here's an example of a valid JSON-RPC 2.0 message you could send to the `echo` tool:
+- Check `exchange.clientCapabilities.sampling` before calling `exchange.createMessage`.
+- The client controls the actual LLM call, including model choice (guided by `modelPreferences`) and user approval.
+- Handle potential errors from the sampling request.
+
+### Roots (Client Capability)
+
+Similar to sampling, `roots` are provided _by the client_ to the server. Servers supporting filesystem operations should check for this capability and use the `roots/list` request to understand the accessible directories.
+
+**Server-Side Logic (Conceptual):**
+
+```typescript
+// Inside server initialization or a relevant handler...
+async function checkRoots(exchange: McpServerExchange) {
+  if (exchange.clientCapabilities?.roots) {
+    try {
+      const rootsResult = await exchange.listRoots();
+      console.error("Client supports roots:", rootsResult.roots);
+      // Use this information to constrain file operations
+    } catch (error) {
+      console.error("Failed to list roots:", error);
+    }
+  } else {
+    console.error("Client does not support roots.");
+    // Operate without root constraints or deny file operations
+  }
+}
+```
+
+### Streaming Responses (Transport Feature)
+
+The **Streamable HTTP** transport inherently supports streaming server responses via Server-Sent Events (SSE). When a server needs to send multiple messages (e.g., progress updates, multiple parts of a large result, or server-initiated requests) in response to a single client request or over a persistent connection (via GET), it uses an SSE stream.
+
+- The SDK's transport implementation handles the mechanics of SSE.
+- Your server logic decides _when_ to send multiple messages versus a single response. For long-running tools, sending progress notifications followed by a final result over an SSE stream is common.
+
+### Progress Reporting
+
+For long-running operations initiated by a client request (e.g., `tools/call`), the server can send `notifications/progress` messages back to the client _if_ the client included a `progressToken` in the original request's metadata.
+
+**Client Request (Conceptual):**
 
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 1,
+  "id": 555,
   "method": "tools/call",
-  "params": { "name": "echo", "arguments": { "message": "Hello, world!" } }
-}
-```
-
-## 4. Exposing Capabilities
-
-MCP servers expose their functionalities through three primary mechanisms: Tools, Resources, and Prompts. These capabilities allow LLMs to interact with external systems, access data, and leverage pre-defined interaction patterns.
-
-### Defining and Implementing Tools
-
-Tools enable LLMs to perform actions through your server. They are similar to POST endpoints in a REST API and are designed to be *model-controlled*.
-
-**Key Features:**
-
-* **Discovery:** Clients can discover available tools using the `tools/list` endpoint.
-* **Invocation:** Tools are called using the `tools/call` endpoint.
-* **Flexibility:** Tools can range from simple calculations to complex API interactions.
-
-**Tool Definition Structure:**
-
-```typescript
-{
-  name: string;          // Unique identifier
-  description?: string;  // Human-readable description
-  inputSchema: {         // JSON Schema for input parameters
-    type: "object",
-    properties: { ... }  // Tool-specific parameters
-  }
-}
-```
-
-**Implementation Example:**
-
-```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-
-const server = new McpServer({
-  name: "example-server",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    tools: {}
-  }
-});
-
-// Add a tool that calculates the sum of two numbers
-server.tool(
-  'calculate_sum',
-  { a: z.number(), b: z.number() }, // Define input schema using zod
-  async ({ a, b }) => ({
-    content: [{ type: 'text', text: String(a + b) }],
-  })
-);
-```
-
-**Best Practices:**
-
-* Use clear names and descriptions.
-* Provide detailed JSON Schema definitions using tools like `zod`.
-* Implement proper error handling.
-* Keep tool operations focused.
-* Consider rate limiting.
-
-**Security Considerations:**
-
-* Validate all inputs.
-* Implement access control.
-* Handle errors securely.
-
-### Managing Resources
-
-Resources allow servers to expose data and content to LLMs. They are similar to GET endpoints in a REST API and are designed to be *application-controlled*.
-
-**Key Features:**
-
-* **Resource URIs:** Resources are identified by URIs (e.g., `file:///path/to/file.txt`).
-* **Text and Binary Resources:** Resources can contain text (UTF-8) or binary data (base64 encoded).
-* **Discovery:**
-  * **Direct Resources:** Servers expose a list of concrete resources.
-  * **Resource Templates:** Servers expose URI templates for dynamic resources.
-* **Reading Resources:** Clients use the `resources/read` request.
-* **Resource Updates:**
-  * **List Changes:** Servers notify clients of changes to the resource list.
-  * **Content Changes:** Clients can subscribe to updates for specific resources.
-
-**Implementation Example:**
-
-```typescript
-import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
-
-const server = new McpServer({
-  name: "example-server",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    resources: {}
-  }
-});
-
-const LOGS_DIR = './logs'; // Or an appropriate subdirectory within your server project
-
-server.resource(
-  "app-logs",
-  new ResourceTemplate("file:///logs/{filename}", {
-    list: async () => {
-      const files = await fs.readdir(LOGS_DIR);
-      return files.map(file => ({
-        uri: `file:///logs/${file}`,
-        name: file,
-        mimeType: 'text/plain' // Or determine based on file extension
-      }));
-    }
-  }),
-  async (uri, { filename }) => {
-    const filePath = path.join(LOGS_DIR, filename);
-
-    // Basic sanitization and path traversal prevention
-    if (!filePath.startsWith(LOGS_DIR) || path.relative(LOGS_DIR, filePath).startsWith('..')) {
-      throw new Error("Access denied");
-    }
-
-    try {
-      const logContents = await fs.readFile(filePath, 'utf-8');
-      return {
-        contents: [{
-          uri: uri.href,
-          mimeType: "text/plain",
-          text: logContents
-        }]
-      };
-    } catch (error: any) {
-      throw new Error(`Error reading file: ${error.message}`);
-    }
-  }
-);
-```
-
-**Best Practices:**
-
-* Use clear resource names and URIs.
-* Set appropriate MIME types.
-* Use subscriptions for frequently changing resources.
-* Validate URIs before processing.
-
-**Security Considerations:**
-
-* Validate all resource URIs.
-* Implement access controls.
-* Sanitize file paths.
-
-### Creating and Sharing Prompts
-
-Prompts are reusable prompt templates and workflows that clients can surface to users and LLMs. They are designed to be *user-controlled*.
-
-**Key Features:**
-
-* **Dynamic Arguments:** Prompts can accept dynamic arguments.
-* **Context from Resources:** Prompts can include context from resources.
-* **Multi-step Workflows:** Prompts can chain multiple interactions.
-* **UI Integration:** Prompts can be surfaced as UI elements (e.g., slash commands).
-
-**Prompt Structure:**
-
-```typescript
-{
-  name: string;              // Unique identifier
-  description?: string;      // Human-readable description
-  arguments?: [              // Optional arguments
-    {
-      name: string;          // Argument identifier
-      description?: string;  // Argument description
-      required?: boolean;    // Is argument required?
-    }
-  ]
-}
-```
-
-**Discovering Prompts:** Clients use the `prompts/list` endpoint.
-
-**Using Prompts:** Clients use the `prompts/get` request.
-
-**Implementation Example:**
-
-```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-
-const PROMPTS = {
-  "git-commit": {
-    name: "git-commit",
-    description: "Generate a Git commit message",
-    arguments: [{
-      name: "changes",
-      description: "Git diff or description of changes",
-      required: true
-    }]
-  }
-};
-
-const server = new McpServer({
-  name: "example-prompts-server",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    prompts: {}
-  }
-});
-
-server.prompt(
-  "git-commit",
-  { changes: z.string() },
-  ({ changes }) => ({
-    messages: [{
-      role: "user",
-      content: {
-        type: "text",
-        text: `Generate a concise but descriptive commit message for these changes:\n\n${changes}`
-      }
-    }]
-  })
-);
-```
-
-**Best Practices:**
-
-* Use clear prompt names and descriptions.
-* Validate all arguments.
-* Handle missing arguments gracefully.
-* Consider versioning for prompt templates.
-
-**Security Considerations:**
-
-* Validate all arguments.
-* Sanitize user input.
-* Consider rate limiting.
-* Implement access controls.
-
-### Schema Validation and Documentation
-
-All capabilities (Tools, Resources, and Prompts) should have clear and well-defined schemas using JSON Schema. This ensures that clients can understand the expected input and output formats, enabling reliable communication and preventing errors. The TypeScript SDK provides utilities for working with JSON Schema, and you should leverage these to define your schemas. The examples above demonstrate using `zod` for schema definition, which is a good practice.
-
-Good documentation is crucial for making your server's capabilities discoverable and understandable. Use descriptive names and descriptions for all capabilities and their parameters. Consider providing examples in your documentation to illustrate how the capabilities should be used.
-
-## 5. Advanced Server Features
-
-MCP offers several advanced features that enhance server capabilities and enable more complex interactions.
-
-### Sampling
-
-Sampling allows servers to request LLM completions through the client. This enables agentic behaviors while maintaining security and privacy through a human-in-the-loop design.
-
-**Key Concepts:**
-
-* **Human-in-the-Loop:** The client reviews and can modify both the sampling request and the completion.
-* **Message Format:** Sampling requests use a standardized message format with `messages`, `modelPreferences`, `systemPrompt`, `includeContext`, and other sampling parameters.
-* **Model Preferences:** Servers can specify preferences for model selection (hints, cost, speed, intelligence).
-* **Context Inclusion:** Servers can specify which MCP context to include (`none`, `thisServer`, `allServers`).
-
-**Example Request:**
-
-```json
-{
-  "method": "sampling/createMessage",
   "params": {
-    "messages": [
-      {
-        "role": "user",
-        "content": {
-          "type": "text",
-          "text": "What files are in the current directory?"
-        }
-      }
-    ],
-    "systemPrompt": "You are a helpful file system assistant.",
-    "includeContext": "thisServer",
-    "maxTokens": 100
+    "name": "longRunningTask",
+    "arguments": {
+      /* ... */
+    },
+    "_meta": { "progressToken": "task123" } // Client provides a token
   }
 }
 ```
 
-**Best Practices:**
+**Server Sending Progress (Conceptual):**
 
-The [zod](https://zod.dev/) library is a TypeScript-first schema declaration and validation library that's excellent for defining these schemas concisely and with good type safety.
+```typescript
+// Inside the longRunningTask tool handler...
+async function longRunningTaskHandler(
+  input: any,
+  exchange: McpServerExchange,
+  request: McpSchema.CallToolRequest
+) {
+  const progressToken = request.params._meta?.progressToken;
 
-* Provide clear prompts.
-* Handle both text and image content.
-* Set reasonable token limits.
-* Include relevant context.
-* Validate responses.
-
-### Roots
-
-Roots define the boundaries where servers can operate. Clients suggest roots (URIs) to inform servers about relevant resources and their locations.
-
-**Key Concepts:**
-
-* **Guidance, Not Enforcement:** Roots are informational, not strictly enforcing.
-* **Common Use Cases:** Project directories, repository locations, API endpoints.
-
-**Example:**
-
-```json
-{
-  "roots": [
-    {
-      "uri": "file:///home/user/projects/frontend",
-      "name": "Frontend Repository"
-    },
-    {
-      "uri": "https://api.example.com/v1",
-      "name": "API Endpoint"
+  const sendProgress = async (
+    progress: number,
+    total?: number,
+    message?: string
+  ) => {
+    if (progressToken !== undefined) {
+      try {
+        await exchange.sendProgress({
+          progressToken,
+          progress,
+          total,
+          message,
+        });
+      } catch (e) {
+        console.error("Failed to send progress", e);
+      }
     }
-  ]
+  };
+
+  await sendProgress(0, 100, "Starting task...");
+  // ... perform part 1 ...
+  await sendProgress(25, 100, "Part 1 complete...");
+  // ... perform part 2 ...
+  await sendProgress(75, 100, "Part 2 complete...");
+  // ... perform final part ...
+  await sendProgress(100, 100, "Task finished.");
+
+  // Send final result (this implicitly ends progress reporting for this token)
+  return { content: [{ type: "text", text: "Task complete!" }] };
 }
 ```
-
-### Streaming Responses
-
-MCP supports streaming responses for tools and resources, allowing servers to send data incrementally. This is particularly useful for large outputs or long-running operations. This is handled at the transport layer, as shown in the SSE transport examples in Section 2.
-
-### Progress Reporting
-
-Servers can report progress for long-running operations, providing feedback to the client and user. This is typically done through notifications, allowing the client to display progress indicators. The specific implementation depends on the server and the nature of the operation.
 
 ### Resource Subscriptions
 
-As mentioned in Section 4, clients can subscribe to resource updates. This allows servers to notify clients when a resource's content changes, enabling real-time updates.
+If a server declares `resources: { subscribe: true }` capability, clients can send `resources/subscribe` requests for specific resource URIs. The server is then responsible for tracking these subscriptions and sending `notifications/resources/updated` when the content of a subscribed resource changes.
 
-### Multi-Server Coordination
+**Implementation Sketch:**
 
-MCP is designed to support multiple servers working together. Clients can connect to multiple servers simultaneously, and servers can potentially interact with each other (though direct server-to-server communication is not currently part of the core MCP specification). This allows for complex workflows and distributed processing.
+- Maintain a data structure mapping resource URIs to connected client sessions that subscribed.
+- Monitor the underlying data source for changes.
+- When a change occurs for a subscribed URI, iterate through the subscribed sessions and send the `notifications/resources/updated` notification via the `exchange.sendResourceUpdated()` method (or equivalent).
+- Handle `resources/unsubscribe` requests to remove clients from the tracking structure.
+- Clean up subscriptions when a client disconnects.
 
-### Performance Optimization
+### Completions
 
-Several techniques can be used to optimize MCP server performance:
+Servers can offer argument auto-completion for Prompts and Resource Templates by declaring the `completions` capability and handling `completion/complete` requests.
 
-* **Caching:** Cache frequently accessed data (e.g., resource contents) to reduce latency.
-* **Concurrency:** Handle multiple requests concurrently using asynchronous programming.
-* **Efficient Data Structures:** Use appropriate data structures for storing and retrieving information.
-* **Optimized Algorithms:** Choose efficient algorithms for processing data.
-* **Transport Choice:** Use `stdio` when possible for local communication as it's more efficient.
-
-## 6. Security and Best Practices
-
-### Authentication and Authorization
-
-* Implement appropriate authentication mechanisms for your chosen transport (especially for remote connections).
-* Implement authorization checks to control access to resources and tools when needed.
-
-### Data Security
-
-* **Input Validation:**
-  * Validate all inputs (resource URIs, tool parameters, prompt arguments) against defined schemas. Using libraries like `zod` is strongly recommended.
-  * Sanitize file paths and system commands to prevent injection attacks.
-  * Validate URLs and external identifiers.
-  * Check parameter sizes and ranges.
-* **Data Handling:**
-  * Use TLS for network transport (especially for SSE).
-  * Encrypt sensitive data at rest and in transit.
-  * Validate message integrity.
-  * Implement message size limits.
-  * Sanitize input data.
-  * Be cautious with binary data handling.
-* **Resource Protection:**
-  * Implement access controls for resources.
-  * Validate resource paths.
-  * Monitor resource usage.
-  * Rate limit requests.
-
-### Error Handling
-
-* Use a consistent error handling strategy (e.g., the Result pattern).
-* Don't leak sensitive information in error messages.
-* Log security-relevant errors.
-* Implement proper cleanup after errors.
-* Handle timeouts appropriately.
-* Report tool errors within the result object, not as protocol-level errors.
-
-### General Best Practices
-
-* **Principle of Least Privilege:** Grant only the necessary permissions to clients and users.
-* **Defense in Depth:** Implement multiple layers of security.
-* **Regular Audits:** Regularly audit your server's security and dependencies.
-* **Dependency Management:** Use lock files and regularly audit dependencies for vulnerabilities.
-* **Keep it Simple:** Simpler code is generally easier to secure.
-* **Documentation:** Thoroughly document your server's security measures and expected behavior.
-* **Testing:** Include security testing as part of your overall testing strategy.
-* **Transports:** Use `stdio` when possible for local communication as it's more efficient and avoids network-related security concerns.
-* **Sampling:** Validate all message content and sanitize sensitive information when using sampling.
-
-## 7. Troubleshooting and Resources
-
-This section provides guidance on troubleshooting MCP server implementations and lists helpful resources.
-
-### Debugging Tools
-
-Several tools are available for debugging MCP servers:
-
-* **MCP Inspector:** An interactive debugging interface for direct server testing. See the [MCP Inspector guide](https://github.com/modelcontextprotocol/inspector) for details.
-* **Claude Desktop Developer Tools:** Useful for integration testing, log collection, and accessing Chrome DevTools within Claude Desktop.
-  * To enable developer tools, create a `developer_settings.json` file with `{"allowDevTools": true}` in `~/Library/Application Support/Claude/`.
-  * Open DevTools with Command-Option-Shift-i.
-* **Server Logging:** Implement custom logging within your server to track errors, performance, and other relevant information.
-
-### Viewing Logs (Claude Desktop)
-
-You can view detailed MCP logs from Claude Desktop:
-
-```bash
-# Follow logs in real-time
-tail -n 20 -F ~/Library/Logs/Claude/mcp*.log
-```
-
-These logs capture server connection events, configuration issues, runtime errors, and message exchanges.
-
-### Common Issues and Solutions
-
-* **Working Directory Issues (Claude Desktop):** The working directory for servers launched via `claude_desktop_config.json` may be undefined. Always use absolute paths in your configuration and `.env` files.
-* **Environment Variable Issues:** MCP servers inherit only a subset of environment variables. Specify required variables explicitly in your `claude_desktop_config.json`.
-* **Server Initialization Problems:**
-  * Check for incorrect server executable paths, missing files, or permission problems.
-  * Verify configuration files for valid JSON syntax, missing fields, or type mismatches.
-  * Ensure required environment variables are set correctly.
-* **Connection Problems:**
-  * Check Claude Desktop logs.
-  * Verify the server process is running.
-  * Test the server standalone with the MCP Inspector.
-  * Verify protocol compatibility.
-
-### Implementing Logging
-
-* **Server-Side Logging:**
-  * For `stdio` transport, log messages to `stderr`. These will be captured by the host application (e.g., Claude Desktop).
-  * For all transports, send log messages to the client using `server.sendLoggingMessage()` (from `@modelcontextprotocol/sdk/server`).
-  * Log initialization steps, resource access, tool execution, error conditions, and performance metrics.
-* **Client-Side Logging:** Enable debug logging, monitor network traffic, track message exchanges, and record error states in your client application.
-
-### Debugging Workflow
-
-1. **Initial Development:** Use the MCP Inspector for basic testing, implement core functionality, and add logging.
-2. **Integration Testing:** Test within Claude Desktop, monitor logs, and check error handling.
-
-**Testing Changes:**
-
-* Configuration changes: Restart Claude Desktop.
-* Server code changes: Use Command-R to reload.
-
-### Best Practices
-
-* **Structured Logging:** Use consistent formats, include context, add timestamps, and track request IDs.
-* **Error Handling:** Log stack traces, include error context, track error patterns, and monitor recovery.
-* **Performance Tracking:** Log operation timing, monitor resource usage, track message sizes, and measure latency.
-
-### Security Considerations (Debugging)
-
-* **Sensitive Data:** Sanitize logs, protect credentials, and mask personal information.
-* **Access Control:** Verify permissions, check authentication, and monitor access patterns.
-
-### Community Resources and Support
-
-* **GitHub Issues:** Report bugs and request features.
-* **GitHub Discussions:** Ask questions and discuss MCP development.
-* **Documentation:** [Model Context Protocol documentation](https://modelcontextprotocol.io)
-
-## 8. Example Implementations
-
-This section provides more complex example implementations to help you understand how to build practical MCP servers.
-
-### SQLite Explorer
-
-This example shows how to build an MCP server that provides access to a SQLite database:
+**Implementation Sketch:**
 
 ```typescript
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import sqlite3 from "sqlite3";
-import { promisify } from "util";
 import { z } from "zod";
+import {
+  CompletionRequestSchema,
+  PromptReferenceSchema,
+} from "@modelcontextprotocol/sdk/types.js"; // Import relevant types
 
-const server = new McpServer({
-  name: "SQLite Explorer",
-  version: "1.0.0"
+// Assume 'server' is an initialized McpServer instance with completions capability
+
+// Example: Completion for a prompt argument
+server.setRequestHandler(CompletionRequestSchema, async (request, exchange) => {
+  const params = request.params;
+
+  // Check if it's for a prompt we know
+  if (params.ref.type === "ref/prompt" && params.ref.name === "my-prompt") {
+    // Check which argument is being completed
+    if (params.argument.name === "targetFile") {
+      const currentValue = (params.argument.value as string) || "";
+      // Logic to find matching files based on currentValue
+      const matchingFiles = [
+        "file1.txt",
+        "file2.log",
+        "another_file.txt",
+      ].filter((f) => f.startsWith(currentValue));
+
+      return {
+        completion: {
+          values: matchingFiles.slice(0, 100), // Max 100 results
+          // total: matchingFiles.length, // Optional total count
+          // hasMore: matchingFiles.length > 100 // Optional flag
+        },
+      };
+    }
+  }
+  // Handle other completion requests or return empty results
+  return { completion: { values: [] } };
 });
-
-// Helper to create DB connection
-const getDb = () => {
-  const db = new sqlite3.Database("database.db");
-  return {
-    all: promisify<string, any[]>(db.all.bind(db)),
-    close: promisify(db.close.bind(db))
-  };
-};
-
-// Resource to expose database schema
-server.resource(
-  "schema",
-  "schema://main",
-  async (uri) => {
-    const db = getDb();
-    try {
-      const tables = await db.all(
-        "SELECT sql FROM sqlite_master WHERE type='table'"
-      );
-      return {
-        contents: [{
-          uri: uri.href,
-          text: tables.map((t: {sql: string}) => t.sql).join("\n")
-        }]
-      };
-    } finally {
-      await db.close();
-    }
-  }
-);
-
-// Tool to execute SQL queries
-server.tool(
-  "query",
-  { sql: z.string() },
-  async ({ sql }) => {
-    const db = getDb();
-    try {
-      const results = await db.all(sql);
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(results, null, 2)
-        }]
-      };
-    } catch (err: unknown) {
-      const error = err as Error;
-      return {
-        content: [{
-          type: "text",
-          text: `Error: ${error.message}`
-        }],
-        isError: true
-      };
-    } finally {
-      await db.close();
-    }
-  }
-);
-
-const transport = new StdioServerTransport();
-await server.connect(transport);
 ```
 
-### Low-Level Server Implementation
+### Logging
 
-For more control, you can use the low-level Server class directly:
+Servers can send structured logs to clients using `notifications/message` if they declare the `logging` capability. Clients can optionally control the minimum level using `logging/setLevel`.
+
+**Sending a Log Message (Conceptual):**
 
 ```typescript
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+// Inside any handler where 'exchange' is available...
+async function someOperation(input: any, exchange: McpServerExchange) {
+  try {
+    // ... do work ...
+    await exchange.sendLogMessage({
+      level: "info",
+      logger: "MyOperationLogger", // Optional logger name
+      data: { message: "Operation successful", input: input }, // Arbitrary JSON data
+    });
+    return {
+      /* success result */
+    };
+  } catch (error: any) {
+    await exchange.sendLogMessage({
+      level: "error",
+      logger: "MyOperationLogger",
+      data: {
+        message: "Operation failed",
+        error: error.message,
+        stack: error.stack,
+      },
+    });
+    return {
+      /* error result */
+    };
+  }
+}
+```
+
+### Performance Optimization
+
+- **Caching:** Cache results of expensive operations (API calls, database queries, resource reads) where appropriate. Use time-based or event-based invalidation.
+- **Concurrency:** Leverage `async/await` and Node.js's event loop to handle multiple requests concurrently without blocking. Avoid CPU-intensive synchronous tasks.
+- **Efficient Data Handling:** Use streams for large data transfers if the transport supports it. Process data efficiently.
+- **Transport Choice:** `stdio` is generally lower overhead than HTTP for local communication.
+- **Debouncing/Throttling:** Implement server-side rate limiting for resource-intensive tools or frequent notifications.
+
+## 6. Security and Best Practices
+
+Security is paramount when building MCP servers, as they often interact with sensitive data and systems.
+
+### Authentication and Authorization
+
+- **Transports:**
+  - **Stdio:** Relies on the security context of the process execution. Ensure the client launches the server securely. Credentials might be passed via environment variables if needed, but this requires careful handling by the client.
+  - **Streamable HTTP:** **MUST** implement proper authentication (e.g., Bearer tokens, API Keys) and authorization. Follow the [MCP Authorization specification](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization) which is based on OAuth 2.1. Validate `Origin` headers and bind to `localhost` for local servers to prevent DNS rebinding. **MUST** use HTTPS for remote connections.
+- **Capability Control:** Implement fine-grained authorization checks within tool/resource handlers if different clients should have different permissions.
+
+### Data Security
+
+- **Input Validation:**
+  - **Always validate and sanitize ALL inputs** from the client (tool arguments, resource URIs, prompt arguments) using robust schemas (`zod` is excellent for this).
+  - **Prevent Path Traversal:** If dealing with file paths, rigorously validate and normalize paths to ensure they stay within designated boundaries. Never trust client-provided paths directly.
+  - **Prevent Injection:** Sanitize inputs used in database queries (use parameterized queries), shell commands (avoid direct execution if possible, otherwise escape rigorously), or API calls.
+- **Data Handling:**
+  - Use TLS/HTTPS for network transports.
+  - Encrypt sensitive data stored by the server.
+  - Avoid logging sensitive information. If necessary, mask or redact it.
+- **Resource Protection:**
+  - Implement access controls based on authentication/authorization context.
+  - Rate limit requests to prevent abuse.
+
+### Error Handling
+
+- **Be Specific but Safe:** Provide enough information for debugging but avoid leaking internal details (stack traces, sensitive paths, internal error codes) to the client in error responses. Log detailed errors server-side.
+- **Tool Errors:** Return `{ isError: true, content: [...] }` for errors _within_ a tool's execution (e.g., API call failed). Use standard JSON-RPC errors for protocol-level issues (e.g., tool not found, invalid params).
+- **Resource Cleanup:** Ensure resources (file handles, network connections, DB connections) are properly closed, especially in error paths (`finally` blocks).
+
+### General Best Practices
+
+- **Principle of Least Privilege:** Servers should only have the permissions they absolutely need to function.
+- **Dependency Security:** Keep dependencies updated (`npm audit`). Use lockfiles (`package-lock.json`).
+- **Code Quality:** Write clean, maintainable, and well-tested code. Simpler code is often more secure.
+- **Clear Documentation:** Document the server's purpose, capabilities, required configuration, and security considerations.
+- **Testing:** Include tests for security vulnerabilities (invalid inputs, path traversal attempts, permission errors).
+- **Annotations:** Use tool annotations (`readOnlyHint`, `destructiveHint`, etc.) accurately, but remember clients **MUST NOT** rely solely on these for security decisions.
+
+## 7. Troubleshooting and Resources
+
+### Debugging Tools
+
+- **MCP Inspector:** ([GitHub](https://github.com/modelcontextprotocol/inspector)) Essential for directly interacting with your server (especially stdio) outside a full client application. Launch it with your server command: `npx @modelcontextprotocol/inspector node build/index.js`.
+- **Client Logs (e.g., Claude Desktop):** Check the host application's logs for connection errors, messages sent/received, and server stderr output. (See paths in Section 3 of the quickstart).
+- **Server Logging:** Implement robust logging within your server (using `console.error` for stdio, or the MCP logging capability).
+- **Node.js Debugger:** Use standard Node.js debugging techniques (e.g., VS Code debugger, `node --inspect`).
+
+### Viewing Logs (Claude Desktop Example)
+
+- **macOS:** `tail -n 50 -F ~/Library/Logs/Claude/mcp*.log`
+- **Windows:** Check `%APPDATA%\Claude\logs\mcp*.log` (use PowerShell `Get-Content -Path "$env:APPDATA\Claude\logs\mcp*.log" -Wait -Tail 50` for live view)
+- Look for `mcp.log` (general) and `mcp-server-SERVERNAME.log` (stderr from your server).
+
+### Common Issues and Solutions
+
+- **Server Not Starting/Connecting:**
+  - Check client logs for errors (path issues, command errors).
+  - Verify server executable path and permissions in client config (e.g., `claude_desktop_config.json`). Use **absolute paths**.
+  - Run the server command directly in your terminal to check for startup errors.
+  - Ensure the server script has execute permissions (`chmod +x build/index.js`).
+  - Check for port conflicts if using HTTP.
+- **Incorrect Working Directory (esp. with Claude Desktop):** Servers launched by clients might not have the expected working directory. Use absolute paths for file access or resolve paths relative to `import.meta.url` or a known base directory.
+- **Environment Variables Missing:** Clients may not pass the full environment. Explicitly configure required environment variables in the client's server configuration if possible, or design the server to read from a config file.
+- **JSON-RPC Errors:**
+  - `-32700 Parse error`: Invalid JSON sent.
+  - `-32600 Invalid Request`: JSON is not a valid Request object.
+  - `-32601 Method not found`: Client called a method the server doesn't support or hasn't registered. Check capabilities and method names.
+  - `-32602 Invalid params`: Input doesn't match the schema defined for the tool/resource/prompt. Check `zod` schemas and client arguments.
+  - `-32603 Internal error`: Server-side exception occurred during processing. Check server logs.
+- **Tool Calls Failing:** Check server logs for detailed errors. Ensure external dependencies (APIs, DBs) are available. Verify input parameters match the tool's schema.
+- **Resource Access Denied:** Check path validation logic and filesystem permissions. Ensure the server process has access to the requested files/directories.
+
+### Implementing Logging Effectively
+
+- **Use `console.error` for Stdio:** Simple and captured by most clients.
+- **Use MCP Logging (`exchange.sendLogMessage`):** For structured logs visible to clients that support the logging capability. Choose appropriate levels (`debug`, `info`, `warn`, `error`).
+- **Log Key Events:** Initialization, connection, disconnection, request received, response sent, errors encountered, significant state changes.
+- **Include Context:** Log relevant data like request IDs, method names, user identifiers (if applicable and safe), and parameters (masking sensitive parts).
+- **Structured Logging:** Consider libraries like `pino` or `winston` for more advanced server-side logging (outputting JSON to stderr for stdio is often effective).
+
+### Community Resources and Support
+
+- **Official Documentation:** [modelcontextprotocol.io](https://modelcontextprotocol.io/)
+- **GitHub Organization:** [github.com/modelcontextprotocol](https://github.com/modelcontextprotocol) (SDKs, Specification, Inspector, Servers)
+- **GitHub Discussions:** For Q&A and community interaction ([Spec Discussions](https://github.com/modelcontextprotocol/specification/discussions), [Org Discussions](https://github.com/orgs/modelcontextprotocol/discussions)).
+- **GitHub Issues:** For bug reports and feature requests on specific repositories.
+
+## 8. Example Implementations
+
+These examples illustrate combining different concepts.
+
+### SQLite Explorer (Enhanced)
+
+```typescript
+// src/sqlite-explorer.ts
+import {
+  McpServer,
+  ResourceTemplate,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import sqlite3 from "sqlite3";
+import { open, Database } from "sqlite"; // Use the promise-based 'sqlite' wrapper
+import { z } from "zod";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DB_PATH = path.resolve(__dirname, "../database.db"); // Store DB alongside src
+
+async function main() {
+  const server = new McpServer(
+    {
+      name: "SQLiteExplorer",
+      version: "1.0.1",
+    },
+    {
+      capabilities: {
+        resources: { listChanged: false },
+        tools: { listChanged: false },
+      },
+    }
+  );
+
+  // Helper to open DB connection
+  const getDb = async (): Promise<Database> => {
+    // Use verbose mode for better debugging during development
+    // sqlite3.verbose();
+    return open({
+      filename: DB_PATH,
+      driver: sqlite3.Database,
+    });
+  };
+
+  // Resource: Database Schema
+  server.resource(
+    "db-schema", // Resource group name
+    "schema://main", // Static URI for the main schema
+    async (uri) => {
+      // Read handler
+      let db: Database | null = null;
+      try {
+        db = await getDb();
+        // Query to get schema for all tables
+        const tables = await db.all<{ name: string; sql: string }>(
+          "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+        );
+        const schemaText = tables
+          .map((t) => `-- ${t.name}\n${t.sql};`)
+          .join("\n\n");
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "application/sql", // Use appropriate MIME type
+              text: schemaText || "-- No tables found --",
+            },
+          ],
+        };
+      } catch (error: any) {
+        console.error(`Schema retrieval error: ${error.message}`);
+        throw new Error(`Failed to retrieve schema: ${error.message}`);
+      } finally {
+        await db?.close(); // Ensure DB is closed
+      }
+    }
+  );
+
+  // Tool: Execute Read-Only SQL Query
+  const querySchema = z.object({
+    sql: z
+      .string()
+      .trim()
+      .min(1)
+      .describe("The read-only SQL query to execute"),
+  });
+
+  server.tool(
+    "sqlQuery", // Tool name
+    querySchema, // Input schema
+    async ({ sql }) => {
+      // Handler
+      // Basic validation: Prevent modification queries (improve this for production)
+      const lowerSql = sql.toLowerCase();
+      if (
+        /\b(insert|update|delete|drop|create|alter|attach)\b/.test(lowerSql)
+      ) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Error: Only read-only SELECT queries are allowed.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      let db: Database | null = null;
+      try {
+        db = await getDb();
+        // Use a timeout for queries
+        const results = await Promise.race([
+          db.all(sql),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Query timeout")), 5000)
+          ), // 5s timeout
+        ]);
+
+        return {
+          content: [
+            {
+              type: "text",
+              // Limit result size for display
+              text:
+                JSON.stringify(results.slice(0, 50), null, 2) +
+                (results.length > 50 ? "\n... (results truncated)" : ""),
+            },
+          ],
+        };
+      } catch (error: any) {
+        console.error(`SQL Query error: ${error.message}`);
+        return {
+          content: [{ type: "text", text: `Query Error: ${error.message}` }],
+          isError: true,
+        };
+      } finally {
+        await db?.close();
+      }
+    },
+    { readOnlyHint: true } // Annotation: This tool doesn't modify data
+  );
+
+  // --- Connection ---
+  const transport = new StdioServerTransport();
+  try {
+    await server.connect(transport);
+    console.error("SQLite Explorer MCP Server running via stdio.");
+  } catch (error) {
+    console.error("Failed to connect server:", error);
+    process.exit(1);
+  }
+}
+
+main().catch((error) => {
+  console.error("Unhandled error during server startup:", error);
+  process.exit(1);
+});
+```
+
+### Low-Level Server Implementation (Manual Handlers)
+
+This shows using the base `Server` class for finer control over request handling, bypassing the `McpServer` helpers.
+
+```typescript
+// src/low-level-server.ts
+import { Server } from "@modelcontextprotocol/sdk/server/index.js"; // Note: different import
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema
+  ListPromptsRequestSchema, // Import specific request schemas
+  GetPromptRequestSchema,
+  ListPromptsResultSchema, // Import result schemas if needed for validation
+  GetPromptResultSchema,
+  McpSchema, // Import base schema types
 } from "@modelcontextprotocol/sdk/types.js";
 
-const server = new Server(
-  {
-    name: "example-server",
-    version: "1.0.0"
-  },
-  {
-    capabilities: {
-      prompts: {}
+async function main() {
+  const server = new Server(
+    {
+      // Server Info
+      name: "low-level-example",
+      version: "1.0.0",
+    },
+    {
+      // Server Options
+      capabilities: {
+        prompts: { listChanged: false }, // Declare supported capabilities
+      },
     }
-  }
-);
+  );
 
-server.setRequestHandler(ListPromptsRequestSchema, async () => {
-  return {
-    prompts: [{
-      name: "example-prompt",
-      description: "An example prompt template",
-      arguments: [{
-        name: "arg1",
-        description: "Example argument",
-        required: true
-      }]
-    }]
-  };
-});
+  // Manually register a handler for 'prompts/list'
+  server.setRequestHandler(
+    ListPromptsRequestSchema,
+    async (request, exchange) => {
+      console.error(`Handling request: ${request.method}`);
+      // Implementation for listing prompts
+      const result: McpSchema.ListPromptsResult = {
+        prompts: [
+          {
+            name: "example-prompt",
+            description: "An example prompt template (low-level)",
+            arguments: [
+              { name: "arg1", description: "Example argument", required: true },
+            ],
+          },
+        ],
+        // nextCursor: undefined // No pagination in this example
+      };
+      // Validate result against schema (optional but recommended)
+      ListPromptsResultSchema.parse(result);
+      return result;
+    }
+  );
 
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  if (request.params.name !== "example-prompt") {
-    throw new Error("Unknown prompt");
-  }
-  return {
-    description: "Example prompt",
-    messages: [{
-      role: "user",
-      content: {
-        type: "text",
-        text: "Example prompt text"
+  // Manually register a handler for 'prompts/get'
+  server.setRequestHandler(
+    GetPromptRequestSchema,
+    async (request, exchange) => {
+      console.error(
+        `Handling request: ${request.method} for prompt: ${request.params.name}`
+      );
+      if (request.params.name !== "example-prompt") {
+        // Throwing an error generates a JSON-RPC error response
+        throw new Error(`Unknown prompt: ${request.params.name}`);
       }
-    }]
-  };
-});
+      const arg1Value = request.params.arguments?.arg1 ?? "[arg1 not provided]";
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+      const result: McpSchema.GetPromptResult = {
+        description: "Example prompt (low-level)",
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `Low-level prompt text with arg1: ${arg1Value}`,
+            },
+          },
+        ],
+      };
+      // Validate result against schema (optional but recommended)
+      GetPromptResultSchema.parse(result);
+      return result;
+    }
+  );
+
+  // --- Connection ---
+  const transport = new StdioServerTransport();
+  try {
+    await server.connect(transport);
+    console.error("Low-Level MCP Server running via stdio.");
+  } catch (error) {
+    console.error("Failed to connect server:", error);
+    process.exit(1);
+  }
+}
+
+main().catch((error) => {
+  console.error("Unhandled error during server startup:", error);
+  process.exit(1);
+});
 ```
-
-### Multi-Capability Server Example
-
-This example shows a server that combines tools, resources, and prompts:
-
-```typescript
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-import fs from "fs/promises";
-import path from "path";
-
-const server = new McpServer({
-  name: "Multi-Capability Server",
-  version: "1.0.0"
-});
-
-// Tool example - Weather lookup
-server.tool(
-  "get-weather",
-  { city: z.string() },
-  async ({ city }) => {
-    try {
-      // In a real implementation, you would call a weather API
-      const mockWeather = {
-        city,
-        temperature: Math.round(Math.random() * 30),
-        conditions: ["Sunny", "Cloudy", "Rainy"][Math.floor(Math.random() * 3)]
-      };
-      
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(mockWeather, null, 2)
-        }]
-      };
-    } catch (error: any) {
-      return {
-        content: [{
-          type: "text",
-          text: `Error retrieving weather: ${error.message}`
-        }],
-        isError: true
-      };
-    }
-  }
-);
-
-// Resource example - Project files
-const PROJECT_DIR = './project';
-server.resource(
-  "project-files",
-  new ResourceTemplate("file:///project/{filename}", {
-    list: async () => {
-      try {
-        await fs.mkdir(PROJECT_DIR, { recursive: true });
-        const files = await fs.readdir(PROJECT_DIR);
-        return files.map(file => ({
-          uri: `file:///project/${file}`,
-          name: file,
-          mimeType: 'text/plain'
-        }));
-      } catch (error) {
-        console.error(`Error listing project files: ${error}`);
-        return [];
-      }
-    }
-  }),
-  async (uri, { filename }) => {
-    const filePath = path.join(PROJECT_DIR, filename);
-    
-    // Security validation
-    if (!filePath.startsWith(PROJECT_DIR) || path.relative(PROJECT_DIR, filePath).startsWith('..')) {
-      throw new Error("Access denied");
-    }
-    
-    try {
-      const fileContents = await fs.readFile(filePath, 'utf-8');
-      return {
-        contents: [{
-          uri: uri.href,
-          mimeType: "text/plain",
-          text: fileContents
-        }]
-      };
-    } catch (error: any) {
-      throw new Error(`Error reading file: ${error.message}`);
-    }
-  }
-);
-
-// Prompt example - Code review
-server.prompt(
-  "code-review",
-  { 
-    code: z.string(),
-    language: z.string().optional(),
-    focus: z.enum(["security", "performance", "readability"]).optional()
-  },
-  ({ code, language, focus }) => ({
-    messages: [{
-      role: "user",
-      content: {
-        type: "text",
-        text: `Please review this ${language || 'code'} with a focus on ${focus || 'overall quality'}:\n\n${code}`
-      }
-    }]
-  })
-);
-
-const transport = new StdioServerTransport();
-await server.connect(transport);
-```
-
-These examples demonstrate how to build more complex MCP servers that provide multiple capabilities and integrate with external systems. You can use them as starting points for your own implementations.
