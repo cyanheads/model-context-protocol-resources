@@ -6,7 +6,7 @@
 [![MCP SDK - Kotlin](https://img.shields.io/badge/Kotlin-0.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![MCP SDK - Java](https://img.shields.io/badge/Java-0.4.0-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
 [![MCP SDK - C#](https://img.shields.io/badge/C%23-0.0.0-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
-[![Guide Last Updated](https://img.shields.io/badge/Last%20Updated-April%202025-brightgreen.svg)]()
+[![Guide Last Updated](https://img.shields.io/badge/Last%20Updated-April%202025-brightgreen.svg)]
 
 Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this powerful standard for enhancing Large Language Model (LLM) Agent capabilities. Questions and feedback are welcome! 🚀
 
@@ -120,9 +120,9 @@ flowchart TB
 
 > Explore the [template repository](https://github.com/cyanheads/mcp-ts-template) for detailed documentation and usage instructions.
 
-## 🛠️ MCP Guides
+## 📚 MCP Guides
 
-Comprehensive guides to help you build MCP clients and servers:
+To help you get started building with MCP, here are comprehensive guides for both client and server development:
 
 ### [MCP Client Development Guide](guides/mcp-client-development-guide.md)
 
@@ -147,9 +147,9 @@ Learn how to create servers that provide capabilities to MCP clients. Covers:
 - Troubleshooting common issues.
 - Example server implementations.
 
-## 🛠️ MCP Utilities
+## 🔧 MCP Utilities
 
-Tools to aid in MCP development and ecosystem management:
+Beyond the core guides, these utilities can assist in development and ecosystem interaction:
 
 ### [MCP Reporter](https://github.com/cyanheads/mcp-reporter)
 
@@ -167,14 +167,14 @@ Generates comprehensive reports detailing the capabilities of connected MCP serv
 - **Report Generation**: Structured Markdown, schema documentation, usage examples.
 - **Integration**: CLI and programmatic API, configurable output.
 
-## 🛠️ MCP Servers
+## 🔌 MCP Servers
 
-A collection of MCP server implementations providing various capabilities:
+This repository hosts several example MCP server implementations, showcasing different capabilities:
 
 ### [Perplexity MCP Server](https://github.com/casey/perplexity-mcp-server)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-^5.8.2-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-^1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Status](https://img.shields.io/badge/Status-Stable-green.svg)](https://github.com/casey/perplexity-mcp-server/issues)
@@ -193,9 +193,9 @@ Integrates with the [Perplexity AI API](https://docs.perplexity.ai/docs/getting-
 ### [Atlas MCP Server](https://github.com/cyanheads/atlas-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-atlas--mcp--server-blue.svg)](https://github.com/cyanheads/atlas-mcp-server)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-2.5.0-blue.svg)](https://github.com/cyanheads/atlas-mcp-server/releases)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.9.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-2.7.1-blue.svg)](https://github.com/cyanheads/atlas-mcp-server/releases)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/atlas-mcp-server?style=social)](https://github.com/cyanheads/atlas-mcp-server)
@@ -212,9 +212,9 @@ ATLAS (Adaptive Task & Logic Automation System): A task and knowledge management
 
 ### [Filesystem MCP Server](https://github.com/cyanheads/filesystem-mcp-server)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-^5.8.3-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-^1.9.0-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.9.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/filesystem-mcp-server?style=social)](https://github.com/cyanheads/filesystem-mcp-server)
@@ -237,7 +237,7 @@ Provides secure and reliable tools for AI agents to interact with the local file
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.4.0-green.svg)](https://modelcontextprotocol.io/)
 [![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/toolkit-mcp-server?style=social)](https://github.com/cyanheads/toolkit-mcp-server)
 
 Offers various system utilities and tools for LLM agents.
@@ -256,7 +256,7 @@ Offers various system utilities and tools for LLM agents.
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.4.1-green.svg)](https://modelcontextprotocol.io/)
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/mentor-mcp-server?style=social)](https://github.com/cyanheads/mentor-mcp-server)
 
 Provides LLM agents with a "second opinion" using the Deepseek API (specifically Deepseek-Reasoning R1) for mentorship tasks.
@@ -272,11 +272,11 @@ Provides LLM agents with a "second opinion" using the Deepseek API (specifically
 ### [Obsidian MCP Server](https://github.com/cyanheads/obsidian-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-obsidian--mcp--server-blue.svg)](https://github.com/cyanheads/obsidian-mcp-server)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.6.1-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-1.4.1-blue.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.10.2-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.5.6-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/obsidian-mcp-server?style=social)](https://github.com/cyanheads/obsidian-mcp-server)
 
 Enables LLMs to interact with [Obsidian](https://obsidian.md/) vaults via the Local REST API plugin.
@@ -293,10 +293,10 @@ Enables LLMs to interact with [Obsidian](https://obsidian.md/) vaults via the Lo
 
 [![GitHub](https://img.shields.io/badge/GitHub-git--mcp--server-blue.svg)](https://github.com/cyanheads/git-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.2.4-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-blue.svg)]()
+[![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/git-mcp-server?style=social)](https://github.com/cyanheads/git-mcp-server)
 
 Provides tools for interacting with local Git repositories.
@@ -314,10 +314,10 @@ Provides tools for interacting with local Git repositories.
 
 [![GitHub](https://img.shields.io/badge/GitHub-github--mcp--server-blue.svg)](https://github.com/cyanheads/github-mcp-server)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://github.com/anthropics/modelcontextprotocol)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]()
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.7.0-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.2-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/Status-Stable-green.svg)]()
+[![Status](https://img.shields.io/badge/Status-Beta-orange.svg)]()
 [![GitHub](https://img.shields.io/github/stars/cyanheads/github-mcp-server?style=social)](https://github.com/cyanheads/github-mcp-server)
 
 Provides tools for interacting with the GitHub API.
@@ -336,9 +336,9 @@ Provides tools for interacting with the GitHub API.
 ### [Ntfy MCP Server](https://github.com/cyanheads/ntfy-mcp-server)
 
 [![GitHub](https://img.shields.io/badge/GitHub-ntfy--mcp--server-blue.svg)](https://github.com/cyanheads/ntfy-mcp-server)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg)](https://www.typescriptlang.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-1.8.0-green.svg)](https://modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/Version-1.0.2-blue.svg)](https://github.com/cyanheads/ntfy-mcp-server/releases)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.10.2-green.svg)](https://modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/Version-1.0.4-blue.svg)](https://github.com/cyanheads/ntfy-mcp-server/releases)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Status](https://img.shields.io/badge/Status-Stable-green.svg)](https://github.com/cyanheads/ntfy-mcp-server)
 [![GitHub](https://img.shields.io/github/stars/cyanheads/ntfy-mcp-server?style=social)](https://github.com/cyanheads/ntfy-mcp-server)
@@ -355,16 +355,16 @@ Interacts with the [ntfy.sh](https://ntfy.sh/) push notification service.
 
 ## 🚀 Getting Started
 
-1.  **Explore the Guides**: Understand MCP concepts and development approaches.
-2.  **Select a Server**: Choose one relevant to your needs and follow its setup instructions.
-3.  **Connect a Client**: Use an existing MCP-compatible client (Claude Desktop, Cline, etc.) or build your own using my [Client Development Guide](guides/mcp-client-development-guide.md).
-4.  **Experiment & Contribute**: Try out the tools and consider contributing via issues or pull requests.
+1.  **Explore the Guides**: Understand MCP concepts and development approaches using the [Client](guides/mcp-client-development-guide.md) and [Server](guides/mcp-server-development-guide.md) guides.
+2.  **Select a Server**: Choose one relevant to your needs from the [MCP Servers](#-mcp-servers) section and follow its specific setup instructions in its repository.
+3.  **Connect a Client**: Use an existing MCP-compatible client (like Claude Desktop, Cline, etc.) or build your own using the [Client Development Guide](guides/mcp-client-development-guide.md).
+4.  **Experiment & Contribute**: Try out the tools and consider contributing via issues or pull requests on the respective project repositories.
 
 ## 📄 License
 
 [![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+This project and its components are licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details, and check individual component repositories for any specific licensing nuances.
 
 ---
 
