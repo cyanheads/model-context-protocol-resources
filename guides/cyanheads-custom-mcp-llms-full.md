@@ -1,4 +1,4 @@
-## Developer Note: My Custom `llms-full.txt` for TypeScript MCP Server Development
+# Developer Note: My Custom `llms-full.txt` for TypeScript MCP Server Development
 
 This file is my personal, condensed version of the official Model Context Protocol `llms-full.txt` (found at [https://modelcontextprotocol.io/llms-full.txt](https://modelcontextprotocol.io/llms-full.txt)) with a focus on Server development. I've tailored it specifically for my own development workflow, focusing primarily on building MCP servers using TypeScript.
 
@@ -258,7 +258,7 @@ export const registerEchoResource = async (
   // To send updates:
   // server.sendNotification('notifications/resources/updated', { uri: echoResourceUri });
 
-  // If supporting list changes (listChanged: true capability):
+  // If supporting list-change events (listChanged: true capability):
   // server.sendNotification('notifications/resources/list_changed', {});
 };
 ```
@@ -273,7 +273,7 @@ export const registerEchoResource = async (
   - `tools/list`: Client requests a list of available `Tool` objects. Supports pagination.
 - **Invocation:**
   - `tools/call`: Client sends tool `name` and `arguments` matching the `inputSchema`.
-  - Response is `CallToolResult` containing `content` (array of Text, Image, Audio, or Embedded Resource) and `isError` (boolean). Tool execution errors (e.g., API failure) are reported via `isError: true` and details in `content`, _not_ as protocol-level errors.
+  - Response is `CallToolResult` containing `content` (array of Text, Image, Audio, or Embedded Resource) and `isError` (boolean). Tool execution errors (e.g., API failure) are reported via `isError: true`, and details in `content`, _not_ as protocol-level errors.
   - **Importance of Rich Schemas:** Providing detailed JSON Schemas (with types, descriptions, required fields, enums, patterns, etc.) is crucial as it dramatically improves the LLM's ability to correctly format arguments and use the tool effectively.
 - **Updates (Optional):**
   - Declare `listChanged: true` capability to send `notifications/tools/list_changed`. This notification **MUST** be sent after any operation that dynamically adds, removes, enables, disables, or updates tools to ensure client UIs remain synchronized. SDKs may provide helper functions (e.g., `sendToolListChanged()`).
@@ -559,7 +559,7 @@ MCP defines several utility protocols servers can support:
 - **Completion:** If `completions` capability is declared, clients can send `completion/complete` for prompt/resource arguments, receiving suggestions.
 - **Cancellation:** Either party can send `notifications/cancelled` with a `requestId` to attempt cancellation of an in-progress request. Best-effort, handles race conditions.
 - **Ping:** Either party can send a `ping` request; the receiver **MUST** respond promptly with an empty result to confirm liveness.
-- **Progress & Configuration (New in 2025-03-26):** The specification also includes mechanisms for servers to send progress updates (`notifications/progress`) for long-running operations and for clients to manage server-specific settings (`configuration/get`, `configuration/set`). **Note:** To receive progress updates, the client **MUST** include a `_meta: { progressToken: "..." }` envelope in the original request that initiates the long-running operation. The server then includes this `progressToken` in subsequent `notifications/progress` messages. While less common than core capabilities, servers can implement these if needed. Clients **MUST** also be prepared to debounce rapid sequences of `listChanged` or `updated` notifications as per the specification's Behavior Requirements ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/basic/behavior.mdx)).
+- **Progress & Configuration (New in 2025-03-26):** The specification also includes mechanisms for servers to send progress updates (`notifications/progress`) for long-running operations and for clients to manage server-specific settings (`configuration/get`, `configuration/set`). **Note:** To receive progress updates, the client **MUST** include a `_meta: { progressToken: "..." }` envelope in the original request that initiates the long-running operation. The server then includes this `progressToken` in subsequent `notifications/progress` messages. While less common than core capabilities, servers can implement these if needed. Clients **MUST** be prepared to debounce rapid sequences of `listChanged` or `updated` notifications as per the specification's Behavior Requirements ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/basic/behavior.mdx)).
 
 **Example: Sending a Log Notification (TypeScript SDK)**
 
@@ -907,6 +907,18 @@ async function startHttpServer() {
 ## 9. Security Considerations for Servers
 
 Security is paramount when building MCP servers. While the host/client manages user consent, server design directly impacts safety.
+
+| Attack Vector        | Mitigation Strategy                                                                                                |
+| :------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| **Injection**        | Rigorous input validation (schemas, sanitization), parameterized queries (SQL), avoid command interpolation.       |
+| **Path Traversal**   | Validate/sanitize file paths, resolve paths relative to allowed roots, avoid user input directly in path operations. |
+| **Denial of Service**| Implement rate limiting on requests (especially tools/API calls), resource limits (CPU/memory).                    |
+| **Data Exposure**    | Least privilege principle, access control checks, output sanitization, avoid logging sensitive data.               |
+| **Insecure Transport**| Use HTTPS for HTTP transport, implement authentication (MCP Auth Spec, API keys, JWT), validate `Origin` header.   |
+| **CSRF (HTTP)**      | Use CSRF tokens or strict SameSite cookie policies if using cookie-based authentication with HTTP transport.       |
+| **Dependency Vulns** | Regularly update dependencies and audit for known vulnerabilities (`npm audit`, `yarn audit`).                     |
+
+Key security practices include:
 
 1.  **Input Validation:** Rigorously validate _all_ inputs (tool arguments, resource URIs, prompt arguments) against defined schemas (e.g., using Zod in TypeScript). Sanitize inputs to prevent injection attacks (command injection, SQL injection, path traversal).
 2.  **Access Control:** Implement checks to ensure operations only affect permitted data/systems. Respect filesystem roots provided by the client. If handling sensitive data, consider server-level authentication/authorization beyond the client's connection.
