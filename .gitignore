@@ -29,8 +29,6 @@ Thumbs.db
 *.d.ts.map
 *.d.ts
 !*.d.ts.template
-package-lock.json
-yarn.lock
 .pnp.js
 .pnp.cjs
 .pnp.mjs
@@ -145,14 +143,6 @@ dist/
 build/
 out/
 
-# Documentation
-docs/_build/
-doc/api/
-
-# Dependency Directories
-jspm_packages/
-bower_components/
-
 # Testing
 coverage/
 .nyc_output/
@@ -172,4 +162,9 @@ coverage/
 *.swo
 *~
 .history/
-.gitignore
+repomix-output*
+mcp-servers.json
+logs/
+*backup*
+backup/
+backups/
