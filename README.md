@@ -15,6 +15,9 @@ Welcome! This repository is a collection of guides, utilities, and server implem
 - [Introduction to MCP](#-introduction-to-mcp)
 - [MCP TypeScript Template](#-mcp-typescript-template-repo)
 - [MCP Guides](#-mcp-guides)
+  - [MCP Client Development Guide](#mcp-client-development-guide)
+  - [MCP Server Development Guide](#mcp-server-development-guide)
+  - [Cyanhead's MCP 'llms.txt'](#cyanheads-mcp-llmstxt)
 - [MCP Utilities](#-mcp-utilities)
 - [MCP Servers](#-mcp-servers)
   - [Perplexity](#perplexity-mcp-server)
@@ -146,6 +149,10 @@ Learn how to create servers that provide capabilities to MCP clients. Covers:
 - Security best practices and implementation patterns.
 - Troubleshooting common issues.
 - Example server implementations.
+
+### [Cyanhead's MCP 'llms.txt'](guides/cyanheads-custom-mcp-llms-full.md)
+
+This file is my personal, condensed version of the official Model Context Protocol `llms-full.txt` (found at [https://modelcontextprotocol.io/llms-full.txt](https://modelcontextprotocol.io/llms-full.txt)) with a focus on Server development. I've tailored it specifically for my own development workflow, focusing primarily on building MCP servers using TypeScript.
 
 ## 🔧 MCP Utilities
 
