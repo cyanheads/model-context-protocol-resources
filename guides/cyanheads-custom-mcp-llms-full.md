@@ -80,7 +80,7 @@ All communication uses standard JSON-RPC 2.0 messages:
 - **Responses:** Sent in reply to a request. MUST include `jsonrpc: "2.0"`, the same `id` as the request, and _either_ `result` (on success) or `error` (on failure).
 - **Notifications:** One-way messages sent by either party. MUST include `jsonrpc: "2.0"` and `method`. MUST NOT include an `id`.
 
-MCP implementations **MUST** support receiving JSON-RPC batches (arrays of requests/notifications/responses) but **MAY** choose whether to send batches. The `initialize` request **MUST NOT** be batched, and servers **MUST** reject an `initialize` request if it arrives as part of a batch.
+MCP implementations **MUST** support receiving JSON-RPC batches (arrays of requests/notifications/responses), even if they never send batches themselves. Servers **MAY** choose whether to send batches. The `initialize` request **MUST NOT** be batched, and servers **MUST** reject an `initialize` request if it arrives as part of a batch.
 
 ### 3.2. Connection Lifecycle
 
@@ -188,7 +188,7 @@ Servers expose functionality through three primary primitives:
   - Response contains `ResourceContent` array (can be multiple, e.g., directory listing). Content can be `text` (UTF-8) or `blob` (Base64 binary).
 - **Updates (Optional):**
   - Declare `listChanged: true` capability to send `notifications/resources/list_changed`.
-  - Declare `subscribe: true` capability to handle `resources/subscribe` requests and send `notifications/resources/updated` for specific URIs. Servers **MUST** also handle `resources/unsubscribe` notifications to prevent subscription leaks when the client no longer needs updates for a specific URI.
+  - Declare `subscribe: true` capability to handle `resources/subscribe` requests and send `notifications/resources/updated` for specific URIs. Servers **MUST** also handle the `resources/unsubscribe` **request** (which requires an `id` and returns an empty object `{}` result) to prevent subscription leaks when the client no longer needs updates for a specific URI.
 
 **Example: Registering a Simple Resource (TypeScript SDK)**
 
@@ -254,7 +254,7 @@ export const registerEchoResource = async (
 
   // If supporting subscriptions (subscribe: true capability):
   // server.setRequestHandler(SubscribeResourceRequestSchema, async (request) => { /* Handle subscribe request */ });
-  // server.setRequestHandler(UnsubscribeResourceRequestSchema, async (request) => { /* Handle unsubscribe request and reply {} */ }); // Server MUST handle this request if subscribe is true.
+  // server.setRequestHandler(UnsubscribeResourceRequestSchema, async (request) => { /* Handle unsubscribe request (requires id) and reply {} */ }); // Server MUST handle this request if subscribe is true.
   // To send updates:
   // server.sendNotification('notifications/resources/updated', { uri: echoResourceUri });
 
@@ -360,15 +360,15 @@ const echoTool: Tool = {
   name: "echo_message",
   description: "Echoes a message back with optional formatting and repetition.",
   inputSchema: echoToolInputSchema,
-  // annotations: { title: "Echo Message Tool", readOnlyHint: true } // Example annotations
+  // annotations: { title: "Echo Message Tool", readOnlyHint: true, "x-version": "1.0.0" } // Example annotations, including recommended versioning
 };
 
 export const registerEchoTool = async (server: McpServer): Promise<void> => {
   // Handle requests to call the tool using server.tool() for consistency
   // Note: The 4-argument overload `server.tool(name, description, schemaShape, handler)` shown below
-  // requires TypeScript SDK version 1.10.2 or later. For older versions, you might need
-  // to use a different overload or register the tool handler more manually using
-  // `server.setRequestHandler(CallToolRequestSchema, ...)` and handle listing separately.
+  // requires TypeScript SDK version 1.10.2 or later. For SDK versions 1.10.0–1.10.1,
+  // you must pass the full Zod schema object (e.g., `EchoToolInput`) instead of its `.shape`.
+  // Alternatively, use the 3-argument overload `server.tool(name, zodSchema, handler)` which accepts the full schema.
   // Use the 4-argument overload available in SDK v1.10.2+ for cleaner integration with Zod schemas:
   // server.tool(name: string, description: string, schema: ZodRawShape, handler: ToolHandlerFn)
   // Note: The SDK helper `server.tool()` automatically handles registering the tool
@@ -434,6 +434,12 @@ export const registerEchoTool = async (server: McpServer): Promise<void> => {
 
   // If supporting list changes (listChanged: true capability):
   // server.sendNotification('notifications/tools/list_changed', {});
+  // Best Practice: When sending list_changed, consider including version info in tool annotations
+  // (e.g., "x-version": "1.1.0") so clients can detect breaking changes.
+
+  // Best Practice: If a tool streams partial results, each chunk MUST use the same 'id'
+  // as the original tools/call request. Only send notifications/progress updates if the
+  // client provided a progressToken in the initial request.
 };
 ```
 
@@ -539,7 +545,7 @@ Servers may need to interact with capabilities declared by the client:
 ### 5.1. Roots
 
 - **Concept:** Clients can provide a list of filesystem "roots" (base URIs, typically `file://`) indicating relevant directories/workspaces.
-- **Server Interaction:** If the client declares the `roots` capability, the server can send a `roots/list` request to get the current list of `Root` objects (`uri`, `name?`). If the client supports `listChanged`, it will send `notifications/roots/list_changed` when the list updates.
+- **Server Interaction:** If the client declares the `roots` capability, the server receives the initial list of roots during the `initialize` handshake. If the client also supports `listChanged` for roots, it will send `notifications/roots/list_changed` when the list updates. The specification currently **does not define** a `roots/list` request method; servers needing to request the list dynamically would need to define an experimental method (e.g., `experimental.roots/list`).
 - **Usage:** Servers **SHOULD** respect these roots as operational boundaries when applicable (e.g., a filesystem server).
 
 ### 5.2. Sampling
@@ -554,12 +560,13 @@ Servers may need to interact with capabilities declared by the client:
 
 MCP defines several utility protocols servers can support:
 
-- **Logging:** If `logging` capability is declared, server can send `notifications/message` with `level`, `logger?`, and `data`. The `level` **MUST** be one of the eight standard Syslog severity levels defined in [RFC 5424](https://tools.ietf.org/html/rfc5424#section-6.2.1): `debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, or `emergency` ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/server/utilities/logging.mdx)). Note that the level is `warning`, not `warn`. Clients can optionally send `logging/setLevel` to control verbosity.
+- **Logging:** If `logging` capability is declared, server can send `notifications/message` with `level`, `logger?`, and `data`. The `level` **MUST** be one of the eight standard Syslog severity levels defined in [RFC 5424](https://tools.ietf.org/html/rfc5424#section-6.2.1): `debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, or `emergency` ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/server/utilities/logging.mdx)). Note that the level is `warning`, not `warn`, and the `notice` level exists between `info` and `warning`. Clients can optionally send `logging/setLevel` to control verbosity.
 - **Pagination:** List operations (`resources/list`, `tools/list`, etc.) can return a `nextCursor`. Clients pass this cursor in subsequent requests to get the next page. Servers determine page size.
 - **Completion:** If `completions` capability is declared, clients can send `completion/complete` for prompt/resource arguments, receiving suggestions.
 - **Cancellation:** Either party can send `notifications/cancelled` with a `requestId` to attempt cancellation of an in-progress request. Best-effort, handles race conditions.
-- **Ping:** Either party can send a `ping` request; the receiver **MUST** respond promptly with an empty result to confirm liveness.
-- **Progress & Configuration (New in 2025-03-26):** The specification also includes mechanisms for servers to send progress updates (`notifications/progress`) for long-running operations and for clients to manage server-specific settings (`configuration/get`, `configuration/set`). **Note:** To receive progress updates, the client **MUST** include a `_meta: { progressToken: "..." }` envelope in the original request that initiates the long-running operation. The server then includes this `progressToken` in subsequent `notifications/progress` messages. While less common than core capabilities, servers can implement these if needed. Clients **MUST** be prepared to debounce rapid sequences of `listChanged` or `updated` notifications as per the specification's Behavior Requirements ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/basic/behavior.mdx)).
+- **Ping:** Either party can send a `ping` request; the receiver **MUST** respond promptly with an empty result `{}` to confirm liveness.
+- **Progress & Configuration (New in 2025-03-26):** The specification also includes mechanisms for servers to send progress updates (`notifications/progress`) for long-running operations and for clients to manage server-specific settings (`configuration/get`, `configuration/set`). **Note:** To receive progress updates, the client **MUST** include a `_meta: { progressToken: "..." }` envelope **as a sibling of `arguments` inside the `params` object** of the original request that initiates the long-running operation. The server then includes this `progressToken` in subsequent `notifications/progress` messages. While less common than core capabilities, servers can implement these if needed.
+- **Notification Back-pressure:** Clients **MUST** be prepared to debounce rapid sequences of `listChanged` or `updated` notifications as per the specification's Behavior Requirements ([spec link](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/basic/behavior.mdx)). Servers should design update logic to be idempotent, as clients might miss intermediate notifications if the server sends them in rapid bursts.
 
 **Example: Sending a Log Notification (TypeScript SDK)**
 
@@ -570,6 +577,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // Check if client supports logging during initialization or via server.clientCapabilities
 
 // Send an informational log message using the correct payload shape
+// Note: The SDK's sendNotification handles wrapping this in the full JSON-RPC envelope.
+// If constructing manually, this object would be the value of the 'params' key.
 server.sendNotification("notifications/message", {
   level: "info", // Use string literal from RFC 5424
   data: "Tool execution started.", // Message content goes in 'data'
@@ -693,7 +702,7 @@ Servers must implement one or more transport mechanisms.
 ### 8.1. Stdio Transport
 
 - **Mechanism:** Client launches server as subprocess. Communication via `stdin` (client->server) and `stdout` (server->client). Logging via `stderr`.
-- **Formatting:** Each message (request, response, or notification, whether single or a batch array) **MUST** be sent as a single line of valid JSON, terminated by a newline character (`\n`). While pretty-printing is disallowed, note that Base64 encoded strings (`blob` content) may legally contain internal newline characters (`\n`). Servers and clients **MUST** correctly handle escaped newlines within JSON strings (e.g., `"content": "line1\\nline2"`) and Base64 content. Avoid unescaped line feed characters (`\n`) in whitespace-insensitive positions within the JSON structure itself. Example: `{"jsonrpc":"2.0","method":"ping","id":1}\n`.
+- **Formatting:** Each message (request, response, or notification, whether single or a batch array) **MUST** be sent as a single line of valid JSON, terminated by a newline character (`\n`). Pretty-printing is disallowed. Base64 encoded strings (`blob` content) inside a JSON string **cannot** contain literal newline bytes (0x0A); any newlines within the encoded data **MUST** be represented as the escaped sequence `\\n` within the JSON string itself. Servers and clients **MUST** correctly handle these escaped `\\n` sequences within JSON strings containing Base64 data. Avoid unescaped line feed characters (`\n`) in whitespace-insensitive positions within the JSON structure itself. Example: `{"jsonrpc":"2.0","method":"ping","id":1}\n`.
 - **Use Case:** Ideal for local integrations, simple process communication.
 - **Shutdown:** Server should exit gracefully when its `stdin` is closed by the client.
 
@@ -734,7 +743,7 @@ async function startStdioServer() {
 - **Mechanism:** Server exposes a single HTTP endpoint path supporting `POST` (client->server messages) and `GET` (client initiates server->client stream). Uses Server-Sent Events (SSE) for streaming.
 - **Client POST:** Client sends JSON-RPC message(s) (single or batch) in POST body.
   - **Response Handling:** The server decides the response format. If the POST contains requests requiring a reply, the server **MUST** respond with either `Content-Type: application/json` (single JSON response object) or `Content-Type: text/event-stream` (initiating an SSE stream for potentially multiple responses/notifications/requests). The client **MUST** support receiving both formats.
-  - **Accept Header:** For every `POST` request, the client **MUST** include an `Accept` header listing both `application/json` and `text/event-stream` (e.g., `Accept: application/json, text/event-stream`). Servers **MUST** respect this header and choose the appropriate response `Content-Type` (`application/json` or `text/event-stream`) based on their capabilities and the nature of the response (single JSON vs. stream). Servers **MUST** be prepared to handle this dual-value `Accept` header.
+  - **Accept Header:** For every `POST` request, the client **SHOULD** include an `Accept` header listing both `application/json` and `text/event-stream` (e.g., `Accept: application/json, text/event-stream`). While recommended, this header is not strictly required by the spec. Servers **SHOULD** respect this header if present but **MUST** gracefully handle requests where the header is missing or lists the types in a different order, typically defaulting to `application/json` or choosing based on the response content.
   - **Notifications Only:** If the POST contains only notifications/responses (no requests expecting a reply), the server returns `202 Accepted`.
 - **Client GET:** Client sends `GET` with an `Accept: text/event-stream` header to establish a persistent SSE stream for server-initiated messages (notifications, requests). Server responds with `Content-Type: text/event-stream` or `405 Method Not Allowed` if GET is not supported.
 - **Session Management (Optional):** Server can return `Mcp-Session-Id` header on `initialize` response. Client MUST include this header on subsequent requests. Server can invalidate sessions (respond `404`). Client can send `DELETE` with header to terminate session.
@@ -784,11 +793,11 @@ async function startHttpServer() {
     const allowedOrigins = process.env.MCP_ALLOWED_ORIGINS?.split(",") || []; // Example allowlist
 
     // Allow requests if:
-    // 1. Server is bound to localhost AND Origin header is missing (e.g., direct connection, some tools)
-    // 2. Origin header is present AND is in the configured allowlist
+    // 1. Origin header is present AND is in the configured allowlist
+    // 2. Server is bound to localhost AND Origin header is missing OR 'null' (common for Electron/local file://)
     const isOriginAllowed =
-      (isLocalhostBinding && !origin) || // Allow missing/null Origin only for localhost binding
-      (origin && allowedOrigins.includes(origin));
+      (origin && allowedOrigins.includes(origin)) ||
+      (isLocalhostBinding && (!origin || origin === "null")); // Allow missing or 'null' Origin only for localhost binding
 
     if (!isOriginAllowed) {
       logger.warn(
@@ -908,15 +917,15 @@ async function startHttpServer() {
 
 Security is paramount when building MCP servers. While the host/client manages user consent, server design directly impacts safety.
 
-| Attack Vector        | Mitigation Strategy                                                                                                |
-| :------------------- | :----------------------------------------------------------------------------------------------------------------- |
-| **Injection**        | Rigorous input validation (schemas, sanitization), parameterized queries (SQL), avoid command interpolation.       |
-| **Path Traversal**   | Validate/sanitize file paths, resolve paths relative to allowed roots, avoid user input directly in path operations. |
-| **Denial of Service**| Implement rate limiting on requests (especially tools/API calls), resource limits (CPU/memory).                    |
-| **Data Exposure**    | Least privilege principle, access control checks, output sanitization, avoid logging sensitive data.               |
-| **Insecure Transport**| Use HTTPS for HTTP transport, implement authentication (MCP Auth Spec, API keys, JWT), validate `Origin` header.   |
-| **CSRF (HTTP)**      | Use CSRF tokens or strict SameSite cookie policies if using cookie-based authentication with HTTP transport.       |
-| **Dependency Vulns** | Regularly update dependencies and audit for known vulnerabilities (`npm audit`, `yarn audit`).                     |
+| Attack Vector          | Mitigation Strategy                                                                                                  |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| **Injection**          | Rigorous input validation (schemas, sanitization), parameterized queries (SQL), avoid command interpolation.         |
+| **Path Traversal**     | Validate/sanitize file paths, resolve paths relative to allowed roots, avoid user input directly in path operations. |
+| **Denial of Service**  | Implement rate limiting on requests (especially tools/API calls), resource limits (CPU/memory).                      |
+| **Data Exposure**      | Least privilege principle, access control checks, output sanitization, avoid logging sensitive data.                 |
+| **Insecure Transport** | Use HTTPS for HTTP transport, implement authentication (MCP Auth Spec, API keys, JWT), validate `Origin` header.     |
+| **CSRF (HTTP)**        | Use CSRF tokens or strict SameSite cookie policies if using cookie-based authentication with HTTP transport.         |
+| **Dependency Vulns**   | Regularly update dependencies and audit for known vulnerabilities (`npm audit`, `yarn audit`).                       |
 
 Key security practices include:
 
@@ -948,16 +957,16 @@ export function originCheckMiddleware(
   const isLocalhostBinding = ["127.0.0.1", "::1", "localhost"].includes(host);
 
   // Determine if the origin is allowed. Note: Browsers might send `Origin: null`
-  // for requests from local files (`file://`) or sandboxed iframes.
-  // The spec allows accepting `null` Origin *only* if the server is explicitly
-  // configured for local development (e.g., bound to localhost).
-  // This example allows missing/null Origin only when bound to localhost.
+  // for requests from local files (`file://`) or sandboxed iframes (common in Electron apps).
+  // Accepting `Origin: null` is generally safe *only* if the server is strictly bound
+  // to localhost (127.0.0.1 or ::1) and not accessible externally. Rejecting `null`
+  // origins when bound to localhost can break local Electron-style hosts.
   const isOriginAllowed =
-    (isLocalhostBinding && !origin) || // Allow missing/null Origin only for localhost binding
-    (origin && ALLOWED_ORIGINS.includes(origin)); // Allow if origin is in the list
+    (origin && ALLOWED_ORIGINS.includes(origin)) || // Allow if origin is in the list
+    (isLocalhostBinding && (!origin || origin === "null")); // Allow missing or 'null' Origin only for localhost binding
 
   if (isOriginAllowed) {
-    logger.debug(`Origin allowed: ${origin || "(none)"} for host ${host}`);
+    logger.debug(`Origin allowed: ${origin || "(missing/null)"} for host ${host}`);
     if (origin) {
       // Set CORS header only if origin is present and allowed
       res.setHeader("Access-Control-Allow-Origin", origin);
