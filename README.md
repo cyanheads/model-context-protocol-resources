@@ -8,9 +8,9 @@
 [![MCP SDK - C#](https://img.shields.io/badge/C%23-0.0.0-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
 [![Guide Last Updated](https://img.shields.io/badge/Guide%20Last%20Updated-April%202025-brightgreen.svg)]()
 
-Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this powerful standard for enhancing Large Language Model (LLM) Agent capabilities. Questions and feedback are welcome! 🚀
+Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this exciting new standard for creating powerful Agent capabilities. Questions and feedback are welcome! 🚀
 
-All content including the guides, utilities, and MCP servers listed below have been created by myself and my coding agents, and is not affiliated with the official Model Context Protocol organization. The official MCP site is [modelcontextprotocol.io](https://modelcontextprotocol.io/), and the official GitHub is [modelcontextprotocol](https://github.com/modelcontextprotocol).
+> **Note:** The content in this repository, including the MCP TypeScript Template, guides, utilities, and server implementations, was created by cyanheads (me) and my coding agents. This project is independent and not affiliated with the official Model Context Protocol organization. The official MCP website is [modelcontextprotocol.io](https://modelcontextprotocol.io/), and the official GitHub organization is [modelcontextprotocol](https://github.com/modelcontextprotocol). Thank you to the official team for their work on the MCP spec, SDKs and documentation!
 
 ## 📋 Table of Contents
 
