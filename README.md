@@ -46,11 +46,11 @@ For a more in-depth introduction to MCP, including its design philosophy and tec
 
 ## 📚 MCP Guides
 
-| Guide                                                                                                               | Description                                                                                                                                                                                       |
-| :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <a id="mcp-client-development-guide"></a>[**MCP Client Development Guide**](guides/mcp-client-development-guide.md) | Learn how to build applications that consume MCP server capabilities. Covers core architecture, lifecycle, tools/resources, security, examples, and advanced topics.                              |
-| <a id="mcp-server-development-guide"></a>[**MCP Server Development Guide**](guides/mcp-server-development-guide.md) | Learn how to create servers providing capabilities to MCP clients. Covers core architecture, building servers, exposing capabilities, advanced features, security, troubleshooting, and examples. |
-| <a id="cyanheads-mcp-llmstxt"></a>[**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)         | A personal guide for TypeScript MCP server development using the high-level SDK (`McpServer`). Updated for Spec `2025-03-26` & TS SDK `v1.11.0`, covering features like tool annotations.          |
+| Guide                                                                                                               | Description                                                                                                                                                                                        |
+| :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a id="mcp-client-development-guide"></a>[**MCP Client Development Guide**](guides/mcp-client-development-guide.md) | Learn how to build applications that consume MCP server capabilities. Covers core architecture, lifecycle, tools/resources, security, examples, and advanced topics.                               |
+| <a id="mcp-server-development-guide"></a>[**MCP Server Development Guide**](guides/mcp-server-development-guide.md) | Learn how to create servers providing capabilities to MCP clients. Covers core architecture, building servers, exposing capabilities, advanced features, security, troubleshooting, and examples.  |
+| <a id="cyanheads-mcp-llmstxt"></a>[**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)         | A personal guide for TypeScript MCP server development using the high-level SDK (`McpServer`). Updated for Spec `2025-03-26` & TS SDK `v1.11.0`, covering features like tool annotations and auth. |
 
 ## 🔧 MCP Utilities
 
