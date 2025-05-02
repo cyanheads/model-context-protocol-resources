@@ -1,12 +1,12 @@
 # Model Context Protocol Resources & Guides
 
 [![modelcontextprotocol.io](https://img.shields.io/badge/modelcontextprotocol.io-orange.svg)](https://modelcontextprotocol.io/)
-[![MCP SDK - TypeScript](https://img.shields.io/badge/TypeScript-1.10.2-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
+[![MCP SDK - TypeScript](https://img.shields.io/badge/TypeScript-1.11.0-blue.svg)](https://github.com/modelcontextprotocol/typescript-sdk)
 [![MCP SDK - Python](https://img.shields.io/badge/Python-1.6.0-blue.svg)](https://github.com/modelcontextprotocol/python-sdk)
 [![MCP SDK - Kotlin](https://img.shields.io/badge/Kotlin-0.3.0-blue.svg)](https://github.com/modelcontextprotocol/kotlin-sdk)
 [![MCP SDK - Java](https://img.shields.io/badge/Java-0.4.0-blue.svg)](https://github.com/modelcontextprotocol/java-sdk)
-[![MCP SDK - C#](https://img.shields.io/badge/C%23-0.0.0-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
-[![Guide Last Updated](https://img.shields.io/badge/Guide%20Last%20Updated-April%202025-brightgreen.svg)]()
+[![MCP SDK - C#](https://img.shields.io/badge/C%23-0.3.2-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
+[![Guide Last Updated](https://img.shields.io/badge/Guide%20Last%20Updated-May%202025-brightgreen.svg)]()
 
 Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this exciting new standard for creating powerful Agent capabilities. Questions and feedback are welcome! 🚀
 
@@ -50,7 +50,7 @@ For a more in-depth introduction to MCP, including its design philosophy and tec
 | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | <a id="mcp-client-development-guide"></a>[**MCP Client Development Guide**](guides/mcp-client-development-guide.md) | Learn how to build applications that consume MCP server capabilities. Covers core architecture, lifecycle, tools/resources, security, examples, and advanced topics.                              |
 | <a id="mcp-server-development-guide"></a>[**MCP Server Development Guide**](guides/mcp-server-development-guide.md) | Learn how to create servers providing capabilities to MCP clients. Covers core architecture, building servers, exposing capabilities, advanced features, security, troubleshooting, and examples. |
-| <a id="cyanheads-mcp-llmstxt"></a>[**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)         | A personal, condensed version of the official `llms-full.txt`, tailored for TypeScript server development workflow, focusing on building MCP servers.                                             |
+| <a id="cyanheads-mcp-llmstxt"></a>[**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)         | A personal guide for TypeScript MCP server development using the high-level SDK (`McpServer`). Updated for Spec `2025-03-26` & TS SDK `v1.11.0`, covering features like tool annotations.          |
 
 ## 🔧 MCP Utilities
 
