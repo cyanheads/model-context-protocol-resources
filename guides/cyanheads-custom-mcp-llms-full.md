@@ -23,7 +23,7 @@ Instructions for using this file: Use this file as a reference for understanding
 
 The Model Context Protocol (MCP) provides a standardized communication layer enabling Large Language Models (LLMs) within host applications (clients) to interact securely and effectively with external data sources and tools via dedicated servers. Building an MCP server allows you to expose specific capabilities—such as accessing file systems, querying databases, interacting with APIs, or executing custom logic—to any MCP-compatible client application.
 
-This document focuses on using the **high-level TypeScript SDK (`McpServer`)** to build robust, secure, and interoperable MCP servers efficiently.
+This document focuses on using the **high-level TypeScript SDK (`McpServer`)** to build robust, secure, and interoperable MCP servers efficiently, incorporating the latest [MCP Authentication Specification](https://github.com/modelcontextprotocol/specification/blob/main/docs/specification/2025-03-26/basic/authorization.md) standards for secure interactions.
 
 ## 2. Core Concepts & Architecture
 
@@ -587,7 +587,7 @@ startStdioServer();
 
 ### 6.2. Streamable HTTP Transport
 
-For remote servers or web-based clients. Handles client requests (POST) and server notifications (via SSE on GET).
+For remote servers or web-based clients. Handles client requests (POST) and server notifications (via SSE on GET). **Crucially, non-stdio transports like HTTP now mandate secure authentication as per the MCP Authentication Specification.** Communication **MUST** use HTTPS.
 
 **With Session Management (Stateful):** Recommended for most HTTP servers to handle multiple clients correctly.
 
@@ -625,7 +625,13 @@ function createServerInstance(): McpServer {
 async function startHttpServer() {
   const app = express();
   app.use(express.json());
-  // IMPORTANT: Add security middleware (CORS, Origin check, Auth) here! See Section 8.
+  // --- CRITICAL SECURITY MIDDLEWARE ---
+  // 1. CORS/Origin Check (See Section 8 Example)
+  // app.use(originCheckMiddleware);
+  // 2. MCP Authentication Middleware (Implement based on MCP Auth Spec - OAuth 2.0)
+  //    This middleware should verify tokens, enforce scopes, etc.
+  // app.use(mcpAuthMiddleware);
+  // ------------------------------------
 
   // Handle POST requests (client-to-server)
   app.post(MCP_ENDPOINT_PATH, async (req, res) => {
@@ -1014,16 +1020,23 @@ startSQLiteServer();
 
 ## 8. Security Considerations
 
-Security is critical. Always prioritize:
+Security is paramount in MCP. Adhere strictly to these principles, incorporating the latest [MCP Authentication Specification](https://github.com/modelcontextprotocol/specification/blob/main/docs/specification/2025-03-26/basic/authorization.md):
 
-1.  **Input Validation:** Use Zod schemas with `server.tool()`, `server.resource()`, `server.prompt()` for automatic validation. Sanitize inputs where necessary.
-2.  **Access Control:** Respect client-provided roots. Implement checks for sensitive operations.
-3.  **Least Privilege:** Run server processes with minimal permissions.
-4.  **Rate Limiting:** Protect against DoS, especially for tools calling external APIs.
-5.  **Secrets Management:** Use environment variables or secrets managers. Never hardcode secrets.
-6.  **Output Sanitization:** Avoid leaking sensitive data in responses.
-7.  **Dependency Security:** Regularly run `npm audit` or `yarn audit`.
-8.  **Transport Security:** Use HTTPS for HTTP transport. Implement authentication (MCP Auth Spec or other methods). Validate `Origin` headers strictly. Bind to `127.0.0.1` for local servers.
+1.  **Input Validation & Sanitization:** Use Zod schemas (`server.tool()`, etc.) for structural validation. Implement **context-aware semantic validation** and **input sanitization** within handlers to prevent injection attacks and ensure data integrity, especially before interacting with databases or external systems.
+2.  **Strict Protocol Validation:** Ensure the server rigorously validates incoming MCP messages against the protocol specification (structure, field consistency, recursion depth) to prevent malformed request attacks. The SDK handles much of this, but be mindful in custom logic.
+3.  **Mandatory Authentication (Non-Stdio):** For transports like HTTP, **secure authentication is mandatory**. Implement the **MCP Authentication Specification**, which is based on **OAuth 2.0**. This includes:
+    - Using secure flows like **Authorization Code with PKCE**.
+    - Supporting **dynamic client registration** where applicable.
+    - Enforcing scope checks based on user consent.
+    - Integrating with trusted **third-party identity providers** (e.g., Auth0, Okta) is a common pattern.
+4.  **Secure Credential Handling:** Store any required credentials (e.g., API keys, database passwords) securely using system keychains or dedicated secrets managers. **Never expose secrets in plaintext** configuration or logs.
+5.  **HTTPS Enforcement:** All HTTP-based communication **MUST** use HTTPS to ensure confidentiality and integrity. Configure your server accordingly (TLS certificates).
+6.  **Access Control & Least Privilege:** Respect client-provided roots. Run server processes with the minimum permissions necessary. Design tools and resources to operate with the least privilege required.
+7.  **Rate Limiting:** Implement rate limiting, especially for tools interacting with external APIs or performing resource-intensive operations, to prevent Denial-of-Service (DoS) attacks.
+8.  **Secrets Management:** Use environment variables, `.env` files (added to `.gitignore`), or dedicated secrets management services.
+9.  **Output Sanitization:** Be cautious about the data returned in responses. Avoid leaking sensitive information, internal system details, or excessive error details.
+10. **Dependency Security:** Regularly audit dependencies (`npm audit`, `yarn audit`) and keep them updated to patch known vulnerabilities.
+11. **Transport Security (Origin/CORS):** For HTTP transport, strictly validate `Origin` headers using an allowlist (see example below). Configure CORS headers correctly. Bind to `127.0.0.1` (`localhost`) for servers intended only for local access.
 
 **Example: Basic Origin Check Middleware (Express)**
 
@@ -1114,7 +1127,7 @@ export function originCheckMiddleware(
 
 - **Low-Level SDK:** For fine-grained control over the protocol, use the base `Server` class instead of `McpServer`. This requires manual handling of requests and responses using schemas. See official docs for details.
 - **Client SDK:** The `@modelcontextprotocol/sdk` also includes classes (`Client`, `StdioClientTransport`, `StreamableHTTPClientTransport`) for building MCP clients.
-- **Authentication:** Implement authentication using the [MCP Auth Spec](https://github.com/modelcontextprotocol/specification/blob/main/docs/specification/2025-03-26/basic/authorization.md) or custom methods for secure HTTP transport.
+- **Authentication:** Implementing the official [MCP Authentication Specification](https://github.com/modelcontextprotocol/specification/blob/main/docs/specification/2025-03-26/basic/authorization.md) is **critical** for secure non-stdio transports. This involves understanding OAuth 2.0 flows (PKCE), scope management, and potentially integrating with identity providers. Refer to the spec for detailed requirements.
 - **Request Context / Tracing:** For complex servers, especially those handling multiple concurrent requests (like HTTP), use techniques like Node.js `AsyncLocalStorage` to create a context per request. This allows you to associate logs, metrics, and tracing information with a specific operation throughout its lifecycle, greatly aiding debugging.
 - **Backwards Compatibility:** The SDK provides ways to maintain compatibility with older transport versions if needed (see README/docs).
 
