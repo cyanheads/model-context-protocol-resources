@@ -665,11 +665,17 @@ async function startHttpServer() {
               `Session closed, removing transport: ${transport.sessionId}`
             );
             delete transports[transport.sessionId];
-            // Optionally clean up server instance if stateful per session
+                    // Optionally clean up server instance if stateful per session
+            // Consider calling server.close() here if the server instance
+            // holds resources tied to the session that need explicit release.
           }
         };
 
         const server = createServerInstance(); // Create a server for this session
+        // Handle graceful shutdown: Ensure server.close() is called when the
+        // application terminates to release resources. This might involve
+        // listening for process signals like SIGINT or SIGTERM.
+        // process.on('SIGINT', async () => { await server.close(); process.exit(0); });
         await server.connect(transport); // Connect server to the new transport
       } else {
         logger.warn(
@@ -977,7 +983,14 @@ async function startSQLiteServer() {
     { readOnlyHint: true, title: "Run SQL Query" }, // Annotations
     async ({ sql }) => {
       logger.debug(`Executing query tool: ${sql}`);
-      // Basic check to prevent modification queries (improve in production)
+      // WARNING: The basic regex check below is INSUFFICIENT for production security
+      // if the SQL query could potentially be influenced by untrusted input.
+      // It only prevents the most basic modification attempts. For robust protection
+      // against SQL injection, use parameterized queries or a dedicated query builder
+      // that properly sanitizes inputs, especially if 'sql' originates from or is
+      // influenced by external sources. Since this example assumes 'sql' comes
+      // directly from the LLM/client (which should ideally be validated upstream),
+      // this basic check is illustrative but not exhaustive.
       if (!/^\s*SELECT/i.test(sql)) {
         logger.warn(`Query tool rejected non-SELECT statement: ${sql}`);
         return {
@@ -1035,7 +1048,7 @@ Security is paramount in MCP. Adhere strictly to these principles, incorporating
 5.  **HTTPS Enforcement:** All HTTP-based communication **MUST** use HTTPS to ensure confidentiality and integrity. Configure your server accordingly (TLS certificates).
 6.  **Access Control & Least Privilege:** Respect client-provided roots. Run server processes with the minimum permissions necessary. Design tools and resources to operate with the least privilege required.
 7.  **Rate Limiting:** Implement rate limiting, especially for tools interacting with external APIs or performing resource-intensive operations, to prevent Denial-of-Service (DoS) attacks.
-8.  **Secrets Management:** Use environment variables, `.env` files (added to `.gitignore`), or dedicated secrets management services.
+8.  **Configuration & Secrets Management:** Load configuration securely. Common patterns include using environment variables (often loaded via `.env` files during development - ensure `.env` is in `.gitignore`) or dedicated secrets management services for sensitive data like API keys or database credentials. Avoid hardcoding secrets.
 9.  **Output Sanitization:** Be cautious about the data returned in responses. Avoid leaking sensitive information, internal system details, or excessive error details.
 10. **Dependency Security:** Regularly audit dependencies (`npm audit`, `yarn audit`) and keep them updated to patch known vulnerabilities.
 11. **Transport Security (Origin/CORS):** For HTTP transport, strictly validate `Origin` headers using an allowlist (see example below). Configure CORS headers correctly. Bind to `127.0.0.1` (`localhost`) for servers intended only for local access.
