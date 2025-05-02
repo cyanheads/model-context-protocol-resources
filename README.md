@@ -28,44 +28,36 @@ Welcome! This repository is a collection of guides, utilities, and server implem
 
 ## 🔗 Official Resources
 
-Here are key links to the official Model Context Protocol documentation, specifications, and community resources:
+Key links to official Model Context Protocol documentation, specifications, and community resources ([modelcontextprotocol.io](https://modelcontextprotocol.io/)):
 
-**Core & Specification:**
-
-| Resource                         | Link                                                                                                                               |
-| :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
-| Main Website                     | [modelcontextprotocol.io](https://modelcontextprotocol.io/)                                                                        |
-| Introduction                     | [modelcontextprotocol.io/introduction](https://modelcontextprotocol.io/introduction)                                               |
-| Server Quickstart                | [modelcontextprotocol.io/quickstart/server](https://modelcontextprotocol.io/quickstart/server)                                     |
-| Specification Home               | [modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)                                             |
-| Architecture                     | [modelcontextprotocol.io/specification/architecture](https://modelcontextprotocol.io/specification/architecture)                   |
-| Base Protocol                    | [modelcontextprotocol.io/specification/basic](https://modelcontextprotocol.io/specification/basic)                                 |
-| Server Features                  | [modelcontextprotocol.io/specification/server](https://modelcontextprotocol.io/specification/server)                               |
-| Client Features                  | [modelcontextprotocol.io/specification/client](https://modelcontextprotocol.io/specification/client)                               |
-| Authentication Spec (2025-03-26) | [modelcontextprotocol.io/.../authorization](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)          |
-| Schema Definition (TS)           | [github.com/.../2025-03-26/schema.ts](https://github.com/modelcontextprotocol/specification/blob/main/schema/2025-03-26/schema.ts) |
-| Contributing Guide               | [Contributing Guide](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/CONTRIBUTING.md)                       |
+| Page / Section            | Link Path                                                                                                           |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------ |
+| Introduction              | [`/introduction`](https://modelcontextprotocol.io/introduction)                                                     |
+| Server Quickstart         | [`/quickstart/server`](https://modelcontextprotocol.io/quickstart/server)                                           |
+| Specification Home        | [`/specification`](https://modelcontextprotocol.io/specification)                                                   |
+| ↳ Architecture            | [`/specification/architecture`](https://modelcontextprotocol.io/specification/architecture)                         |
+| ↳ Base Protocol           | [`/specification/basic`](https://modelcontextprotocol.io/specification/basic)                                       |
+| ↳ Server Features         | [`/specification/server`](https://modelcontextprotocol.io/specification/server)                                     |
+| ↳ Client Features         | [`/specification/client`](https://modelcontextprotocol.io/specification/client)                                     |
+| ↳ Auth Spec (2025-03-26)  | [`/.../authorization`](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)                |
+| Schema Definition (TS)    | [`spec/.../schema.ts`](https://github.com/modelcontextprotocol/specification/blob/main/schema/2025-03-26/schema.ts) |
+| Contributing Guide        | [`CONTRIBUTING.md`](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/CONTRIBUTING.md)         |
+| GitHub Organization       | [`github.com/...`](https://github.com/modelcontextprotocol)                                                         |
+| Specification Discussions | [`spec/discussions`](https://github.com/modelcontextprotocol/specification/discussions)                             |
+| Organization Discussions  | [`orgs/discussions`](https://github.com/orgs/modelcontextprotocol/discussions)                                      |
+| JSON-RPC 2.0 Spec         | [`jsonrpc.org`](https://www.jsonrpc.org/specification)                                                              |
 
 **SDKs & Tools:**
 
-| Language      | SDK Repository                                                           | Notes                          |
-| :------------ | :----------------------------------------------------------------------- | :----------------------------- |
-| TypeScript    | [typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |                                |
-| Python        | [python-sdk](https://github.com/modelcontextprotocol/python-sdk)         |                                |
-| Kotlin        | [kotlin-sdk](https://github.com/modelcontextprotocol/kotlin-sdk)         |                                |
-| Java          | [java-sdk](https://github.com/modelcontextprotocol/java-sdk)             |                                |
-| C#            | [csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)         |                                |
-| **Tool**      | **Repository**                                                           | **Description**                |
-| MCP Inspector | [inspector](https://github.com/modelcontextprotocol/inspector)           | Debugging tool for MCP servers |
-
-**Community & Related Standards:**
-
-| Resource                  | Link                                                                                            |
-| :------------------------ | :---------------------------------------------------------------------------------------------- |
-| GitHub Organization       | [github.com/modelcontextprotocol](https://github.com/modelcontextprotocol)                      |
-| Specification Discussions | [github.com/.../discussions](https://github.com/modelcontextprotocol/specification/discussions) |
-| Organization Discussions  | [github.com/orgs/.../discussions](https://github.com/orgs/modelcontextprotocol/discussions)     |
-| JSON-RPC 2.0 Spec         | [jsonrpc.org](https://www.jsonrpc.org/specification)                                            |
+| Language                       | SDK Repository                                                           |
+| :----------------------------- | :----------------------------------------------------------------------- |
+| TypeScript                     | [typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |
+| Python                         | [python-sdk](https://github.com/modelcontextprotocol/python-sdk)         |
+| Kotlin                         | [kotlin-sdk](https://github.com/modelcontextprotocol/kotlin-sdk)         |
+| Java                           | [java-sdk](https://github.com/modelcontextprotocol/java-sdk)             |
+| C#                             | [csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)         |
+| **Tool**                       | **Repository**                                                           |
+| MCP Inspector (Debugging tool) | [inspector](https://github.com/modelcontextprotocol/inspector)           |
 
 ## 🔍 Introduction to MCP
 
