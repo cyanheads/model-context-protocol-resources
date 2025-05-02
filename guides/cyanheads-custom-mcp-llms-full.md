@@ -2,7 +2,9 @@
 
 This file is my personal, condensed guide focusing on building MCP servers using the **high-level TypeScript SDK (`McpServer`)**. It's tailored for my workflow, emphasizing the recommended abstractions for faster development.
 
-Feed this file to your LLM when developing MCP servers with TypeScript. It contains the essential concepts and high-level examples. Low-level SDK details are omitted for brevity but can be found in the official documentation if needed.
+This file is for LLM consumption whereas my other guides (like `mcp-server-development-guide.md`) are for human developers.
+
+Feed this file to your LLM when developing MCP servers with TypeScript. It contains the essential concepts and high-level examples. Low-level SDK details are omitted for brevity and to not confuse the coding agent, but can be found in the official documentation (or my mcp-server-development-guide.md) if needed.
 
 Instructions for using this file: Use this file as a reference for understanding the Model Context Protocol (MCP) and its high-level implementation in TypeScript. It includes key concepts, protocol standards, and best practices for building MCP servers using the `McpServer` class.
 
@@ -23,7 +25,7 @@ Instructions for using this file: Use this file as a reference for understanding
 
 The Model Context Protocol (MCP) provides a standardized communication layer enabling Large Language Models (LLMs) within host applications (clients) to interact securely and effectively with external data sources and tools via dedicated servers. Building an MCP server allows you to expose specific capabilities—such as accessing file systems, querying databases, interacting with APIs, or executing custom logic—to any MCP-compatible client application.
 
-This document focuses on using the **high-level TypeScript SDK (`McpServer`)** to build robust, secure, and interoperable MCP servers efficiently, incorporating the latest [MCP Authentication Specification](https://github.com/modelcontextprotocol/specification/blob/main/docs/specification/2025-03-26/basic/authorization.md) standards for secure interactions.
+This document focuses on using the **high-level TypeScript SDK (`McpServer`)** to build robust, secure, and interoperable MCP servers efficiently, incorporating the latest [MCP Authentication Specification](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-03-26/basic/authorization.mdx) standards for secure interactions.
 
 ## 2. Core Concepts & Architecture
 
