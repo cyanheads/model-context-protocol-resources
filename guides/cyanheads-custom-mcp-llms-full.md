@@ -193,7 +193,14 @@ logger.info(`Registered dynamic resource template: users://{userId}/profile`);
 Expose executable functions for the LLM (like POST endpoints). Use Zod for schema definition and validation.
 
 - **Definition:** Defined using `server.tool()`. Provide a `name`, `description`, input schema (using Zod shape), optional `annotations`, and an async handler function.
-- **Annotations (Optional):** Provide hints about tool behavior (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`). Clients **MUST** treat these as untrusted hints unless the server is explicitly trusted. Servers should not rely on clients strictly adhering to hints for security.
+- **Annotations (Optional):** Provide hints about tool behavior using a standard set of keys defined by the MCP specification. The standard annotations are:
+  - `title`: (string) A human-readable title for the tool, potentially used in UI.
+  - `readOnlyHint`: (boolean) Suggests the tool does not modify state (like a GET request).
+  - `destructiveHint`: (boolean) Suggests the tool might make significant, potentially irreversible changes or deletions.
+  - `idempotentHint`: (boolean) Suggests calling the tool multiple times with the same arguments will have the same effect as calling it once.
+  - `openWorldHint`: (boolean) Suggests the tool interacts with external systems or data that can change unpredictably between calls (e.g., fetching real-time stock prices, interacting with a volatile API).
+- **Trust Model (CRITICAL):** Clients **MUST** treat these annotations purely as **untrusted hints** unless the server providing them is explicitly trusted by the host application or user. Servers **SHOULD NOT** rely on clients strictly adhering to these hints for enforcing security or correctness. The hints are primarily for informing the client/LLM's _strategy_ or the user interface presentation.
+- **Custom Annotations:** While the protocol allows adding custom key-value pairs to the annotations object beyond the standard ones, clients are not guaranteed to understand or utilize them. The same trust model applies: custom annotations are untrusted hints. Stick to standard annotations for broadest compatibility.
 - **Invocation:** The LLM decides when to call tools; the client mediates and sends a `tools/call` request. The SDK handles routing to your handler.
 - **Response:** Your handler should return a `CallToolResult` object (`{ content: [...], isError?: boolean }`). Execution errors are reported via `isError: true` and details in `content`.
 - **Schema Importance:** Detailed Zod schemas significantly improve the LLM's ability to use the tool correctly.
@@ -242,6 +249,8 @@ server.tool(
   "fetch-weather",
   "Fetches weather for a given city.",
   { city: z.string().min(1).describe("The city name") },
+  // Annotations: Title, read-only (doesn't change local state), open world (external API)
+  { title: "Fetch Weather", readOnlyHint: true, openWorldHint: true },
   async ({ city }) => {
     logger.debug(`Executing tool: fetch-weather`, { city });
     try {
@@ -333,9 +342,9 @@ For better organization and maintainability, especially in larger servers, consi
 ```typescript
 // --- src/mcp-server/tools/myTool/myToolLogic.ts ---
 // Contains the core logic and schema for the tool.
-import { z } from 'zod';
+import { z } from "zod";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
-import { logger } from '../../../utils/logger.js'; // Adjust path as needed
+import { logger } from "../../../utils/logger.js"; // Adjust path as needed
 
 // Define input schema using Zod
 export const myToolInputSchema = z.object({
@@ -347,44 +356,48 @@ export const myToolInputSchema = z.object({
 export async function handleMyTool(
   args: z.infer<typeof myToolInputSchema>
 ): Promise<{ content: TextContent[]; isError?: boolean }> {
-  logger.debug('Executing myTool logic', args);
+  logger.debug("Executing myTool logic", args);
   // --- Tool implementation goes here ---
-  const resultText = `Processed ${args.parameter1} with optional ${args.parameter2 ?? 'N/A'}`;
+  const resultText = `Processed ${args.parameter1} with optional ${
+    args.parameter2 ?? "N/A"
+  }`;
   return {
-    content: [{ type: 'text', text: resultText }],
+    content: [{ type: "text", text: resultText }],
   };
 }
 
 // --- src/mcp-server/tools/myTool/registration.ts ---
 // Handles registering the tool with the McpServer instance.
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { myToolInputSchema, handleMyTool } from './myToolLogic.js';
-import { logger } from '../../../utils/logger.js'; // Adjust path as needed
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { myToolInputSchema, handleMyTool } from "./myToolLogic.js";
+import { logger } from "../../../utils/logger.js"; // Adjust path as needed
 
 export function registerMyTool(server: McpServer): void {
   server.tool(
-    'my-tool', // Tool name
-    'A description of what my-tool does.', // Description
+    "my-tool", // Tool name
+    "A description of what my-tool does.", // Description
     myToolInputSchema, // Pass the imported schema shape
     // Optional annotations
     { title: "My Awesome Tool", readOnlyHint: true },
     handleMyTool // Pass the imported handler function
   );
-  logger.info('Registered tool: my-tool');
+  logger.info("Registered tool: my-tool");
 }
 
 // --- src/mcp-server/server.ts ---
 // The main server orchestration file imports and calls registration functions.
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerMyTool } from './tools/myTool/registration.js'; // Import registration
-import { config } from '../../config/index.js'; // Adjust path as needed
-import { logger } from '../../utils/logger.js'; // Adjust path as needed
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerMyTool } from "./tools/myTool/registration.js"; // Import registration
+import { config } from "../../config/index.js"; // Adjust path as needed
+import { logger } from "../../utils/logger.js"; // Adjust path as needed
 // ... other imports like transports ...
 
 function createMcpServerInstance(): McpServer {
   const server = new McpServer(
     { name: config.mcpServerName, version: config.mcpServerVersion },
-    { /* capabilities */ }
+    {
+      /* capabilities */
+    }
   );
 
   // Register capabilities by calling their registration functions
@@ -392,7 +405,7 @@ function createMcpServerInstance(): McpServer {
   // registerOtherTool(server);
   // registerMyResource(server);
 
-  logger.info('MCP Server instance configured with capabilities.');
+  logger.info("MCP Server instance configured with capabilities.");
   return server;
 }
 
@@ -423,6 +436,8 @@ const listMessageTool = server.tool(
   "listMessages",
   "Lists messages in a channel.",
   { channel: z.string().describe("Channel name") },
+  // Annotations: Title, read-only
+  { title: "List Channel Messages", readOnlyHint: true },
   async ({ channel }) => ({
     content: [{ type: "text", text: await listMessages(channel) }],
   })
@@ -435,6 +450,8 @@ const putMessageTool = server.tool(
     channel: z.string().describe("Channel name"),
     message: z.string().min(1).describe("Message content"),
   },
+  // Annotations: Title (not read-only, potentially idempotent depending on backend)
+  { title: "Send Channel Message" /* idempotentHint: true (optional) */ },
   async ({ channel, message }) => ({
     content: [{ type: "text", text: await putMessage(channel, message) }],
   })
@@ -451,6 +468,11 @@ const upgradeAuthTool = server.tool(
     permission: z
       .enum(["write", "admin"])
       .describe("Permission level to upgrade to"),
+  },
+  // Annotations: Title (modifies state, not read-only)
+  {
+    title:
+      "Upgrade Authorization" /* destructiveHint: false (usually not destructive) */,
   },
   // Handler receives validated arguments
   async ({ permission }) => {
@@ -575,11 +597,6 @@ import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
-import express from "express";
-import { randomUUID } from "node:crypto";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { logger } from "../utils/logger.js"; // Assuming a logger utility
 import { config } from "../config/index.js"; // Assuming a config module
 
@@ -650,16 +667,14 @@ async function startHttpServer() {
         logger.warn(
           "Bad POST request: Invalid session or non-init request without session ID."
         );
-        res
-          .status(400)
-          .json({
-            jsonrpc: "2.0",
-            error: {
-              code: -32000,
-              message: "Bad Request: Session ID required or invalid",
-            },
-            id: null,
-          });
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Bad Request: Session ID required or invalid",
+          },
+          id: null,
+        });
         return;
       }
 
@@ -726,9 +741,6 @@ startHttpServer();
 import express, { Request, Response } from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import express, { Request, Response } from "express";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { logger } from "../utils/logger.js"; // Assuming a logger utility
 import { config } from "../config/index.js"; // Assuming a config module
 
@@ -777,13 +789,11 @@ async function startStatelessHttpServer() {
       transport?.close();
       server?.close();
       if (!res.headersSent) {
-        res
-          .status(500)
-          .json({
-            jsonrpc: "2.0",
-            error: { code: -32603, message: "Internal server error" },
-            id: null,
-          });
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: { code: -32603, message: "Internal server error" },
+          id: null,
+        });
       }
     }
   });
@@ -791,13 +801,11 @@ async function startStatelessHttpServer() {
   // GET and DELETE are not typically supported in stateless mode without sessions
   const methodNotAllowedHandler = (req: Request, res: Response) => {
     logger.warn(`Method ${req.method} not allowed on stateless endpoint.`);
-    res
-      .status(405)
-      .json({
-        jsonrpc: "2.0",
-        error: { code: -32000, message: "Method Not Allowed" },
-        id: null,
-      });
+    res.status(405).json({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Method Not Allowed" },
+      id: null,
+    });
   };
   app.get(MCP_ENDPOINT_PATH, methodNotAllowedHandler);
   app.delete(MCP_ENDPOINT_PATH, methodNotAllowedHandler);
@@ -856,6 +864,8 @@ async function startEchoServer() {
     "echo-tool", // Tool name
     "Echoes back the provided message via a tool.", // Description
     { message: z.string().min(1).describe("Message to echo") }, // Input schema
+    // Annotations: Title, read-only
+    { title: "Echo Message (Tool)", readOnlyHint: true },
     async ({ message }) => {
       // Handler
       logger.debug(`Echo tool called with message: ${message}`);
