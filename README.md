@@ -8,21 +8,64 @@
 [![MCP SDK - C#](https://img.shields.io/badge/C%23-0.3.2-blue.svg)](https://github.com/modelcontextprotocol/csharp-sdk)
 [![Guide Last Updated](https://img.shields.io/badge/Guide%20Last%20Updated-May%202025-brightgreen.svg)]()
 
-Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** that I've created as I'm learning everything MCP has to offer. It reflects ongoing exploration and development with this exciting new standard for creating powerful Agent capabilities. Questions and feedback are welcome! 🚀
+Welcome! This repository is a collection of guides, utilities, and server implementations for the **Model Context Protocol (MCP)** created while learning MCP. It reflects ongoing exploration and development with this exciting new standard for creating powerful Agent capabilities. Questions and feedback are welcome! 🚀
 
-> **Note:** The content in this repository, including the MCP TypeScript Template, guides, utilities, and server implementations, was created by cyanheads (me) and my coding agents. This project is independent and not affiliated with the official Model Context Protocol organization. The official MCP website is [modelcontextprotocol.io](https://modelcontextprotocol.io/), and the official GitHub organization is [modelcontextprotocol](https://github.com/modelcontextprotocol). Thank you to the official team for their work on the MCP spec, SDKs and documentation!
+> **Disclaimer:** The resources in this repository (guides, utilities, server implementations, and the MCP TypeScript Template) were developed independently by [cyanheads](https://github.com/cyanheads) while exploring the Model Context Protocol. This project is not officially affiliated with the Model Context Protocol organization. [Links to official MCP resources are provided below.](#official-resources) I appreciate the work of the official MCP team on the specification, SDKs, and documentation!
 
 ## 📋 Table of Contents
 
-[Introduction](#-introduction-to-mcp) | [Guides](#-mcp-guides) | [Utilities](#-mcp-utilities) | [Servers](#-mcp-servers) | [Getting Started](#-getting-started) | [License](#-license)
+[Introduction](#introduction-to-mcp) | [Official Resources](#official-resources) | [Guides](#mcp-guides) | [Utilities](#mcp-utilities) | [Servers](#mcp-servers) | [Getting Started](#getting-started) | [License](#license)
 
-**MCP Template Repo:** [mcp-ts-template](#-mcp-typescript-template-repo)
+**MCP Template Repo:** [mcp-ts-template](#mcp-typescript-template-repo)
 
-**Guides:** [MCP Client Development](#mcp-client-development-guide) | [MCP Server Development](#mcp-server-development-guide) | [llms.txt](#cyanheads-mcp-llmstxt)
+**Guides:** [MCP Client Development](guides/mcp-client-development-guide.md) | [MCP Server Development](guides/mcp-server-development-guide.md) | [cyanheads-custom-llms.txt](guides/cyanheads-custom-mcp-llms-full.md)
 
-**Utilities:** [mcp-reporter](#-mcp-reporter)
+**Utilities:** [mcp-reporter](#mcp-utilities)
 
-**Servers:** [atlas-mcp-server](#-atlas-mcp-server) | [filesystem-mcp-server](#-filesystem-mcp-server) | [git-mcp-server](#-git-mcp-server) | [github-mcp-server](#-github-mcp-server) | [mcp-reporter](#-mcp-reporter) | [mcp-ts-template](#-mcp-ts-template) | [mentor-mcp-server](#-mentor-mcp-server) | [ntfy-mcp-server](#-ntfy-mcp-server) | [obsidian-mcp-server](#-obsidian-mcp-server) | [perplexity-mcp-server](#-perplexity-mcp-server) | [toolkit-mcp-server](#-toolkit-mcp-server)
+**Servers:** [atlas-mcp-server](#mcp-servers) | [filesystem-mcp-server](#mcp-servers) | [git-mcp-server](#mcp-servers) | [github-mcp-server](#mcp-servers) |
+[mcp-reporter](#mcp-servers) | [mcp-ts-template](#mcp-servers) | [mentor-mcp-server](#mcp-servers) | [ntfy-mcp-server](#mcp-servers) |
+[obsidian-mcp-server](#mcp-servers) | [perplexity-mcp-server](#mcp-servers) | [toolkit-mcp-server](#mcp-servers)
+
+## 🔗 Official Resources
+
+Here are key links to the official Model Context Protocol documentation, specifications, and community resources:
+
+**Core & Specification:**
+
+| Resource                         | Link                                                                                                                               |
+| :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| Main Website                     | [modelcontextprotocol.io](https://modelcontextprotocol.io/)                                                                        |
+| Introduction                     | [modelcontextprotocol.io/introduction](https://modelcontextprotocol.io/introduction)                                               |
+| Server Quickstart                | [modelcontextprotocol.io/quickstart/server](https://modelcontextprotocol.io/quickstart/server)                                     |
+| Specification Home               | [modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)                                             |
+| Architecture                     | [modelcontextprotocol.io/specification/architecture](https://modelcontextprotocol.io/specification/architecture)                   |
+| Base Protocol                    | [modelcontextprotocol.io/specification/basic](https://modelcontextprotocol.io/specification/basic)                                 |
+| Server Features                  | [modelcontextprotocol.io/specification/server](https://modelcontextprotocol.io/specification/server)                               |
+| Client Features                  | [modelcontextprotocol.io/specification/client](https://modelcontextprotocol.io/specification/client)                               |
+| Authentication Spec (2025-03-26) | [modelcontextprotocol.io/.../authorization](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)          |
+| Schema Definition (TS)           | [github.com/.../2025-03-26/schema.ts](https://github.com/modelcontextprotocol/specification/blob/main/schema/2025-03-26/schema.ts) |
+| Contributing Guide               | [Contributing Guide](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/CONTRIBUTING.md)                       |
+
+**SDKs & Tools:**
+
+| Language      | SDK Repository                                                           | Notes                          |
+| :------------ | :----------------------------------------------------------------------- | :----------------------------- |
+| TypeScript    | [typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |                                |
+| Python        | [python-sdk](https://github.com/modelcontextprotocol/python-sdk)         |                                |
+| Kotlin        | [kotlin-sdk](https://github.com/modelcontextprotocol/kotlin-sdk)         |                                |
+| Java          | [java-sdk](https://github.com/modelcontextprotocol/java-sdk)             |                                |
+| C#            | [csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)         |                                |
+| **Tool**      | **Repository**                                                           | **Description**                |
+| MCP Inspector | [inspector](https://github.com/modelcontextprotocol/inspector)           | Debugging tool for MCP servers |
+
+**Community & Related Standards:**
+
+| Resource                  | Link                                                                                            |
+| :------------------------ | :---------------------------------------------------------------------------------------------- |
+| GitHub Organization       | [github.com/modelcontextprotocol](https://github.com/modelcontextprotocol)                      |
+| Specification Discussions | [github.com/.../discussions](https://github.com/modelcontextprotocol/specification/discussions) |
+| Organization Discussions  | [github.com/orgs/.../discussions](https://github.com/orgs/modelcontextprotocol/discussions)     |
+| JSON-RPC 2.0 Spec         | [jsonrpc.org](https://www.jsonrpc.org/specification)                                            |
 
 ## 🔍 Introduction to MCP
 
@@ -46,35 +89,33 @@ For a more in-depth introduction to MCP, including its design philosophy and tec
 
 ## 📚 MCP Guides
 
-| Guide                                                                                                               | Description                                                                                                                                                                                        |
-| :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="mcp-client-development-guide"></a>[**MCP Client Development Guide**](guides/mcp-client-development-guide.md) | Learn how to build applications that consume MCP server capabilities. Covers core architecture, lifecycle, tools/resources, security, examples, and advanced topics.                               |
-| <a id="mcp-server-development-guide"></a>[**MCP Server Development Guide**](guides/mcp-server-development-guide.md) | Learn how to create servers providing capabilities to MCP clients. Covers core architecture, building servers, exposing capabilities, advanced features, security, troubleshooting, and examples.  |
-| <a id="cyanheads-mcp-llmstxt"></a>[**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)         | A personal guide for TypeScript MCP server development using the high-level SDK (`McpServer`). Updated for Spec `2025-03-26` & TS SDK `v1.11.0`, covering features like tool annotations and auth. |
+| Guide                                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [**MCP Client Development Guide**](guides/mcp-client-development-guide.md) | Learn how to build applications that consume MCP server capabilities. Covers core architecture, lifecycle, tools/resources, security, examples, and advanced topics. (Note: Needs update for latest spec changes)                                                                                                                                                                                                                             |
+| [**MCP Server Development Guide**](guides/mcp-server-development-guide.md) | Comprehensive guide to building MCP servers. Covers core architecture, protocol fundamentals, server lifecycle, transports (Stdio, Streamable HTTP), building with the TypeScript SDK, defining Tools/Resources/Prompts, advanced features (sampling, roots, streaming, progress, subscriptions, completions), security best practices (updated for Auth Spec `2025-03-26`), troubleshooting, and example implementations. (Updated May 2025) |
+| [**Cyanhead's MCP 'llms.txt'**](guides/cyanheads-custom-mcp-llms-full.md)  | A custom llms.txt for faster TypeScript MCP server development using the high-level SDK (`McpServer`). Tailored for LLM consumption, it covers key concepts, high-level examples, security, and dynamic capabilities, updated for Spec `2025-03-26` & TS SDK `v1.11.0`.                                                                                                                                                                       |
 
 ## 🔧 MCP Utilities
 
-| Project                                                                                 | Description                                                                                                                                                                                              |
-| :-------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="-mcp-reporter"></a>[**mcp-reporter**](https://github.com/cyanheads/mcp-reporter) | A streamlined utility that generates comprehensive capability reports for MCP servers. Helps developers understand available functionality across their MCP ecosystem for documentation and integration. |
+| Project                                                       | Description                                                                                                                                                                                              |
+| :------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [**mcp-reporter**](https://github.com/cyanheads/mcp-reporter) | A streamlined utility that generates comprehensive capability reports for MCP servers. Helps developers understand available functionality across their MCP ecosystem for documentation and integration. |
 
 ## 🔌 MCP Servers
 
 This repository hosts several example MCP server implementations, showcasing different capabilities:
 
-| Project                                                                                                            | Description                                                                                                                                                                                                                                                                      |
-| :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="-atlas-mcp-server"></a>[**atlas-mcp-server**](https://github.com/cyanheads/atlas-mcp-server)                | ATLAS (Adaptive Task & Logic Automation System), a Neo4j-powered task management system designed for LLM Agents. It uses a three-tier architecture (Projects, Tasks, Knowledge) to manage complex workflows and includes Deep Research scaffolding.                              |
-| <a id="-filesystem-mcp-server"></a>[**filesystem-mcp-server**](https://github.com/cyanheads/filesystem-mcp-server) | Offers platform-agnostic file system capabilities for AI agents via MCP. Enables reading, writing, updating, and managing files/directories, featuring advanced search/replace and directory traversal.                                                                          |
-| <a id="-git-mcp-server"></a>[**git-mcp-server**](https://github.com/cyanheads/git-mcp-server)                      | Provides an enterprise-ready MCP interface for Git operations. Allows LLM agents to initialize, clone, branch, commit, and manage repositories via STDIO & Streamable HTTP.                                                                                                      |
-| <a id="-github-mcp-server"></a>[**github-mcp-server**](https://github.com/cyanheads/github-mcp-server)             | Integrates with the GitHub API via MCP, built in TypeScript. Provides a structured interface for LLM agents to manage repositories, issues, pull requests, code, files, and releases.                                                                                            |
-| <a id="-mcp-reporter"></a>[**mcp-reporter**](https://github.com/cyanheads/mcp-reporter)                            | A streamlined utility that generates comprehensive capability reports for MCP servers. Helps developers understand available functionality across their MCP ecosystem for documentation and integration.                                                                         |
-| <a id="-mcp-ts-template"></a>[**mcp-ts-template**](https://github.com/cyanheads/mcp-ts-template)                   | A beginner-friendly, production-ready TypeScript template repository that _includes_ a runnable example MCP server and client. Provides essential utilities, examples, and type safety for a solid starting point. Included .clinerules with instructions for your coding agent. |
-| <a id="-mentor-mcp-server"></a>[**mentor-mcp-server**](https://github.com/cyanheads/mentor-mcp-server)             | Offers AI-powered mentorship via MCP using Deepseek-Reasoning R1 through the Deepseek API. Provides LLM agents with a 'second opinion' for code review, design critique, writing feedback, and brainstorming.                                                                    |
-| <a id="-ntfy-mcp-server"></a>[**ntfy-mcp-server**](https://github.com/cyanheads/ntfy-mcp-server)                   | Integrates with the ntfy.sh push notification service via MCP. Enables LLM agents to send highly customizable notifications to external devices.                                                                                                                                 |
-| <a id="-obsidian-mcp-server"></a>[**obsidian-mcp-server**](https://github.com/cyanheads/obsidian-mcp-server)       | Enables LLMs to interact securely with Obsidian vaults via MCP. Offers token-aware tools for searching, navigating, and updating Obsidian notes, facilitating seamless knowledge base management with Properties management.                                                     |
-| <a id="-perplexity-mcp-server"></a>[**perplexity-mcp-server**](https://github.com/cyanheads/perplexity-mcp-server) | Unlocks Perplexity's search-augmented AI capabilities for LLM agents via MCP. Provides access to real-time web information with robust error handling, secure validation, and optional reasoning transparency (showThinking).                                                    |
-| <a id="-toolkit-mcp-server"></a>[**toolkit-mcp-server**](https://github.com/cyanheads/toolkit-mcp-server)          | Provides essential system utilities and tools for LLM agents via MCP, including IP geolocation, network diagnostics, system monitoring, cryptographic operations, and QR code generation.                                                                                        |
+| Project                                                                         | Description                                                                                                                                                                                                                                         |
+| :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [**atlas-mcp-server**](https://github.com/cyanheads/atlas-mcp-server)           | ATLAS (Adaptive Task & Logic Automation System), a Neo4j-powered task management system designed for LLM Agents. It uses a three-tier architecture (Projects, Tasks, Knowledge) to manage complex workflows and includes Deep Research scaffolding. |
+| [**filesystem-mcp-server**](https://github.com/cyanheads/filesystem-mcp-server) | Offers platform-agnostic file system capabilities for AI agents via MCP. Enables reading, writing, updating, and managing files/directories, featuring advanced search/replace and directory traversal.                                             |
+| [**git-mcp-server**](https://github.com/cyanheads/git-mcp-server)               | Provides an enterprise-ready MCP interface for Git operations. Allows LLM agents to initialize, clone, branch, commit, and manage repositories via STDIO & Streamable HTTP.                                                                         |
+| [**github-mcp-server**](https://github.com/cyanheads/github-mcp-server)         | Integrates with the GitHub API via MCP, built in TypeScript. Provides a structured interface for LLM agents to manage repositories, issues, pull requests, code, files, and releases.                                                               |
+| [**mentor-mcp-server**](https://github.com/cyanheads/mentor-mcp-server)         | Offers AI-powered mentorship via MCP using Deepseek-Reasoning R1 through the Deepseek API. Provides LLM agents with a 'second opinion' for code review, design critique, writing feedback, and brainstorming.                                       |
+| [**ntfy-mcp-server**](https://github.com/cyanheads/ntfy-mcp-server)             | Integrates with the ntfy.sh push notification service via MCP. Enables LLM agents to send highly customizable notifications to external devices.                                                                                                    |
+| [**obsidian-mcp-server**](https://github.com/cyanheads/obsidian-mcp-server)     | Enables LLMs to interact securely with Obsidian vaults via MCP. Offers token-aware tools for searching, navigating, and updating Obsidian notes, facilitating seamless knowledge base management with Properties management.                        |
+| [**perplexity-mcp-server**](https://github.com/cyanheads/perplexity-mcp-server) | Unlocks Perplexity's search-augmented AI capabilities for LLM agents via MCP. Provides access to real-time web information with robust error handling, secure validation, and optional reasoning transparency (showThinking).                       |
+| [**toolkit-mcp-server**](https://github.com/cyanheads/toolkit-mcp-server)       | Provides essential system utilities and tools for LLM agents via MCP, including IP geolocation, network diagnostics, system monitoring, cryptographic operations, and QR code generation.                                                           |
 
 ## 🚀 Getting Started
 
