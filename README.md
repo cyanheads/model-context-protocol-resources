@@ -24,7 +24,7 @@ Welcome! This repository is a collection of guides, utilities, and server implem
 
 **Servers:** [atlas-mcp-server](#mcp-servers) | [filesystem-mcp-server](#mcp-servers) | [git-mcp-server](#mcp-servers) | [github-mcp-server](#mcp-servers) |
 [mcp-reporter](#mcp-servers) | [mcp-ts-template](#mcp-servers) | [mentor-mcp-server](#mcp-servers) | [ntfy-mcp-server](#mcp-servers) |
-[obsidian-mcp-server](#mcp-servers) | [perplexity-mcp-server](#mcp-servers) | [toolkit-mcp-server](#mcp-servers)
+[obsidian-mcp-server](#mcp-servers) | [perplexity-mcp-server](#mcp-servers) | [pubmed-mcp-server](#mcp-servers) | [toolkit-mcp-server](#mcp-servers)
 
 ## 🔗 Official Resources
 
@@ -107,6 +107,7 @@ This repository hosts several example MCP server implementations, showcasing dif
 | [**ntfy-mcp-server**](https://github.com/cyanheads/ntfy-mcp-server)             | Integrates with the ntfy.sh push notification service via MCP. Enables LLM agents to send highly customizable notifications to external devices.                                                                                                    |
 | [**obsidian-mcp-server**](https://github.com/cyanheads/obsidian-mcp-server)     | Enables LLMs to interact securely with Obsidian vaults via MCP. Offers token-aware tools for searching, navigating, and updating Obsidian notes, facilitating seamless knowledge base management with Properties management.                        |
 | [**perplexity-mcp-server**](https://github.com/cyanheads/perplexity-mcp-server) | Unlocks Perplexity's search-augmented AI capabilities for LLM agents via MCP. Provides access to real-time web information with robust error handling, secure validation, and optional reasoning transparency (showThinking).                       |
+| [**pubmed-mcp-server**](https://github.com/cyanheads/pubmed-mcp-server)         | Connects AI agents to NCBI's PubMed and E-utilities via MCP, enabling search, retrieval, and analysis of biomedical literature.                                                                                                                   |
 | [**toolkit-mcp-server**](https://github.com/cyanheads/toolkit-mcp-server)       | Provides essential system utilities and tools for LLM agents via MCP, including IP geolocation, network diagnostics, system monitoring, cryptographic operations, and QR code generation.                                                           |
 
 ## 🚀 Getting Started
