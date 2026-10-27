@@ -26,6 +26,19 @@ bunx @cyanheads/mcp-ts-core init my-mcp-server
 | [MCP overview](guides/mcp-overview.md) | Hosts, clients, and servers; messages and statelessness; tools, resources, and prompts; multi round-trip requests; notifications and caching; stdio and Streamable HTTP; authorization; extensions; security |
 | [Legacy vs. modern servers](guides/legacy-vs-modern.md) | Revision history from `2024-11-05`, what changed in `2026-07-28`, deprecations, era compatibility and detection, and a migration checklist for server authors |
 
+## Agent Skills for server builders
+
+These skills ship with mcp-ts-core and are written for coding agents. They reference the framework's APIs, but the practices carry over to any SDK. Hand one to your agent and ask it to distill the guidance for your stack.
+
+| Looking to… | Skill |
+|:--|:--|
+| Design an MCP server: tool surface, resources, and service layer for a domain or API | [`design-mcp-server`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/design-mcp-server/SKILL.md) |
+| Build a good tool: naming, schemas, response design, errors | [`add-tool`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/add-tool/SKILL.md) |
+| Audit how your tool descriptions and schemas read to a model | [`tool-defs-analysis`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/tool-defs-analysis/SKILL.md) |
+| Shape large or awkward responses: overflow handling, payload shaping, retrieval patterns | [`techniques`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/techniques/SKILL.md) |
+| Test a server against live inputs, including adversarial ones | [`field-test`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/field-test/SKILL.md) |
+| Review a server for security gaps: prompt injection, input sinks, auth, leakage | [`security-pass`](https://github.com/cyanheads/mcp-ts-core/blob/main/framework-skills/security-pass/SKILL.md) |
+
 ## Official resources
 
 | Resource | Link |
