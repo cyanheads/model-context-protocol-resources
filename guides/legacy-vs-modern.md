@@ -2,7 +2,7 @@
 
 MCP revision `2026-07-28` removed the `initialize` handshake and protocol-level sessions. A server written for an earlier revision and a client written for this one can't talk to each other unless one side supports both. This page covers how the protocol got here, what changed, how the two eras interoperate, and what a server needs to move across.
 
-For the protocol itself, start with the [overview](../README.md).
+For the protocol itself, start with the [overview](mcp-overview.md).
 
 ## Terminology
 
