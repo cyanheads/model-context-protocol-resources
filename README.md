@@ -46,7 +46,7 @@ These skills ship with mcp-ts-core and are written for coding agents. They refer
 | Specification (`2026-07-28`) | [modelcontextprotocol.io/specification/2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28) |
 | Changelog for this revision | [Key changes](https://modelcontextprotocol.io/specification/2026-07-28/changelog) |
 | Deprecated features registry | [Deprecated](https://modelcontextprotocol.io/specification/2026-07-28/deprecated) |
-| Schema (source of truth) | [`schema.ts`](https://github.com/modelcontextprotocol/specification/blob/main/schema/2026-07-28/schema.ts) |
+| Schema (source of truth) | [`schema.ts`](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2026-07-28/schema.ts) |
 | Extensions | [Extensions overview](https://modelcontextprotocol.io/extensions/overview) |
 | Enhancement proposals | [SEPs](https://modelcontextprotocol.io/seps) |
 | Server registry | [MCP Registry](https://modelcontextprotocol.io/registry/about) |

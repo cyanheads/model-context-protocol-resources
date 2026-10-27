@@ -30,7 +30,7 @@ MCP defines the boundary between an application and a capability, and nothing on
 | Role | What it is | Responsibilities |
 |:--|:--|:--|
 | **Host** | The AI application: Claude, ChatGPT, VS Code, Cursor, an agent you wrote | Owns the conversation and the model. Decides which servers are connected, enforces user consent, and controls what context each server receives. |
-| **Client** | A connector inside the host, one per server | Speaks the protocol to exactly one server. Attaches its protocol version and capabilities to every request. |
+| **Client** | A connector inside the host, one per server | Speaks the protocol to exactly one server. Attaches its protocol version and capabilities (the optional features it supports, such as showing the user a form) to every request. |
 | **Server** | A program that exposes capabilities, running as a local subprocess or a remote HTTP service | Answers requests for its own tools, resources, and prompts. Knows nothing about other servers. |
 
 ```mermaid
@@ -56,7 +56,7 @@ All traffic is [JSON-RPC 2.0](https://www.jsonrpc.org/specification), UTF-8 enco
 - **Responses** carry the request's `id` and either a `result` or an `error`.
 - **Notifications** carry a `method` and no `id`, and get no reply.
 
-Only the client sends requests. The server answers each one and may send notifications tied to a request in flight or to an open subscription. A `tools/call` request looks like this:
+Only the client sends requests. The server answers each one and may send notifications tied to a request in flight or to an open subscription ([section 7](#7-notifications-progress-and-cancellation)). A `tools/call` request, which asks the server to run a tool, looks like this:
 
 ```json
 {
@@ -75,28 +75,28 @@ Only the client sends requests. The server answers each one and may send notific
 }
 ```
 
-`_meta` carries protocol metadata. On every request the client includes the protocol version and its capabilities (both required) and should include its own name and version. A request missing a required field is rejected with `-32602 Invalid params`. Keys under prefixes whose second label is `modelcontextprotocol` or `mcp` are reserved for the protocol, and OpenTelemetry trace context (`traceparent`, `tracestate`, `baggage`) also travels in `_meta`.
+`_meta` is an object for metadata about the request, separate from the method's own parameters. On every request the client includes the protocol version and its capabilities (both required) and should include its own name and version. A request missing a required field is rejected with `-32602 Invalid params`. Key prefixes whose second label is `modelcontextprotocol` or `mcp` are reserved for the protocol, and OpenTelemetry trace context (`traceparent`, `tracestate`, `baggage`) also travels in `_meta`.
 
-Every result carries a `resultType`: `"complete"` for a normal result, or `"input_required"` when the server needs more from the client first (see [section 6](#6-asking-the-client-for-input)). Servers should identify themselves in each result's `_meta` under `io.modelcontextprotocol/serverInfo`.
+Every result carries a `resultType`: `"complete"` for a normal result, or `"input_required"` when the server needs more from the client first (see [section 6](#6-asking-the-client-for-input)). Servers should include their name and version in each result's `_meta` under `io.modelcontextprotocol/serverInfo`.
 
 Errors use the standard JSON-RPC codes (`-32700`, `-32600` to `-32603`) plus three MCP-defined codes:
 
 | Code | Name | Meaning |
 |:--|:--|:--|
-| `-32020` | `HeaderMismatch` | HTTP headers disagree with the request body, or a required header is missing |
+| `-32020` | `HeaderMismatch` | An HTTP header disagrees with the request body, or a required header is missing |
 | `-32021` | `MissingRequiredClientCapability` | The request needs a client capability the client did not declare |
 | `-32022` | `UnsupportedProtocolVersion` | The server does not speak the requested version; `data.supported` lists the versions it does |
 
 ## 4. Statelessness and discovery
 
-As of `2026-07-28`, MCP is stateless. There is no `initialize` handshake and no session, and each request carries everything the server needs to process it. This has several consequences:
+As of `2026-07-28`, MCP is stateless. There is no `initialize` handshake (the setup exchange earlier revisions used) and no session, and each request carries everything the server needs to process it. This has several consequences:
 
 - **Any server instance can answer any request.** Plain load balancing and serverless deployments work, with no sticky sessions or shared session store.
 - **A connection is not a conversation.** A client may interleave unrelated requests on one stdio process or HTTP connection, and the server must not infer context from earlier requests.
-- **Lists don't vary per connection.** `tools/list` returns the same set to every caller with the same credentials. It may vary by authorization, such as hiding tools a token's scopes don't permit.
+- **Lists don't vary per connection.** `tools/list` returns the same set to every caller with the same credentials. It may vary by authorization, for example by hiding tools a token's scopes don't permit.
 - **Cross-call state is an explicit handle.** A server that needs continuity, such as a shopping cart or a browser context, returns an opaque identifier from one tool and accepts it as an argument on later calls. The handle's lifetime belongs in the creating tool's description, and an expired handle should produce a tool error that says so.
 
-Servers must implement **`server/discover`**, which returns the protocol versions the server supports, its capabilities, its identity, and optional `instructions`: natural-language guidance for the model on how to use the server. Clients may call it first, but don't have to. A client can send any request directly, and if the server doesn't support the requested version it answers `UnsupportedProtocolVersionError` with the versions it does support, so the client can retry.
+Servers must implement **`server/discover`**, which returns the protocol versions the server supports, its capabilities, its identity, and optional `instructions` (natural-language guidance for the model on using the server). Clients may call it first but don't have to. A client can send any request directly. If the server doesn't support the requested version, it answers with an `UnsupportedProtocolVersion` error listing the versions it does support, so the client can retry.
 
 ## 5. What a server exposes
 
@@ -108,11 +108,11 @@ A server offers up to three primitives. They differ in who decides when each is 
 | **Resources** | The application | URI-addressed data the host attaches as context | `resources/list`, `resources/templates/list`, `resources/read` |
 | **Prompts** | The user | Message templates, usually surfaced as slash commands | `prompts/list`, `prompts/get` |
 
-A server declares each primitive it supports as a capability (`tools`, `resources`, `prompts`). Tools do most of the work in practice, and host support for resources and prompts is less consistent, so check what your target hosts implement.
+A server declares each primitive it supports as a capability (`tools`, `resources`, `prompts`) in its `server/discover` result. Tools do most of the work in practice, and host support for resources and prompts is less consistent, so check what your target hosts implement.
 
 ### Tools
 
-A tool definition has a `name`, an optional display `title`, a `description`, an `inputSchema`, and optionally an `outputSchema`, `annotations`, and `icons`:
+A tool definition requires a `name` and an `inputSchema`. Everything else is optional: a display `title`, a `description` (optional in the schema, essential in practice), an `outputSchema`, `annotations`, and `icons`:
 
 ```json
 {
@@ -135,7 +135,7 @@ A tool definition has a `name`, an optional display `title`, a `description`, an
 - **Names** should be 1 to 128 characters from `A-Z a-z 0-9 _ - .`, unique within the server. Two servers can each expose a `search` tool, so a host aggregating servers has to disambiguate them.
 - **Descriptions** are what the model reads when it decides whether and how to call the tool. They work like a prompt and need the same care.
 - **Annotations** (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) are hints for the host's consent UI. Clients must treat them as untrusted unless the server is trusted.
-- **Ordering:** servers should return tools in a deterministic order so clients can cache the list and prompt caches stay warm.
+- **Ordering:** servers should return tools in a deterministic order so clients can cache the list and LLM prompt caches stay warm.
 
 A tool result has two surfaces:
 
@@ -163,10 +163,10 @@ A prompt is a named template with declared arguments. `prompts/get` fills the ar
 
 ## 6. Asking the client for input
 
-Sometimes a server needs something from the client side in the middle of a request: a confirmation, a field the user didn't supply, an OAuth sign-in. Servers never send requests of their own. Instead they use **multi round-trip requests (MRTR)**:
+Sometimes a server needs something from the client side in the middle of a request: a confirmation, a field the user didn't supply, a sign-in to a third-party service. Servers never send requests of their own. Instead they ask through **multi round-trip requests (MRTR)**, where the server answers the original request with a list of what it needs and the client retries with the answers:
 
 1. The client sends a request (`tools/call`, `resources/read`, or `prompts/get`).
-2. The server returns an `InputRequiredResult` (`resultType: "input_required"`) with a map of `inputRequests` and an optional opaque `requestState`.
+2. The server returns an `InputRequiredResult` (`resultType: "input_required"`) carrying a map of `inputRequests`, a `requestState`, or both. `requestState` is an opaque string only the server interprets; it lets the server resume without storing anything.
 3. The client gathers the inputs, then retries the original request under a **new** JSON-RPC `id`, adding `inputResponses` and echoing `requestState` unchanged.
 4. The server completes the request, or asks again if something is still missing.
 
@@ -183,9 +183,9 @@ sequenceDiagram
     S-->>C: complete: tool result
 ```
 
-The retry carries everything the server needs, so a different server instance can finish the request. Because `requestState` passes through the client, the server must treat it as attacker-controlled. If it affects authorization or business logic, the server must protect its integrity (HMAC or AEAD) and should bind it to the authenticated principal, a short expiry, and the originating request. A one-time operation needs single-use enforcement on the server side as well.
+The retry carries everything the server needs, so a different server instance can finish the request. Because `requestState` passes through the client, the server must treat it as attacker-controlled. If it affects authorization or business logic, the server must protect its integrity (HMAC or AEAD) and should bind it to the authenticated principal, a short expiry, and the originating request. A one-time operation also needs single-use enforcement on the server.
 
-A server may only ask for inputs the client declared in its capabilities. If a request can't proceed without one, the server returns `MissingRequiredClientCapability`. Three kinds of input request exist:
+A server may only ask for inputs the client declared in its capabilities. If a request can't proceed without an undeclared one, the server returns `MissingRequiredClientCapability`. Three kinds of input request exist:
 
 | Request | Purpose | Status |
 |:--|:--|:--|
@@ -201,7 +201,7 @@ A server may only ask for inputs the client declared in its capabilities. If a r
 | **Cancellation** | On stdio, the client sends `notifications/cancelled` with the request ID. On HTTP, closing the request's response stream is the cancellation. The server stops work and sends nothing further for that request. |
 | **Change notifications** | The client opens a long-lived `subscriptions/listen` request with a filter (`toolsListChanged`, `promptsListChanged`, `resourcesListChanged`, `resourceSubscriptions: [uris]`). The server acknowledges with the subset it will honor, then sends matching notifications, each tagged with the subscription's ID. If the stream drops, the client re-issues the request. |
 | **Pagination** | List methods return an opaque `nextCursor`, which the client passes back as `cursor`. |
-| **Caching** | Results from `server/discover`, the three list methods, `resources/templates/list`, and `resources/read` must carry `ttlMs` (a freshness hint) and `cacheScope` (`"public"` or `"private"`). Interim `input_required` results and MRTR retries are never cached. |
+| **Caching** | Results from `server/discover`, the three list methods, `resources/templates/list`, and `resources/read` must carry `ttlMs` (how many milliseconds the client may treat the result as fresh) and `cacheScope` (`"public"` if any caller may share the cached copy, `"private"` if it may be reused only under the same authorization). Interim `input_required` results and MRTR retries are never cached. |
 | **Logging** | `notifications/message` is sent only for requests whose `_meta` sets `io.modelcontextprotocol/logLevel`. The feature is deprecated: log to `stderr` on stdio and use OpenTelemetry for observability. |
 
 ## 8. Transports
@@ -221,8 +221,8 @@ The host launches the server as a subprocess and exchanges newline-delimited JSO
 
 The server exposes one endpoint (for example `https://example.com/mcp`) that accepts POST:
 
-- Every client message is its own POST. The server responds with either a single JSON object or an SSE stream scoped to that request, which carries progress notifications and then the final response.
-- Selected body fields are mirrored into headers so load balancers and gateways can route without parsing JSON: `MCP-Protocol-Version` and `Mcp-Method` on every request, plus `Mcp-Name` (the tool, prompt, or resource) on `tools/call`, `prompts/get`, and `resources/read`. A tool can mark a primitive parameter with `x-mcp-header` to have it sent as `Mcp-Param-{Name}`. Never mark secrets this way, since intermediaries see headers. Servers reject any header that disagrees with the body using `-32020`.
+- Every client message is its own POST. The server responds with either a single JSON object or an SSE (Server-Sent Events) stream scoped to that request, which carries progress notifications and then the final response.
+- Selected body fields are mirrored into headers so load balancers and gateways can route without parsing JSON: `MCP-Protocol-Version` and `Mcp-Method` on every request, plus `Mcp-Name` (the tool, prompt, or resource) on `tools/call`, `prompts/get`, and `resources/read`. A tool can mark a string, integer, or boolean parameter with `x-mcp-header` to have it sent as `Mcp-Param-{Name}`. Don't mark secrets or personal data this way, since intermediaries see headers. Servers reject any header that disagrees with the body using `-32020`.
 - There are no sessions, no `Mcp-Session-Id`, no standalone GET stream, and no resumption via `Last-Event-ID`. If a stream breaks mid-request, the request is lost, and the client re-issues it with a new ID. Change notifications use `subscriptions/listen`, which is itself a POST.
 - Servers must validate the `Origin` header (403 on mismatch) to block DNS rebinding, should bind to `127.0.0.1` when running locally, and should authenticate every request.
 
@@ -240,9 +240,9 @@ Authorization: Bearer eyJhbGciOi...
 
 Authorization applies to HTTP transports and is optional. A server that requires it follows a defined subset of OAuth:
 
-1. **The MCP server is an OAuth 2.1 resource server.** It publishes [Protected Resource Metadata](https://datatracker.ietf.org/doc/html/rfc9728) (RFC 9728), which names its authorization server(s). An unauthenticated request gets `401` with `WWW-Authenticate: Bearer resource_metadata="…", scope="…"`.
+1. **The MCP server is an OAuth 2.1 resource server.** It publishes [Protected Resource Metadata](https://datatracker.ietf.org/doc/html/rfc9728) (RFC 9728), which names its authorization server(s). An unauthenticated request gets `401`, typically with `WWW-Authenticate: Bearer resource_metadata="…", scope="…"`. A server that omits `resource_metadata` serves the metadata at `/.well-known/oauth-protected-resource`, and clients must check both.
 2. **The client discovers the authorization server** through OAuth Authorization Server Metadata (RFC 8414) or OpenID Connect Discovery. Clients must support both.
-3. **The client gets a client ID.** In order of preference: a [Client ID Metadata Document](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document-00), where the client ID is an HTTPS URL pointing to the client's metadata; pre-registration; or Dynamic Client Registration (RFC 7591), which is deprecated as of `2026-07-28`.
+3. **The client gets a client ID.** In order of preference: credentials pre-registered for this server; a [Client ID Metadata Document](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document-00), where the client ID is an HTTPS URL pointing to the client's metadata, if the authorization server advertises support; Dynamic Client Registration (RFC 7591), deprecated as of `2026-07-28`; and as a last resort, asking the user to enter client details.
 4. **The client runs the authorization code flow with PKCE**, sending the `resource` parameter ([RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html)) so the token is bound to this server, and validating the `iss` parameter in the response ([RFC 9207](https://datatracker.ietf.org/doc/html/rfc9207)).
 5. **The server validates every token's audience** and rejects tokens issued for anyone else. It must never forward the client's token to an upstream API. If it calls other services, it gets its own credentials for them.
 6. **Step-up:** when a call needs more scope, the server returns `403` with `error="insufficient_scope"` and the required scopes, and the client re-authorizes for them.
@@ -251,15 +251,14 @@ Extensions cover other cases: OAuth client credentials for machine-to-machine ac
 
 ## 10. Extensions
 
-Extensions add optional functionality outside the core protocol. Each side lists the extensions it supports under `capabilities.extensions`, keyed by identifier, and when only one side supports an extension, the other falls back to core behavior or rejects the request. Official extensions use the `io.modelcontextprotocol/` prefix and live in `ext-*` repositories under the [modelcontextprotocol](https://github.com/modelcontextprotocol) organization. Third-party extensions use a reversed domain the author owns (`com.example/feature`).
+Extensions add optional functionality outside the core protocol. Each side lists the extensions it supports under `capabilities.extensions`, keyed by identifier. When only one side supports an extension, the side that supports it falls back to core behavior or rejects the request. Official extensions use the `io.modelcontextprotocol/` prefix and live in `ext-*` repositories under the [modelcontextprotocol](https://github.com/modelcontextprotocol) organization. Third-party extensions use a reversed domain the author owns (`com.example/feature`).
 
 | Extension | What it adds |
 |:--|:--|
 | **Tasks** (`io.modelcontextprotocol/tasks`) | Long-running operations. A server returns a task handle instead of blocking, and the client polls `tasks/get` and sends mid-flight input with `tasks/update`. Moved out of the core protocol in `2026-07-28`. |
 | **MCP Apps** (`io.modelcontextprotocol/ui`) | Interactive UI inside the conversation. A tool points to a `ui://` resource containing HTML, which the host renders in a sandboxed iframe that talks to the host over `postMessage`. |
+| **[Skills](https://modelcontextprotocol.io/extensions/skills/overview)** (`io.modelcontextprotocol/skills`) | Servers publish Agent Skills (a `SKILL.md` plus supporting files) that clients discover and read through the Resources primitive. |
 | **Authorization extensions** | OAuth client credentials and enterprise-managed authorization |
-
-[Skills over MCP](https://modelcontextprotocol.io/community/working-groups/skills-over-mcp), which delivers structured agent instructions through MCP, is being developed in a working group.
 
 ## 11. Security
 
@@ -268,10 +267,10 @@ The protocol has no way to enforce any of the following, so the work falls on ho
 - **Everything a server returns is untrusted input to the model.** Tool descriptions, annotations, results, and resource contents can all contain instructions planted by a malicious server or by whatever upstream data the server relays (prompt injection). Hosts should show the user which tools are available, ask before calling them, and display arguments before execution.
 - **Data can leak across servers.** A model can read private data through one server and send it out through another. Only the host sees both sides, so only the host can stop this.
 - **Local servers run with the user's privileges.** Installing one means running someone else's code.
-- **Confused deputy and token passthrough.** A server must accept only tokens issued for itself and must never relay a client's token upstream. An OAuth proxy server must get user consent for each client it registers.
-- **SSRF.** Servers that fetch URLs, including OAuth metadata and schema `$ref`s, should block private, loopback, and link-local addresses.
+- **Confused deputy and token passthrough.** A server must accept only tokens issued for itself and must never relay a client's token upstream. A server that proxies to a third-party authorization server under a static client ID must get the user's consent for each dynamically registered client before forwarding it there.
+- **SSRF.** Clients fetch OAuth metadata URLs a server supplies, and authorization servers fetch client metadata documents. Both should block private, loopback, and link-local addresses, as should any implementation that opts in to fetching remote schema `$ref`s.
 - **DNS rebinding.** Local HTTP servers validate `Origin` and bind to localhost.
-- **MRTR state.** `requestState` is client-controlled. Protect its integrity, bind it to the principal and the request, and expire it.
+- **MRTR state.** `requestState` is client-controlled, so sign or encrypt it as described in [section 6](#6-asking-the-client-for-input).
 
 The specification's [security best practices](https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices) cover each attack and its mitigations.
 
@@ -288,7 +287,7 @@ Revision `2026-07-28` split MCP into two eras. The specification calls handshake
 | HTTP stream recovery | Resumable via `Last-Event-ID` | Not resumable; re-issue the request |
 | Discovery | Implicit in `initialize` | `server/discover` |
 
-A modern-only client can't talk to a legacy server, and a legacy client can't talk to a modern-only server. Legacy clients have no way to move forward. Servers therefore need to stay dual-era until their clients have upgraded. The TypeScript SDK implements the modern revision in its v2 packages (`@modelcontextprotocol/server`, `@modelcontextprotocol/client`), which replace the single v1 package `@modelcontextprotocol/sdk`.
+A modern-only client can't talk to a legacy server, and a legacy client can't talk to a modern-only server. Servers therefore need to stay dual-era until their clients have upgraded. The TypeScript SDK implements the modern revision in its v2 packages (`@modelcontextprotocol/server`, `@modelcontextprotocol/client`), which replace the single v1 package `@modelcontextprotocol/sdk` and still serve legacy clients by default.
 
 **[Legacy vs. modern servers](legacy-vs-modern.md)** covers the full revision history, the compatibility matrix, how clients detect a server's era, deprecation timelines, and a migration checklist for server authors.
 
