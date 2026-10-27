@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: model-context-protocol-resources
+abstract: "A technical overview of the Model Context Protocol (MCP), current to the 2026-07-28 specification, with a guide to the differences between legacy (handshake-based) and modern (stateless) MCP servers and a migration checklist for server authors."
+type: software
+authors:
+  - family-names: Hand
+    given-names: Casey
+    orcid: "https://orcid.org/0009-0009-3726-568X"
+repository-code: "https://github.com/cyanheads/model-context-protocol-resources"
+license: Apache-2.0
+keywords:
+  - mcp
+  - model-context-protocol
+  - mcp-specification
+  - mcp-servers
+  - ai-agents
+  - llm-tools
