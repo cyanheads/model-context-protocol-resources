@@ -189,7 +189,7 @@ A server may only ask for inputs the client declared in its capabilities. If a r
 
 | Request | Purpose | Status |
 |:--|:--|:--|
-| `elicitation/create` | Ask the user. **Form mode** collects structured fields against a restricted JSON Schema. **URL mode** sends the user to a URL for interactions that must not pass through the client: credentials, OAuth, payments. Form mode must never ask for secrets. | Active |
+| `elicitation/create` | Ask the user. **Form mode** collects structured fields against a restricted JSON Schema. **URL mode** sends the user to a URL for interactions that must not pass through the client: credentials, sign-ins to third-party services, payments. Form mode must never ask for secrets, and a server must not use URL mode to authorize users to itself. | Active |
 | `sampling/createMessage` | Ask the host's model for a completion | Deprecated in `2026-07-28`; call an LLM provider API directly |
 | `roots/list` | Ask which directories are in scope | Deprecated in `2026-07-28`; take paths as tool parameters, resource URIs, or configuration |
 
@@ -199,7 +199,7 @@ A server may only ask for inputs the client declared in its capabilities. If a r
 |:--|:--|
 | **Progress** | The client puts a `progressToken` in a request's `_meta`. The server sends `notifications/progress` on that request's response stream. |
 | **Cancellation** | On stdio, the client sends `notifications/cancelled` with the request ID. On HTTP, closing the request's response stream is the cancellation. The server stops work and sends nothing further for that request. |
-| **Change notifications** | The client opens a long-lived `subscriptions/listen` request with a filter (`toolsListChanged`, `promptsListChanged`, `resourcesListChanged`, `resourceSubscriptions: [uris]`). The server acknowledges with the subset it will honor, then sends matching notifications, each tagged with the subscription's ID. If the stream drops, the client re-issues the request. |
+| **Change notifications** | The client opens a long-lived `subscriptions/listen` request with a filter (`toolsListChanged`, `promptsListChanged`, `resourcesListChanged`, `resourceSubscriptions: [uris]`). The server acknowledges with the subset it will honor, then sends matching notifications, each tagged in `_meta` with `io.modelcontextprotocol/subscriptionId` (the JSON-RPC ID of the listen request). If the stream drops, the client re-issues the request. |
 | **Pagination** | List methods return an opaque `nextCursor`, which the client passes back as `cursor`. |
 | **Caching** | Results from `server/discover`, the three list methods, `resources/templates/list`, and `resources/read` must carry `ttlMs` (how many milliseconds the client may treat the result as fresh) and `cacheScope` (`"public"` if any caller may share the cached copy, `"private"` if it may be reused only under the same authorization). Interim `input_required` results and MRTR retries are never cached. |
 | **Logging** | `notifications/message` is sent only for requests whose `_meta` sets `io.modelcontextprotocol/logLevel`. The feature is deprecated: log to `stderr` on stdio and use OpenTelemetry for observability. |
