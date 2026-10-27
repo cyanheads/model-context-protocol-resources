@@ -11,7 +11,7 @@
 
 This page explains how MCP works: the roles, the wire format, what a server exposes, how servers ask for input, the transports, authorization, and what changed when the protocol went stateless in revision `2026-07-28`. It is written for engineers who want a working model of the protocol before reading the [specification](https://modelcontextprotocol.io/specification/2026-07-28).
 
-**Building a server?** [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core) is a TypeScript framework for MCP servers on the current spec. It serves legacy and modern clients from the same server and ships Agent Skills for designing, testing, and releasing. Scaffold a project with:
+**Building a server?** [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core) is an agent-native TypeScript framework for building MCP servers on the current spec. Every scaffold ships Agent Skills that your coding agent follows to design, test, and release the server, and the server answers legacy and modern clients alike. Scaffold a project with:
 
 ```bash
 bunx @cyanheads/mcp-ts-core init my-mcp-server
